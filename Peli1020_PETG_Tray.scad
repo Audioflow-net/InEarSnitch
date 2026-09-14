@@ -194,9 +194,11 @@ module tpu_tray_mat() {
         }
         
         // 3. Wir verrunden das scharfe V-Kreuz zu einer weichen U-Kurve (Leaf Spring!)
-        // offset(5) füllt das tiefe V in der Mitte mit einer 5mm Rundung auf.
+        // WICHTIG: offset(5) muss zuerst kommen (um die Lücke zu füllen), 
+        // dann offset(-5) (um die Außenmaße wiederherzustellen).
+        // In OpenSCAD wird von rechts nach links gelesen!
         module leaf_spring_solid() {
-            offset(r=5) offset(r=-5) {
+            offset(r=-5) offset(r=5) {
                 combined_solid();
             }
         }
