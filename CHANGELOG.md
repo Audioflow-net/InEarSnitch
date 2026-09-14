@@ -1318,3 +1318,10 @@
   - Die dreiteilige Hull-Form wirkte wie ein abstrakter Schmetterling, da die beiden Konturen zu nah aneinander standen. Die Form wurde zu einer klaren, organischen Tropfenform (Teardrop) vereinfacht (2 Zylinder).
   - Der Abstand zwischen Links und Rechts wurde vergrößert, damit sie als zwei getrennte Ohrstücke erkennbar sind.
   - Ein intelligenter `render_mode = "assembly"` Switch wurde eingebaut. Standardmäßig sieht man nun das komplette graue Tray richtig herum, mit der roten TPU-Matte bündig darin liegend. Für den Druck kann man auf `print_tray` oder `print_mat` umschalten.
+
+### V177 - 2026-09-14
+- **TPU Matte**: Layout auf vertikal gedreht und C-Shape Pods (offene Trichter) eingeführt.
+- **Die Idee / Der Grund**: 
+  - User-Foto von Vision Ears Customs zeigte dicke, steife Ear-Hooks am Connector.
+  - Eine horizontale Anordnung würde die steifen Kabel sofort gegen die Trennwand biegen und sie extrem abknicken.
+  - Die IEMs werden nun vertikal eingelegt (Faceplate oben, Kabel zeigt nach vorne). Die TPU-Wände bilden eine Vase/Trichter-Form (C-Shape), die den Body sicher umschließt, aber unten komplett offen ist (14mm Spalt). So fließt das steife Kabel exakt und knickfrei in den PETG-Ausgang.

@@ -712,30 +712,34 @@ class AnalysisWidget(QWidget):
                     max_peak = float(np.max(csd_slices[0]))
                     self.csd_widget.setYRange(max_peak - 45, max_peak + 5)
                 
-                # 5. Fill-Farbe (brush) passend zum Background
-                bg_color = theme.get_color('bg')
+                # 4. Fill-Opacity reduzieren
+                fill_brush = pg.mkBrush(24, 24, 27, 200)
                 
                 # Draw from back to front (i.e. oldest/last slice first) to allow occlusion
                 for i in range(num_slices - 1, -1, -1):
                     slice_mag = csd_slices[i]
                     
-                    # 3 & 2: 0.98 statt 0.96 (Freq), 1.2 statt 2.5 dB (Y-Offset)
-                    shift_freqs = csd_freqs * (0.98 ** i)
-                    shift_mag = slice_mag - (i * 1.2) 
+                    # 3 & 2: Freq-Shift 0.99, Y-Offset 1.5 dB
+                    shift_freqs = csd_freqs * (0.99 ** i)
+                    shift_mag = slice_mag - (i * 1.5) 
                 
-                    # Neon color mapping: Cyan to Purple over time
+                    # 6. Farb-Gradient: Vorne = voll Cyan, Hinten = dunkel transparent
                     blend = i / max(1, num_slices - 1)
-                    r = int(0 * (1 - blend) + 255 * blend)
-                    g = int(255 * (1 - blend) + 0 * blend)
-                    b = 255
-                    color = pg.mkColor(r, g, b)
+                    r = 0
+                    g = int(255 * (1 - blend) + 30 * blend)
+                    b = int(255 * (1 - blend) + 40 * blend)
+                    a = int(255 * (1 - blend) + 50 * blend)
+                    color = pg.mkColor(r, g, b, a)
+                    
+                    # 5. Linienbreite: vorne 2.0, hinten 1.0
+                    pen_width = 2.0 - (1.0 * blend)
                 
                     self.csd_widget.plot(
                         shift_freqs, 
                         shift_mag, 
-                        pen=pg.mkPen(color, width=1.5),
+                        pen=pg.mkPen(color, width=pen_width),
                         fillLevel=-100,
-                        brush=pg.mkBrush(bg_color)
+                        brush=fill_brush
                     )
                 
         # Trigger EQ update to draw the virtual curve
