@@ -180,15 +180,15 @@ module tpu_tray_mat() {
         
         // 2. Massiver Block mit eingebauter Blattfeder-Kurve (Leaf Spring)!
         module leaf_spring_solid() {
-            union() {
-                translate([28, 0]) pod_shape();
-                translate([59, 0]) pod_shape();
-                
-                // DAS GEHEIMNIS DER BLATTFEDER:
-                // Ein zentraler Kreis, der die spitze V-Kerbe zwischen den Pods 
-                // mit einer perfekten, weichen U-Kurve auffüllt!
-                // Garantiert stressfrei für TPU (kein Creep) und 100% crash-frei für OpenSCAD!
-                translate([43.5, 40]) circle(d=28, $fn=80);
+            // BUGFIX: offset(0.01) zwingt OpenSCAD, die Winding-Order des Polygons 
+            // neu zu berechnen. Das verhindert den Bug, bei dem das TPU als unendlicher 
+            // blauer Rechteck-Block mit einem Loch in der Mitte gerendert wird!
+            offset(r=0.01) {
+                union() {
+                    translate([28, 0]) pod_shape();
+                    translate([59, 0]) pod_shape();
+                    translate([43.5, 40]) circle(d=28, $fn=80);
+                }
             }
         }
         
