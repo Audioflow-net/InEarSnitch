@@ -1373,3 +1373,11 @@
   - Um PETG zu 100% ohne Support zu drucken, wurde das Tray in zwei flache Teile zerschnitten. Der Rahmen hat eine Auflagefläche bei Z=29.5 und kleine Snap-Bumps bei Z=32.2. Die Bodenplatte (inklusive Mic-Holder) rastet dort perfekt ein.
   - Das TPU hatte vorher Löcher, weil ich "schwebend" fälschlicherweise als "ohne Boden" interpretiert habe. Das war Unsinn, TPU flext von alleine genug. Der Boden ist jetzt komplett massiv (1.5mm).
   - Die TPU-Wand wurde über ein extrem sauberes 2D-Offset-Profil generiert. Das sorgt dafür, dass die Wand überall exakt 1.2mm dick ist, nirgendwo Löcher hat und in der Mitte stark nach innen gewölbt ist (Hourglass), um die IEMs massiv festzuklemmen.
+
+### V185 - 2026-09-14
+- **Exploded View & Snap Bump Fix**: `render_mode = "exploded"` hinzugefügt, um die drei Teile auseinandergezogen anzuzeigen. Die Koordinaten der Snap-Bumps wurden korrigiert (`tray_x_bot` statt `rim_x`), sodass sie nicht mehr aus dem Rahmen herausstehen.
+- **TPU Tear-Away (Geniale User-Idee)**: Die freischwingenden Gegen-Gummis werden nicht mehr über riesige Löcher im Boden erzeugt.
+- **Die Idee / Der Grund**: 
+  - Anstatt Löcher in den Boden zu schneiden, hat das TPU-Tray nun einen 100% massiven Boden.
+  - Die inneren Klemm-Wände werden durch einen ultrafeinen, 0.4mm hohen horizontalen Schnitt vom Boden separiert.
+  - Der Slicer druckt diese Wände eine Schicht lang in die Luft. Sie sinken minimal ab und verbinden sich gerade genug, dass man sie drucken kann. Nach dem Druck fährt man mit dem Finger oder Skalpell darüber, reißt die Sollbruchstelle auf, und die Klemm-Wände sind völlig lose und schwingen frei!
