@@ -4,7 +4,7 @@ import numpy as np
 import theme
 from PySide6.QtWidgets import (
     QPushButton, QLineEdit, QListWidget, QListWidgetItem, QWidget, QFrame, QTabWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem, 
-    QHeaderView, QLabel, QCheckBox, QAbstractItemView, QSplitter
+    QHeaderView, QLabel, QCheckBox, QAbstractItemView, QSplitter, QSizePolicy
 )
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap
@@ -260,9 +260,23 @@ class HistoryWidget(QWidget):
         split_layout.addWidget(left_pane, stretch=1)
         
         # --- RIGHT PANE ---
+        self.right_pane_wrapper = QWidget()
+        self.right_pane_layout = QHBoxLayout(self.right_pane_wrapper)
+        self.right_pane_layout.setContentsMargins(0,0,0,0)
+        self.right_pane_layout.setSpacing(0)
+        
+        self.btn_toggle_tools = QPushButton("▶")
+        self.btn_toggle_tools.setFixedWidth(16)
+        self.btn_toggle_tools.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        self.btn_toggle_tools.setStyleSheet("QPushButton { background-color: #2a2a2f; color: #888; border: none; border-left: 1px solid #3f3f46; font-size: 10px; } QPushButton:hover { background-color: #3f3f46; color: white; }")
+        self.btn_toggle_tools.setCursor(Qt.PointingHandCursor)
+        self.btn_toggle_tools.clicked.connect(self.toggle_tools_pane)
+        self.right_pane_layout.addWidget(self.btn_toggle_tools)
+        
         self.tools_tabs = QTabWidget()
         self.tools_tabs.setFixedWidth(345)
         self.tools_tabs.setStyleSheet(f"QTabWidget::tab-bar {{ alignment: center; }} QTabWidget::pane {{ border: 1px solid {border}; border-radius: 4px; }} QTabBar::tab {{ background: {bg}; color: {text_sec}; padding: 4px 10px; min-width: 80px; border: 1px solid {border}; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: bold; font-size: 11px; }} QTabBar::tab:selected {{ background: {active}; color: {fg}; }}")
+        self.right_pane_layout.addWidget(self.tools_tabs)
         
         target_tab = QWidget()
         target_layout = QVBoxLayout(target_tab)
@@ -296,7 +310,7 @@ class HistoryWidget(QWidget):
         
         target_layout.addWidget(self.list_widget, stretch=1)
         self.tools_tabs.addTab(target_tab, "ARCHIVE")
-        split_layout.addWidget(self.tools_tabs)
+        split_layout.addWidget(self.right_pane_wrapper)
         self.layout.addLayout(split_layout)
         
         bottom_container = QVBoxLayout()
@@ -677,3 +691,11 @@ class HistoryWidget(QWidget):
                 QMessageBox.information(self, "Target Saved", f"Target saved to {target_path}")
             except Exception as e:
                 print(e)
+
+    def toggle_tools_pane(self):
+        is_visible = self.tools_tabs.isVisible()
+        self.tools_tabs.setVisible(not is_visible)
+        if is_visible:
+            self.btn_toggle_tools.setText("◀")
+        else:
+            self.btn_toggle_tools.setText("▶")

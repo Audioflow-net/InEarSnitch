@@ -1042,7 +1042,10 @@ class AnalysisWidget(QWidget):
     def toggle_tools_pane(self):
         is_visible = self.tools_tabs.isVisible()
         self.tools_tabs.setVisible(not is_visible)
+        total = self.split_layout.width()
         if is_visible:
             self.btn_toggle_tools.setText("◀")
+            self.split_layout.setSizes([total, 0])
         else:
             self.btn_toggle_tools.setText("▶")
+            self.split_layout.setSizes([total - 250, 250])
