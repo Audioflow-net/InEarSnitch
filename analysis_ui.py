@@ -567,7 +567,6 @@ class AnalysisWidget(QWidget):
         tab_cat_map = {0: 'FR', 1: 'THD', 2: 'CSD'}
         active_cat = tab_cat_map.get(tab_idx, None)  # None = show all
 
-        import theme
         is_light = theme.is_light()
         status_style = {
             'OK':   ('#dcfce7' if is_light else '#0d3320', '#16a34a' if is_light else '#22c55e', '✓'),
@@ -819,7 +818,7 @@ class AnalysisWidget(QWidget):
                         shift_mag, 
                         pen=pg.mkPen(color, width=pen_width),
                         fillLevel=-100,
-                        brush=fill_brush
+                        fillBrush=fill_brush
                     )
                 
         # Trigger EQ update to draw the virtual curve
@@ -977,7 +976,6 @@ class AnalysisWidget(QWidget):
             pass
 
     def update_theme(self):
-        import theme
         bg = theme.get_color('bg_panel')
         fg = theme.get_color('text_primary')
         border = theme.get_color('border')
