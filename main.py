@@ -203,7 +203,7 @@ class MusicianCard(QWidget):
     def __init__(self, name, role, iems, status="Ready", profile_pic=None):
         super().__init__()
         self.setAttribute(Qt.WA_StyledBackground, True)
-        self.layout = QHBoxLayout(self)
+        self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(10, 10, 10, 10)
         self.name = name
         
@@ -237,9 +237,11 @@ class MusicianCard(QWidget):
         role_lbl.setStyleSheet("background-color: transparent; border: none; outline: none;")
         role_lbl.setFocusPolicy(Qt.NoFocus)
         
-        bottom_info = QHBoxLayout()
+        bottom_info = QVBoxLayout()
         bottom_info.setContentsMargins(0, 0, 0, 0)
         bottom_info.setSpacing(4)
+        bottom_info.setAlignment(Qt.AlignCenter)
+        name_lbl.setAlignment(Qt.AlignCenter)
         
         self.iems_data = iems
         self.current_iem_id = iems[0][0] if iems else -1
@@ -268,10 +270,10 @@ class MusicianCard(QWidget):
 
         
         info_layout.addWidget(name_lbl)
-        info_layout.addWidget(role_lbl)
+        role_lbl.hide()
         info_layout.addLayout(bottom_info)
         
-        self.layout.addWidget(self.avatar)
+        self.avatar.hide()
         self.layout.addLayout(info_layout)
         
         self.setObjectName("musicianCardObj")
