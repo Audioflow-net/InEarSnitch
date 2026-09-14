@@ -482,7 +482,7 @@ class AnalysisWidget(QWidget):
         
         pos = evt[0] if isinstance(evt, tuple) else evt
         # Only show crosshair on Freq Response tab
-        if self.plot_widget.sceneBoundingRect().contains(pos) and self.graph_tabs.currentIndex() == 0:
+        if self.plot_widget.plotItem.vb.sceneBoundingRect().contains(pos) and self.graph_tabs.currentIndex() == 0:
             mousePoint = self.plot_widget.plotItem.vb.mapSceneToView(pos)
             
             if self.vLine not in self.plot_widget.plotItem.items:
@@ -491,10 +491,9 @@ class AnalysisWidget(QWidget):
                 self.plot_widget.addItem(self.crosshair_label, ignoreBounds=True)
                 
             x_log = mousePoint.x()
-            freq = 10**x_log
             
             closest_dist = float('inf')
-            closest_x = None
+            closest_x_log = None
             closest_y = None
             
             for item in self.plot_widget.plotItem.items:
@@ -504,23 +503,25 @@ class AnalysisWidget(QWidget):
                     except Exception:
                         continue
                     if x_data is not None and len(x_data) > 0:
-                        idx = (np.abs(x_data - freq)).argmin()
-                        curve_freq = x_data[idx]
+                        # x_data is already in log10 space because setLogMode(x=True)
+                        idx = (np.abs(x_data - x_log)).argmin()
+                        curve_x_log = x_data[idx]
                         curve_mag = y_data[idx]
                         
-                        dist = abs(np.log10(curve_freq) - x_log)
+                        dist = abs(curve_x_log - x_log)
                         if dist < closest_dist:
                             closest_dist = dist
-                            closest_x = curve_freq
+                            closest_x_log = curve_x_log
                             closest_y = curve_mag
                             
-            if closest_x is not None:
-                self.vLine.setPos(np.log10(closest_x))
+            if closest_x_log is not None:
+                self.vLine.setPos(closest_x_log)
                 self.hLine.setPos(closest_y)
                 
-                freq_str = f"{closest_x:.0f} Hz" if closest_x < 1000 else f"{closest_x/1000:.1f} kHz"
+                closest_freq = 10**closest_x_log
+                freq_str = f"{closest_freq:.0f} Hz" if closest_freq < 1000 else f"{closest_freq/1000:.2f} kHz"
                 self.crosshair_label.setText(f"{freq_str} | {closest_y:+.1f} dB")
-                self.crosshair_label.setPos(np.log10(closest_x), closest_y)
+                self.crosshair_label.setPos(closest_x_log, closest_y)
                 
                 self.vLine.show()
                 self.hLine.show()
