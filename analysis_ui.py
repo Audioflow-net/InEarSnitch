@@ -296,11 +296,25 @@ class AnalysisWidget(QWidget):
         self.split_layout.addWidget(left_pane_widget)
         
         # --- Right Pane: Tools (QTabWidget) ---
+        self.right_pane_wrapper = QWidget()
+        self.right_pane_layout = QHBoxLayout(self.right_pane_wrapper)
+        self.right_pane_layout.setContentsMargins(0,0,0,0)
+        self.right_pane_layout.setSpacing(0)
+        
+        self.btn_toggle_tools = QPushButton("▶")
+        self.btn_toggle_tools.setFixedWidth(16)
+        self.btn_toggle_tools.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        self.btn_toggle_tools.setStyleSheet("QPushButton { background-color: #2a2a2f; color: #888; border: none; border-left: 1px solid #3f3f46; font-size: 10px; } QPushButton:hover { background-color: #3f3f46; color: white; }")
+        self.btn_toggle_tools.setCursor(Qt.PointingHandCursor)
+        self.btn_toggle_tools.clicked.connect(self.toggle_tools_pane)
+        self.right_pane_layout.addWidget(self.btn_toggle_tools)
+        
         self.tools_tabs = QTabWidget()
         self.tools_tabs.setElideMode(Qt.ElideNone)
         self.tools_tabs.setUsesScrollButtons(True)
         self.tools_tabs.setMinimumWidth(220)
         self.tools_tabs.setMaximumWidth(400)
+        self.right_pane_layout.addWidget(self.tools_tabs)
         
         # 1. Diagnostics Tool
         self.diag_container = QWidget()
@@ -456,7 +470,7 @@ class AnalysisWidget(QWidget):
         dsp_layout.addWidget(self.preset_cards_scroll, stretch=1)
         
         self.tools_tabs.addTab(self.dsp_container, "EQ")
-        self.split_layout.addWidget(self.tools_tabs)
+        self.split_layout.addWidget(self.right_pane_wrapper)
         self.split_layout.setStretchFactor(0, 1)
         self.split_layout.setStretchFactor(1, 0)
         
@@ -1025,4 +1039,10 @@ class AnalysisWidget(QWidget):
         # Redraw diagnostics cards to refresh their light/dark color palette
         self.render_diagnostics()
 
-
+    def toggle_tools_pane(self):
+        is_visible = self.tools_tabs.isVisible()
+        self.tools_tabs.setVisible(not is_visible)
+        if is_visible:
+            self.btn_toggle_tools.setText("◀")
+        else:
+            self.btn_toggle_tools.setText("▶")
