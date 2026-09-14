@@ -168,15 +168,15 @@ module tpu_tray_mat() {
     
     // Die perfekte, kontinuierliche 2D-Wand (ohne Lücken!)
     module tpu_wall_2d() {
-        // 1. Grundform einer EINZELNEN Kammer definieren
+        
+        // 1. Grundform einer Kammer (inkl. künstlicher Klemm-Nase zur Mitte)
         module pod_shape(is_left) {
             hull() {
                 translate([0, 50]) circle(d=34, $fn=60);
                 translate([0, 30]) circle(d=34, $fn=60);
                 translate([0, 10]) circle(d=16, $fn=60);
                 
-                // KÜNSTLICHE KLEMM-NASE: Streckt die Kammer zur Mitte!
-                // Dadurch wird die Überlappung massiv vergrößert (auf 11mm).
+                // Die Nase sorgt für eine massive Überlappung in der Mitte!
                 if (is_left) {
                     translate([10, 40]) circle(d=22, $fn=60);
                 } else {
@@ -185,22 +185,26 @@ module tpu_tray_mat() {
             }
         }
         
-        // 2. Die Kammer aushöhlen (exakt 1.2mm Wandstärke)
-        module hollow_pod(is_left) {
-            difference() {
-                pod_shape(is_left);
-                offset(r = -wall_thickness) pod_shape(is_left);
+        // 2. Wir vereinen beide Kammern zu einem einzigen MASSIVEN Block
+        module combined_solid() {
+            union() {
+                translate([28, 0]) pod_shape(true);
+                translate([59, 0]) pod_shape(false);
             }
         }
         
-        // 3. Beide ausgehöhlten Kammern überlappend zusammenfügen!
-        // Die Nasen formen in der Mitte ein riesiges, tiefes Teardrop-Kreuz!
-        // offset(0.5) verrundet die spitzen inneren Ecken zu weichen Kissen.
-        offset(r=0.5) offset(r=-0.5) {
-            union() {
-                translate([28, 0]) hollow_pod(true);
-                translate([59, 0]) hollow_pod(false);
+        // 3. Wir verrunden das scharfe V-Kreuz zu einer weichen U-Kurve (Leaf Spring!)
+        // offset(5) füllt das tiefe V in der Mitte mit einer 5mm Rundung auf.
+        module leaf_spring_solid() {
+            offset(r=5) offset(r=-5) {
+                combined_solid();
             }
+        }
+        
+        // 4. Erst jetzt höhlen wir das Meisterwerk zu einer exakten 1.2mm Wand aus!
+        difference() {
+            leaf_spring_solid();
+            offset(r = -wall_thickness) leaf_spring_solid();
         }
     }
     
