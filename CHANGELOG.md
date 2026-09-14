@@ -1332,3 +1332,10 @@
 - **Die Idee / Der Grund**: 
   - Die Pods waren zu groß und überlappten sich. Sie wurden auf X=24 und X=62 verschoben (samt PETG-Notches), was einen sauberen Spalt erzeugt.
   - Die innere Wand wurde an Y=15 durchtrennt und der TPU-Boden exakt darunter weggeschnitten (`spring_floor_cut`). Dadurch liegt die Wand direkt auf dem Druckbett (ohne Boden) und fungiert als 40mm langes schwebendes Gummiband, das beim Einlegen des CIEM nachgibt und ihn unter Spannung festhält.
+
+### V179 - 2026-09-14
+- **8er-Form mit schwebendem Zentrum (Trampolin)**: Form aus V177 wiederhergestellt, aber das zentrale Überlappungsstück fungiert nun als schwebende V-Feder.
+- **Die Idee / Der Grund**: 
+  - Der User favorisierte die optisch geschlossene "8er-Form" (Überlappung der Pods in der Mitte).
+  - Die Mulden wurden minimal enger gezogen (d=34 statt 36), damit sie näher am IEM anliegen.
+  - Der TPU-Boden unter der exakten Mitte wurde herausgeschnitten (`spring_floor_cut` bei X=35 bis 50), und die Wände dort unten durchtrennt. Dadurch hängt das gesamte verschmolzene Mittelstück als schwebende "Trampolin-Brücke" in der Luft, federt den Druck von beiden CIEMs ab und erfüllt den Wunsch nach dem Gegen-Gummi in Perfektion.
