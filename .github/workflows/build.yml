@@ -268,19 +268,16 @@ jobs:
       - name: Install NSIS
         run: choco install nsis --no-progress -y
 
-      - name: Prepare NSIS script
+      - name: Compile NSIS installer
         shell: pwsh
         run: |
-          # installer.nsi liegt im Repo – einfach die Variablen ersetzen
           $content = Get-Content "installer.nsi" -Raw
           $content = $content -replace '\$\{APP_VERSION\}', $env:APP_VERSION
           $content = $content -replace '\$\{INSTALLER_NAME\}', $env:INSTALLER_NAME
           $content | Set-Content "installer_final.nsi" -Encoding UTF8
-          Write-Host "✅ NSIS script prepared"
-          Write-Host "OutFile: $env:INSTALLER_NAME"
-
-      - name: Compile NSIS installer
-        run: makensis installer_final.nsi
+          $makensis = "C:\Program Files (x86)\NSIS\makensis.exe"
+          & $makensis installer_final.nsi
+          Write-Host "✅ Installer compiled: $env:INSTALLER_NAME"
 
       - name: Sign Installer (Authenticode)
         if: env.WINDOWS_CERT_PATH != ''
