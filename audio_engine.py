@@ -78,6 +78,17 @@ class AudioEngine:
             tone_stereo[:, 0] = tone
         else:
             tone_stereo[:, 1] = tone
+
+        # WASAPI Crash Prevention
+        import sys
+        if sys.platform == "win32":
+            try:
+                out_sr = int(sd.query_devices(output_device_idx)['default_samplerate'])
+                in_sr = int(sd.query_devices(input_device_idx)['default_samplerate'])
+                if out_sr != in_sr:
+                    return False, -999.0, f"Sample Rate Mismatch!\n\nWindows WASAPI requires identical sample rates for Input and Output.\nOutput: {out_sr} Hz\nInput: {in_sr} Hz\n\nPlease go to Windows Sound Control Panel -> Properties -> Advanced and set both devices to exactly the same format (e.g. 24-bit, 48000 Hz)."
+            except Exception:
+                pass
         
         try:
             import threading
@@ -185,16 +196,30 @@ class AudioEngine:
         except Exception:
             pass
 
-        # 2. CoreAudio full-duplex I/O
+        # WASAPI Crash Prevention: Windows cannot open a full-duplex stream if Input and Output native sample rates differ.
+        import sys
+        if sys.platform == "win32":
+            try:
+                out_sr = int(sd.query_devices(output_device_idx)['default_samplerate'])
+                in_sr = int(sd.query_devices(input_device_idx)['default_samplerate'])
+                if out_sr != in_sr:
+                    raise RuntimeError(f"Sample Rate Mismatch!\n\nWindows WASAPI requires identical sample rates for Input and Output.\nOutput: {out_sr} Hz\nInput: {in_sr} Hz\n\nPlease go to Windows Sound Control Panel -> Properties -> Advanced and set both devices to exactly the same format (e.g. 24-bit, 48000 Hz).")
+            except RuntimeError:
+                raise
+            except Exception:
+                pass
+
+        # 2. CoreAudio/WASAPI full-duplex I/O
         try:
-            recording = sd.playrec(sweep_stereo, 
+            recording = sd.playrec(sweep_stereo,  
                                    samplerate=self.sample_rate, 
                                    channels=1, 
                                    device=(input_device_idx, output_device_idx),
                                    blocking=False)
         except sd.PortAudioError as e:
-            # Fallback for some macOS interfaces that strictly require matching input channels
-            if "9986" in str(e) or "9998" in str(e) or "Invalid number of channels" in str(e) or "Internal PortAudio error" in str(e):
+            # Fallback: Windows WASAPI and some macOS interfaces strictly require matching input channels.
+            # Catching ANY PortAudioError here because Windows throws different error strings that otherwise cause a hard crash.
+            try:
                 in_info = sd.query_devices(input_device_idx)
                 in_chans = in_info['max_input_channels']
                 recording = sd.playrec(sweep_stereo, 
@@ -202,8 +227,8 @@ class AudioEngine:
                                        channels=in_chans, # Use exact max input channels
                                        device=(input_device_idx, output_device_idx),
                                        blocking=False)
-            else:
-                raise e
+            except Exception as e2:
+                raise RuntimeError(f"Audio device error (WASAPI/PortAudio). Ensure input and output sample rates match in Windows Sound Settings! Original Error: {str(e)} | Fallback Error: {str(e2)}")
                                
         start_t = time.time()
         timeout = duration + 5.0
