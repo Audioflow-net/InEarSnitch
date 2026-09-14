@@ -225,6 +225,19 @@ class AnalysisWidget(QWidget):
         self.eq_tf_line = self.plot_widget.plot(pen=pg.mkPen('#06b6d4', width=2, style=Qt.DashLine), name="EQ Curve (0dB = 60dB)")
         self.eq_tf_line.setZValue(10)
         self.eq_tf_line.hide()
+        
+        # --- Crosshair Setup ---
+        self.vLine = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen(color=(255, 255, 255, 120), width=1))
+        self.hLine = pg.InfiniteLine(angle=0, movable=False, pen=pg.mkPen(color=(255, 255, 255, 120), width=1))
+        self.crosshair_label = pg.TextItem(anchor=(0, 1), color=(255, 255, 255, 200), fill=(24, 24, 27, 200))
+        self.vLine.hide()
+        self.hLine.hide()
+        self.crosshair_label.hide()
+        self.plot_widget.addItem(self.vLine, ignoreBounds=True)
+        self.plot_widget.addItem(self.hLine, ignoreBounds=True)
+        self.plot_widget.addItem(self.crosshair_label, ignoreBounds=True)
+        self.plot_widget.scene().sigMouseMoved.connect(self.mouseMoved)
+        
         fr_layout.addWidget(self.plot_widget)
         
         self.graph_tabs.addTab(self.fr_container, "Freq Response")

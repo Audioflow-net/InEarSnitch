@@ -110,11 +110,11 @@ class AudioEngine:
             # Expected probe peak = cal peak + 20*log10(probe_amp / cal_sweep_amp)
             expected_probe_peak = cal_rec_peak + 20 * np.log10(probe_amp / cal_sweep_amp + 1e-12)
             drift = abs(peak_dbfs - expected_probe_peak)
-            if drift > 4.0:
+            if drift > 6.0:
                 return False, peak_dbfs, (
                     f"Level shifted by {drift:.0f} dB since calibration "
                     f"(expected {expected_probe_peak:.0f}, got {peak_dbfs:.0f} dBFS). "
-                    f"System volume was changed. Re-calibrate or restore volume."
+                    f"Re-calibrate or restore your system volume."
                 )
         
         return True, peak_dbfs, f"Level OK ({peak_dbfs:.0f} dBFS)"
