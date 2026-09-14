@@ -871,7 +871,7 @@ class MainWindow(QMainWindow):
         self.cb_smooth = QComboBox()
         self.cb_smooth.setMinimumWidth(110)
         self.cb_smooth.addItems(["1/24 Oct", "1/48 Oct", "1/12 Oct", "1/6 Oct", "Raw"])
-        self.cb_smooth.currentIndexChanged.connect(self.redraw_graph)
+        self.cb_smooth.currentIndexChanged.connect(self.on_smooth_changed)
         meas_top_h.addWidget(self.cb_smooth)
         
         self.btn_reset_view = QPushButton("AUTOZOOM")
@@ -1704,6 +1704,11 @@ class MainWindow(QMainWindow):
             if self.temp_mag_r is not None:
                 f, m, _ = AudioEngine.smooth_spectrum(self.temp_freqs, self.temp_mag_r, points=pts or 0)
                 self.plot_widget.plot(f, m + spl_off, pen=pg.mkPen(theme.get_color('curve_right'), width=2, style=Qt.DashLine), name="Right")
+
+    def on_smooth_changed(self, *args):
+        self.redraw_graph()
+        if hasattr(self, 'page_ana'):
+            self.update_analysis_view()
 
     def load_targets(self):
         # We populate the four combo boxes (2 in Meas, 2 in Ana)

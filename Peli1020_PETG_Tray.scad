@@ -169,28 +169,20 @@ module tpu_tray_mat() {
     // Die perfekte, kontinuierliche 2D-Wand (ohne Lücken!)
     module tpu_wall_2d() {
         module outer_shape() {
-            // offset(r) glättet die tiefen Klemm-Einwölbungen weich ab!
+            // offset(r) glättet die Übergänge zwischen den beiden Hulls weich ab!
             offset(r=2) offset(r=-2) {
-                difference() {
-                    // Die Grundform der beiden Pods (Überlappen leicht in der Mitte)
-                    union() {
-                        hull() {
-                            translate([26, 50]) circle(d=34, $fn=60);
-                            translate([26, 30]) circle(d=34, $fn=60);
-                            translate([26, 10]) circle(d=16, $fn=60);
-                        }
-                        hull() {
-                            translate([59, 50]) circle(d=34, $fn=60);
-                            translate([59, 30]) circle(d=34, $fn=60);
-                            translate([59, 10]) circle(d=16, $fn=60);
-                        }
+                // Die Grundform der beiden Pods (Überlappen in der Mitte um 3mm!)
+                union() {
+                    hull() {
+                        translate([28, 50]) circle(d=34, $fn=60);
+                        translate([28, 30]) circle(d=34, $fn=60);
+                        translate([28, 10]) circle(d=16, $fn=60);
                     }
-                    
-                    // DIE KLEMM-EINWÖLBUNGEN (Hourglass)
-                    // Zieht Zylinder ab, um die Wand extrem tief nach innen an den IEM zu drücken!
-                    translate([42.5, 66]) circle(d=22, $fn=60); // Oben einklemmen
-                    translate([42.5, 38]) circle(d=18, $fn=60); // Mitte extrem einklemmen
-                    translate([42.5, 12]) circle(d=10, $fn=60); // Unten leicht einklemmen
+                    hull() {
+                        translate([59, 50]) circle(d=34, $fn=60);
+                        translate([59, 30]) circle(d=34, $fn=60);
+                        translate([59, 10]) circle(d=16, $fn=60);
+                    }
                 }
             }
         }
@@ -216,7 +208,7 @@ module tpu_tray_mat() {
                 tpu_wall_2d();
         
         // Trichter links öffnen (Kabelausgang)
-        translate([26, 0, 0]) translate([-7, -5, -eps]) cube([14, 25, 20]);
+        translate([28, 0, 0]) translate([-7, -5, -eps]) cube([14, 25, 20]);
         // Trichter rechts öffnen
         translate([59, 0, 0]) translate([-7, -5, -eps]) cube([14, 25, 20]);
         
