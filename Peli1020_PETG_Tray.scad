@@ -261,8 +261,10 @@ module dropin_cutout_block(tol=0) {
 module petg_outer_frame() {
     difference() {
         petg_tray();
-        // Schneidet den exakten inneren Hohlraum aus, ohne die Außenwand zu zerstören!
-        dropin_cutout_block(tol=0);
+        // BUGFIX: tol=-0.1 macht den Block minimal breiter.
+        // Das garantiert, dass er beim Abziehen sauber IN die Wand schneidet
+        // und OpenSCAD keine "Invalid 2-Manifold" Kanten stehen lässt!
+        dropin_cutout_block(tol=-0.1);
     }
     
     // Snap-Fit Punkte: Wir müssen die 15 Grad Schräge (Draft) exakt berechnen!
@@ -287,11 +289,38 @@ module petg_outer_frame() {
     }
 }
 
+// BUGFIX V189: Platte nativ bauen (ohne intersection!), da CGAL sonst abstürzt!
 module petg_dropin_plate() {
-    // 0.15mm Toleranz, damit die Platte sauber in den Rahmen flutscht
-    intersection() {
-        petg_tray();
-        dropin_cutout_block(tol=0.15);
+    tol = 0.15; // Toleranz für sauberes Einklicken
+    
+    difference() {
+        union() {
+            // 1. Die flache 2mm Bodenplatte exakt an den 15 Grad Wänden hochziehen
+            h_295 = 29.5 - z_bot;
+            d_295 = h_295 * tan(15);
+            h_315 = 31.5 - z_bot;
+            d_315 = h_315 * tan(15);
+            
+            hull() {
+                translate([1.5 + d_295 + wall + tol, 1.5 + d_295 + wall + tol, 29.5])
+                    rounded_rect(tray_x_bot - 2*d_295 - 2*wall - 2*tol, tray_y_bot - 2*d_295 - 2*wall - 2*tol, eps, tray_r_bot - d_295 - wall);
+                translate([1.5 + d_315 + wall + tol, 1.5 + d_315 + wall + tol, 31.5])
+                    rounded_rect(tray_x_bot - 2*d_315 - 2*wall - 2*tol, tray_y_bot - 2*d_315 - 2*wall - 2*tol, eps, tray_r_bot - d_315 - wall);
+            }
+            
+            // 2. Die Trennwand
+            translate([81.0, 1.5 + d_315 + wall + tol, 31.5]) 
+                cube([2.0, tray_y_bot - 2*d_315 - 2*wall - 2*tol, 10.0]);
+                
+            // 3. Mic Coupler Tube (Outer)
+            coupler_tube(is_inner=false);
+        }
+        
+        // Mic Coupler aushöhlen (damit das Mikrofon perfekt hineinpasst!)
+        coupler_tube(is_inner=true);
+        
+        // Unterseite radikal abschneiden, damit die Platte zu 100% plan bei Z=29.5 beginnt
+        translate([-50, -50, 0]) cube([300, 300, 29.5]);
     }
 }
 
