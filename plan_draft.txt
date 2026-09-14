@@ -1,0 +1,16 @@
+eisteepfirsich
+
+Hallo! Der aktuelle Light-/Dark-Mode nutzt ein "Monkey-Patching", das einfach stur Hex-Codes in Inline-Styles überschreibt (was z.B. bei "Delete Selected" zu schwarzer Schrift auf rotem Grund führt und PyQtGraph-Titel ganz ignoriert). 
+
+Um das nach gängigen UI/CSS-Praktiken (Trennung von Struktur und Design, keine Inline-Styles, semantische Klassen) auf Vordermann zu bringen, schlage ich folgenden Plan vor:
+
+1. **`theme.py` (Globale Stylesheet-Architektur):**
+   - Entfernen des `patched_set_style` String-Replace-Hacks.
+   - Aufbau eines zentralen globalen QSS-Strings (ähnlich einer `style.css`), in den je nach Modus (Light/Dark) die passenden Farb-Variablen (wie CSS-Variables) injiziert werden (z.B. für `QPushButton`, `QWidget`, `QListWidget`).
+2. **`history_ui.py` & `analysis_ui.py` (Refactoring auf CSS-Klassen):**
+   - Entfernen der hartcodierten `setStyleSheet(...)` Aufrufe bei Buttons und Labels.
+   - Stattdessen weisen wir dynamische Properties zu (das PyQt-Äquivalent zu CSS-Klassen: `btn.setProperty("class", "danger")`), damit sie das korrekte globale Styling bekommen.
+3. **`theme.py` & UI-Klassen (PyQtGraph Fixes):**
+   - PyQtGraph-Titel (z.B. "Measurement History") unterstützen kein QSS. Wir binden eine Mechanik ein, die beim Theme-Wechsel alle Plots durchgeht und die `.setTitle(color=...)` auf den richtigen Theme-Wert (weiß oder dunkelgrau) umschreibt.
+
+Darf ich mit Schritt 1 (`theme.py` umbauen) beginnen?

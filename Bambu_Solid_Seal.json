@@ -1,0 +1,13 @@
+{
+    "type": "process",
+    "name": "IE-SNITCH Solid Seal",
+    "from": "system",
+    "inherits": "0.16mm Optimal @BBL A1 Mini",
+    "wall_loops": "3",
+    "sparse_density": "100",
+    "sparse_infill_pattern": "rectilinear",
+    "top_shell_layers": "4",
+    "bottom_shell_layers": "4",
+    "detect_thin_wall": "1",
+    "seam_position": "aligned"
+}

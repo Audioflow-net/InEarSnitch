@@ -1,0 +1,167 @@
+        # BOTTOM CONTROLS (Unified QGridLayout)
+        control_panel = QFrame()
+        control_panel.setObjectName("ControlPanel")
+        control_panel.setStyleSheet("#ControlPanel { background-color: #222; border-radius: 8px; }")
+        control_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        control_layout = QGridLayout(control_panel)
+        control_layout.setContentsMargins(15, 15, 15, 15)
+        control_layout.setHorizontalSpacing(15)
+        control_layout.setVerticalSpacing(15)
+
+        # Helper to create segmented buttons
+        def create_seg_btn(text, pos, checked_bg="#444"):
+            btn = QPushButton(text)
+            btn.setCheckable(True)
+            # Base style
+            rad = "4px"
+            bl = rad if pos in ("left", "only") else "0px"
+            tl = rad if pos in ("left", "only") else "0px"
+            br = rad if pos in ("right", "only") else "0px"
+            tr = rad if pos in ("right", "only") else "0px"
+            b_right = "0px" if pos == "left" or pos == "middle" else "1px solid #555"
+            
+            btn.setStyleSheet(f'''
+                QPushButton {{
+                    background-color: #222;
+                    color: #AAA;
+                    border: 1px solid #555;
+                    border-right: {b_right};
+                    border-top-left-radius: {tl};
+                    border-bottom-left-radius: {bl};
+                    border-top-right-radius: {tr};
+                    border-bottom-right-radius: {br};
+                    padding: 6px 12px;
+                    font-weight: bold;
+                    font-size: 13px;
+                }}
+                QPushButton:checked {{
+                    background-color: {checked_bg};
+                    color: white;
+                    border-color: #666;
+                }}
+                QPushButton:hover:!checked {{
+                    background-color: #333;
+                }}
+            ''')
+            btn.setCursor(Qt.PointingHandCursor)
+            return btn
+
+        # --- Row 0 ---
+        
+        # Channel Segmented Control
+        chan_widget = QWidget()
+        chan_layout = QHBoxLayout(chan_widget)
+        chan_layout.setContentsMargins(0, 0, 0, 0)
+        chan_layout.setSpacing(0)
+        self.btn_grp_chan = QButtonGroup(chan_widget)
+        
+        btn_l = create_seg_btn("Left", "left", checked_bg="#16a34a")
+        btn_l.setChecked(True)
+        btn_r = create_seg_btn("Right", "right", checked_bg="#dc2626")
+        
+        self.btn_grp_chan.addButton(btn_l, 0)
+        self.btn_grp_chan.addButton(btn_r, 1)
+        chan_layout.addWidget(btn_l)
+        chan_layout.addWidget(btn_r)
+        
+        self.btn_grp_chan.buttonClicked.connect(self.update_watermark)
+        self.btn_grp_chan.buttonClicked.connect(self.on_target_channel_changed)
+        control_layout.addWidget(chan_widget, 0, 0, 1, 2)
+        
+        # Sweeps Segmented Control
+        sweeps_widget = QWidget()
+        sweeps_layout = QHBoxLayout(sweeps_widget)
+        sweeps_layout.setContentsMargins(0, 0, 0, 0)
+        sweeps_layout.setSpacing(0)
+        self.btn_grp_sweeps = QButtonGroup(sweeps_widget)
+        
+        btn_1x = create_seg_btn("1x", "left")
+        btn_1x.setChecked(True)
+        btn_3x = create_seg_btn("3x", "middle")
+        btn_5x = create_seg_btn("5x", "right")
+        
+        self.btn_grp_sweeps.addButton(btn_1x, 1)
+        self.btn_grp_sweeps.addButton(btn_3x, 3)
+        self.btn_grp_sweeps.addButton(btn_5x, 5)
+        sweeps_layout.addWidget(btn_1x)
+        sweeps_layout.addWidget(btn_3x)
+        sweeps_layout.addWidget(btn_5x)
+        
+        control_layout.addWidget(sweeps_widget, 0, 2, 1, 2)
+        
+        # --- Row 1 ---
+        self.cb_meas_target = QComboBox()
+        self.cb_meas_target.setToolTip("Select a target curve. Type to search.")
+        self.cb_meas_target.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.cb_meas_target.setMinimumWidth(180)
+        self.cb_meas_target.setStyleSheet("QComboBox { background: #222; color: #E0E0E0; border: 1px solid #555; padding: 8px; border-radius: 4px; font-size: 13px; font-weight: 500; } QComboBox QAbstractItemView { background-color: #222; color: white; selection-background-color: #10b981; }")
+        self.cb_meas_target.currentIndexChanged.connect(self.on_meas_target_changed)
+        control_layout.addWidget(self.cb_meas_target, 1, 0, 1, 2)
+
+        self.cb_meas_history = QComboBox()
+        self.cb_meas_history.setToolTip("Select a historical measurement. Type to search.")
+        self.cb_meas_history.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.cb_meas_history.setMinimumWidth(220)
+        self.cb_meas_history.setStyleSheet("QComboBox { background: #222; color: #E0E0E0; border: 1px solid #555; padding: 8px; border-radius: 4px; font-size: 13px; font-weight: 500; } QComboBox QAbstractItemView { background-color: #222; color: white; selection-background-color: #10b981; }")
+        self.cb_meas_history.currentIndexChanged.connect(self.on_meas_history_changed)
+        control_layout.addWidget(self.cb_meas_history, 1, 2, 1, 2)
+
+        # Spacer column (Column 4) allows the panel to stretch
+        control_layout.setColumnStretch(4, 1)
+
+        # --- Buttons ---
+
+        rta_container = QWidget()
+        rta_layout = QHBoxLayout(rta_container)
+        rta_layout.setContentsMargins(0, 0, 0, 0)
+        rta_layout.setSpacing(6)
+        
+        self.btn_rta_raw = QPushButton("R\nT\nA")
+        self.btn_rta_raw.setToolTip("Start Raw Live RTA")
+        self.btn_rta_raw.setCheckable(True)
+        self.btn_rta_raw.setStyleSheet("QPushButton { background-color: #db2777; color: white; font-weight: bold; font-size: 13px; border-radius: 6px; border: none; } QPushButton:hover { background-color: #be185d; } QPushButton:checked { background-color: #fbcfe8; color: #831843; border: 2px solid #db2777; }")
+        self.btn_rta_raw.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        self.btn_rta_raw.setMinimumHeight(60)
+        self.btn_rta_raw.setFixedWidth(40)
+        self.btn_rta_raw.clicked.connect(self.on_rta_button_clicked)
+        
+        self.btn_iec_guide = QPushButton("I\nE\nC")
+        self.btn_iec_guide.setToolTip("Start Live RTA with 8k IEC Guide")
+        self.btn_iec_guide.setCheckable(True)
+        self.btn_iec_guide.setStyleSheet("QPushButton { background-color: #10b981; color: white; font-weight: bold; font-size: 13px; border-radius: 6px; border: none; } QPushButton:hover { background-color: #059669; } QPushButton:checked { background-color: #a7f3d0; color: #064e3b; border: 2px solid #10b981; }")
+        self.btn_iec_guide.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        self.btn_iec_guide.setMinimumHeight(60)
+        self.btn_iec_guide.setFixedWidth(40)
+        self.btn_iec_guide.clicked.connect(self.on_rta_button_clicked)
+        
+        rta_layout.addStretch()
+        rta_layout.addWidget(self.btn_rta_raw)
+        rta_layout.addWidget(self.btn_iec_guide)
+        
+        control_layout.addWidget(rta_container, 0, 4, 2, 1)
+
+        self.btn_capture = QPushButton("RUN")
+        self.btn_capture.setToolTip("Start measurement capture")
+        self.btn_capture.setStyleSheet("QPushButton { background-color: #10b981; color: black; font-weight: bold; font-size: 14px; border-radius: 6px; } QPushButton:disabled { background-color: #555; color: #888; }")
+        self.btn_capture.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.btn_capture.setMinimumHeight(60)
+        self.btn_capture.clicked.connect(self.run_measurement)
+        control_layout.addWidget(self.btn_capture, 0, 5, 1, 2)
+
+        self.btn_trace = QPushButton("Clear")
+        self.btn_trace.setToolTip("Clear measurement trace")
+        self.btn_trace.setMinimumWidth(80)
+        self.btn_trace.setStyleSheet("QPushButton { background-color: #ef4444; color: white; font-weight: bold; padding: 6px; border-radius: 4px; border: none; } QPushButton:disabled { background-color: #7f1d1d; color: #fca5a5; } QPushButton:hover { background-color: #dc2626; }")
+        self.btn_trace.clicked.connect(self.clear_trace)
+        control_layout.addWidget(self.btn_trace, 1, 5)
+        
+        self.btn_save_db = QPushButton("Save")
+        self.btn_save_db.setToolTip("Save measurement to database")
+        self.btn_save_db.setMinimumWidth(80)
+        self.btn_save_db.setStyleSheet("QPushButton { background-color: #444; color: white; font-weight: bold; padding: 6px; border-radius: 4px; border: 1px solid #555; } QPushButton:disabled { background-color: #222; color: #555; border: 1px solid #333; } QPushButton:hover { background-color: #555; }")
+        self.btn_save_db.clicked.connect(self.save_trace_to_db)
+        control_layout.addWidget(self.btn_save_db, 1, 6)
+        # --- Row 1 ---
+
+        
+        # Container to add some top margin

@@ -1,0 +1,178 @@
+
+    QWidget {
+        background-color: #18181b;
+        color: white;
+    }
+    
+    QLabel {
+        background-color: transparent !important;
+    }
+    
+    QLabel[class="title"] {
+        font-weight: bold;
+        font-size: 16px;
+        color: white;
+    }
+    
+    QLabel[class="subtitle"] {
+        font-weight: bold;
+        font-size: 12px;
+        color: #888888;
+    }
+    
+    QPushButton {
+        background-color: #1f1f23;
+        border: 1px solid #222225;
+        border-radius: 4px;
+        padding: 5px;
+        color: white;
+    }
+    
+    QPushButton:hover {
+        background-color: #2a2a2a;
+    }
+    
+    QPushButton[class="danger"] {
+        background-color: #dc2626;
+        color: white;
+        border: none;
+        font-weight: bold;
+        padding: 8px;
+    }
+    
+    QPushButton[class="danger"]:hover {
+        background-color: #b91c1c;
+    }
+    
+    QPushButton[class="accent"] {
+        background-color: #00FFFF;
+        color: white;
+        border: none;
+        font-weight: bold;
+    }
+    
+    QListWidget, QScrollArea, QComboBox {
+        background-color: #1f1f23;
+        border: 1px solid #222225;
+        color: white;
+    }
+    
+    
+
+    QWidget[class="musician_card"] {
+        background-color: #2d2d34;
+        border-radius: 8px;
+        border: none;
+    }
+    QWidget[class="musician_card"]:hover {
+        background-color: #3f3f46;
+        border-radius: 8px;
+    }
+    QWidget[class="musician_card"][selected="true"] {
+        background-color: #3f3f46;
+        border-radius: 8px;
+        border: 2px solid #00FFFF;
+    }
+    
+    QLabel[class="avatar_btn"] {
+        background-color: #1f1f23;
+        border: 2px solid #2d2d34;
+        border-radius: 18px;
+        color: #888888;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    QLabel[class="avatar_btn"]:hover {
+        background-color: #3f3f46;
+        border: 2px solid #3f3f46;
+        color: white;
+    }
+    QLabel[class="avatar_btn"][selected="true"] {
+        background-color: #00FFFF;
+        color: #000000;
+        border: 2px solid #00FFFF;
+    }
+
+    
+    QFrame[class="iem_card_wrapper"] {
+        background-color: transparent;
+    }
+    QFrame[class="iem_avatar_panel"] {
+        background-color: #1f1f23;
+        border-radius: 20px;
+        border: 1px solid #222225;
+    }
+    QLabel[class="iem_avatar_title"] {
+        font-weight: bold;
+        font-size: 16px;
+        color: white;
+        margin-top: 5px;
+    }
+    QFrame[class="iem_form_panel"] {
+        background-color: #18181b;
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+        border: 1px solid #222225;
+        border-left: none;
+    }
+    QComboBox[class="iem_clean_title"] {
+        background: transparent;
+        border: none;
+        font-size: 20px;
+        font-weight: bold;
+        color: white;
+    }
+    QComboBox[class="iem_clean_title"]::drop-down {
+        border: none;
+        width: 20px;
+    }
+    QLineEdit[class="iem_clean_input"] {
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid #222225;
+        color: #888888;
+        font-size: 14px;
+        padding-bottom: 2px;
+    }
+    QLineEdit[class="iem_clean_input"]:focus {
+        border-bottom: 1px solid #00FFFF;
+        color: white;
+    }
+    QLineEdit[class="iem_clean_abbr"] {
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid #00FFFF;
+        color: #00FFFF;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        padding-bottom: 2px;
+    }
+    QPushButton[class="iem_btn_delete"] {
+        background: transparent;
+        color: #ef4444;
+        font-size: 18px;
+        font-weight: bold;
+        border: none;
+        padding: 5px;
+    }
+    QPushButton[class="iem_btn_delete"]:hover {
+        background: #fef2f2;
+        border-radius: 15px;
+    }
+
+    QWidget[class="panel"] {
+        background-color: #1f1f23;
+        border-radius: 4px;
+        border: 1px solid #222225;
+    }
+    
+    QLabel[class="watermark"] {
+        color: #50FFFFFF !important;
+        font-size: 32px !important;
+        font-weight: bold !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+    }
+    

@@ -1,0 +1,358 @@
+name: Build InEarSnitch
+
+# Inspiriert von PentHertz/RF-Swift/.github/workflows/
+# Baut macOS .dmg und Windows NSIS .exe Installer via PyInstaller.
+# Funktioniert OHNE Signing-Secrets (dann unsigned).
+# Mit Secrets: macOS Notarisierung + Windows Authenticode.
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      upload_to_release:
+        description: "Artifacts an GitHub Release anhängen (nur bei Tag-Build sinnvoll)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # macOS: PyInstaller → .app → DMG
+  # Analog zu RF-Swift macos-dmg.yml
+  # ───────────────────────────────────────────────────────────────────────────
+  build-macos:
+    name: macOS DMG
+    runs-on: macos-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install PySide6>=6.5.0 pyqtgraph>=0.13.0 numpy>=1.24.0 scipy>=1.10.0 \
+                      sounddevice>=0.4.6 packaging pyinstaller
+
+      - name: Derive version
+        run: |
+          if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="dev-$(git rev-parse --short HEAD)"
+          fi
+          echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "DMG_NAME=InEarSnitch-${VERSION}-macOS.dmg" >> "$GITHUB_ENV"
+          echo "==> Building InEarSnitch v$VERSION"
+
+      - name: Build .app with PyInstaller
+        run: python -m PyInstaller --noconfirm InEarSnitch.spec
+
+      - name: Verify .app
+        run: |
+          test -d "dist/InEarSnitch.app"
+          test -f "dist/InEarSnitch.app/Contents/MacOS/InEarSnitch"
+          echo "✅ .app bundle OK"
+
+      - name: Stamp version into Info.plist
+        run: |
+          PLIST="dist/InEarSnitch.app/Contents/Info.plist"
+          /usr/libexec/PlistBuddy \
+            -c "Set :CFBundleShortVersionString $APP_VERSION" \
+            -c "Set :CFBundleVersion $APP_VERSION" \
+            "$PLIST"
+          plutil -lint "$PLIST"
+          echo "✅ Info.plist version: $APP_VERSION"
+
+      - name: Remove Extended Attributes (Gatekeeper)
+        run: |
+          find dist/InEarSnitch.app -name ".DS_Store" -delete || true
+          xattr -cr dist/InEarSnitch.app
+
+      # ── Optionales Codesigning (nur wenn Secrets gesetzt) ──────────────────
+      # Secrets: APPLE_DEVELOPER_ID_CERT_P12_B64, APPLE_DEVELOPER_ID_CERT_PASSWORD,
+      #          MACOS_CI_KEYCHAIN_PASSWORD, APPLE_NOTARY_USER,
+      #          APPLE_NOTARY_PASSWORD, APPLE_NOTARY_TEAM_ID
+      # Ohne Secrets: Ad-hoc Signatur (funktioniert lokal, nicht im App Store)
+
+      - name: Import Developer ID certificate
+        if: env.APPLE_DEVELOPER_ID_CERT_P12_B64 != ''
+        env:
+          APPLE_DEVELOPER_ID_CERT_P12_B64: ${{ secrets.APPLE_DEVELOPER_ID_CERT_P12_B64 }}
+          APPLE_DEVELOPER_ID_CERT_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_CERT_PASSWORD }}
+          MACOS_CI_KEYCHAIN_PASSWORD: ${{ secrets.MACOS_CI_KEYCHAIN_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH="$RUNNER_TEMP/ci.keychain"
+          echo "$APPLE_DEVELOPER_ID_CERT_P12_B64" | base64 --decode > /tmp/cert.p12
+          security create-keychain -p "$MACOS_CI_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import /tmp/cert.p12 \
+            -k "$KEYCHAIN_PATH" \
+            -P "$APPLE_DEVELOPER_ID_CERT_PASSWORD" \
+            -T /usr/bin/codesign
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: \
+            -s -k "$MACOS_CI_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          echo "MACOS_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+          rm /tmp/cert.p12
+
+      - name: Codesign .app (Developer ID)
+        if: env.MACOS_KEYCHAIN_PATH != ''
+        run: |
+          codesign --force --deep --options runtime \
+            --keychain "$MACOS_KEYCHAIN_PATH" \
+            --sign "Developer ID Application" \
+            dist/InEarSnitch.app
+          codesign --verify --deep --strict dist/InEarSnitch.app
+          echo "✅ Signed with Developer ID"
+
+      - name: Codesign .app (Ad-hoc fallback)
+        if: env.MACOS_KEYCHAIN_PATH == ''
+        run: |
+          codesign --force --deep --sign - dist/InEarSnitch.app
+          echo "⚠️ Ad-hoc signed (no Developer ID secret)"
+
+      - name: Create DMG
+        run: |
+          # Staging-Ordner für DMG-Inhalt
+          mkdir -p dmg_staging
+          cp -R dist/InEarSnitch.app dmg_staging/
+
+          # Symlink zu /Applications für Drag-Drop-Install
+          ln -s /Applications dmg_staging/Applications
+
+          # DMG erstellen
+          hdiutil create \
+            -volname "InEar SNITCH" \
+            -srcfolder dmg_staging \
+            -ov \
+            -format UDZO \
+            -imagekey zlib-level=9 \
+            "$DMG_NAME"
+
+          echo "✅ DMG created: $DMG_NAME ($(du -sh $DMG_NAME | cut -f1))"
+
+      - name: Notarize DMG
+        if: env.MACOS_KEYCHAIN_PATH != '' && env.APPLE_NOTARY_USER != ''
+        env:
+          APPLE_NOTARY_USER: ${{ secrets.APPLE_NOTARY_USER }}
+          APPLE_NOTARY_PASSWORD: ${{ secrets.APPLE_NOTARY_PASSWORD }}
+          APPLE_NOTARY_TEAM_ID: ${{ secrets.APPLE_NOTARY_TEAM_ID }}
+        run: |
+          xcrun notarytool submit "$DMG_NAME" \
+            --apple-id "$APPLE_NOTARY_USER" \
+            --password "$APPLE_NOTARY_PASSWORD" \
+            --team-id "$APPLE_NOTARY_TEAM_ID" \
+            --wait
+          xcrun stapler staple "$DMG_NAME"
+          spctl --assess --type open --context context:primary-signature \
+            --verbose "$DMG_NAME"
+          echo "✅ Notarized and stapled"
+
+      - name: Upload DMG as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: InEarSnitch-macOS-DMG
+          path: ${{ env.DMG_NAME }}
+          retention-days: 30
+
+      - name: Attach DMG to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.DMG_NAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Windows: PyInstaller → Ordner → NSIS .exe Installer
+  # Analog zu RF-Swift windows-installer.yml
+  # ───────────────────────────────────────────────────────────────────────────
+  build-windows:
+    name: Windows Installer
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    env:
+      # Leer wenn Secret nicht gesetzt → unsigned
+      WINDOWS_CERT_BASE64: ${{ secrets.WINDOWS_CERT_BASE64 }}
+      WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install PySide6>=6.5.0 pyqtgraph>=0.13.0 numpy>=1.24.0 scipy>=1.10.0 `
+                      sounddevice>=0.4.6 packaging pyinstaller
+
+      - name: Derive version
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF_TYPE -eq "tag") {
+            $VERSION = $env:GITHUB_REF_NAME -replace '^v', ''
+          } else {
+            $SHORT = (git rev-parse --short HEAD)
+            $VERSION = "dev-$SHORT"
+          }
+          echo "APP_VERSION=$VERSION" >> $env:GITHUB_ENV
+          echo "INSTALLER_NAME=InEarSnitch-$VERSION-Windows-Setup.exe" >> $env:GITHUB_ENV
+          Write-Host "==> Building InEarSnitch v$VERSION"
+
+      - name: Build with PyInstaller
+        run: python -m PyInstaller --noconfirm InEarSnitch.spec
+
+      - name: Verify EXE
+        shell: pwsh
+        run: |
+          if (Test-Path "dist\InEarSnitch\InEarSnitch.exe") {
+            $size = [math]::Round((Get-Item "dist\InEarSnitch\InEarSnitch.exe").Length / 1MB, 1)
+            Write-Host "✅ InEarSnitch.exe found ($size MB)"
+          } else {
+            Write-Error "❌ InEarSnitch.exe not found!"
+            exit 1
+          }
+
+      # ── Optionales Authenticode Signing ────────────────────────────────────
+      - name: Import code-signing certificate
+        if: env.WINDOWS_CERT_BASE64 != ''
+        shell: pwsh
+        run: |
+          $bytes = [Convert]::FromBase64String($env:WINDOWS_CERT_BASE64)
+          $pfxPath = "$env:RUNNER_TEMP\cert.pfx"
+          [IO.File]::WriteAllBytes($pfxPath, $bytes)
+          echo "WINDOWS_CERT_PATH=$pfxPath" >> $env:GITHUB_ENV
+
+      - name: Sign EXE files (Authenticode)
+        if: env.WINDOWS_CERT_PATH != ''
+        shell: pwsh
+        run: |
+          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(
+            $env:WINDOWS_CERT_PATH, $env:WINDOWS_CERT_PASSWORD)
+          Get-ChildItem "dist\InEarSnitch\*.exe" | ForEach-Object {
+            Set-AuthenticodeSignature -FilePath $_.FullName -Certificate $cert `
+              -TimestampServer "http://timestamp.digicert.com" | Out-Null
+            Write-Host "✅ Signed: $($_.Name)"
+          }
+
+      # ── NSIS Installer erstellen ────────────────────────────────────────────
+      - name: Install NSIS
+        run: choco install nsis --no-progress -y
+
+      - name: Generate NSIS script
+        shell: pwsh
+        run: |
+          $nsis = @"
+          Unicode True
+          !define APP_NAME "InEar SNITCH"
+          !define APP_VERSION "$env:APP_VERSION"
+          !define APP_EXE "InEarSnitch.exe"
+          !define INSTALL_DIR "`$PROGRAMFILES64\InEar SNITCH"
+
+          Name "`${APP_NAME} `${APP_VERSION}"
+          OutFile "$env:INSTALLER_NAME"
+          InstallDir "`${INSTALL_DIR}"
+          InstallDirRegKey HKLM "Software\InEarSnitch" "Install_Dir"
+          RequestExecutionLevel admin
+          SetCompressor /SOLID lzma
+
+          Page directory
+          Page instfiles
+          UninstPage uninstConfirm
+          UninstPage instfiles
+
+          Section "InEar Snitch (required)"
+            SectionIn RO
+            SetOutPath "`$INSTDIR"
+            File /r "dist\InEarSnitch\*.*"
+
+            ; Desktop shortcut
+            CreateShortcut "`$DESKTOP\InEar Snitch.lnk" "`$INSTDIR\`${APP_EXE}"
+
+            ; Start Menu
+            CreateDirectory "`$SMPROGRAMS\InEar Snitch"
+            CreateShortcut "`$SMPROGRAMS\InEar Snitch\InEar Snitch.lnk" "`$INSTDIR\`${APP_EXE}"
+            CreateShortcut "`$SMPROGRAMS\InEar Snitch\Uninstall.lnk" "`$INSTDIR\uninstall.exe"
+
+            ; Registry
+            WriteRegStr HKLM "Software\InEarSnitch" "Install_Dir" "`$INSTDIR"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\InEarSnitch" \
+              "DisplayName" "InEar Snitch"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\InEarSnitch" \
+              "UninstallString" "`"`$INSTDIR\uninstall.exe`""
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\InEarSnitch" \
+              "DisplayVersion" "`${APP_VERSION}"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\InEarSnitch" \
+              "Publisher" "InEar Snitch"
+
+            WriteUninstaller "uninstall.exe"
+          SectionEnd
+
+          Section "Uninstall"
+            Delete "`$INSTDIR\uninstall.exe"
+            RMDir /r "`$INSTDIR"
+            Delete "`$DESKTOP\InEar Snitch.lnk"
+            RMDir /r "`$SMPROGRAMS\InEar Snitch"
+            DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\InEarSnitch"
+            DeleteRegKey HKLM "Software\InEarSnitch"
+          SectionEnd
+          "@
+          $nsis | Out-File -FilePath "installer.nsi" -Encoding utf8
+          Write-Host "✅ NSIS script generated"
+
+      - name: Compile NSIS installer
+        run: makensis installer.nsi
+
+      - name: Sign Installer (Authenticode)
+        if: env.WINDOWS_CERT_PATH != ''
+        shell: pwsh
+        run: |
+          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(
+            $env:WINDOWS_CERT_PATH, $env:WINDOWS_CERT_PASSWORD)
+          Set-AuthenticodeSignature -FilePath $env:INSTALLER_NAME -Certificate $cert `
+            -TimestampServer "http://timestamp.digicert.com"
+          Write-Host "✅ Installer signed"
+
+      - name: Upload Installer as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: InEarSnitch-Windows-Installer
+          path: ${{ env.INSTALLER_NAME }}
+          retention-days: 30
+
+      - name: Attach Installer to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.INSTALLER_NAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

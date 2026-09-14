@@ -1,0 +1,7 @@
+Third-Party Licenses
+
+- PyQtGraph (MIT)
+- NumPy (BSD)
+- SciPy (BSD)
+
+WARNING: PyQt5 is licensed under GPLv3 / Commercial. Please ensure compliance if distributing, or obtain a commercial license.

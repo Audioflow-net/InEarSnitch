@@ -1,0 +1,102 @@
+{
+  "Hardware_IEC711_Coupler": {
+    "outer_diameter_mm": 23.8,
+    "total_height_mm": 35.0,
+    "top_flange_diameter_mm": 20.0,
+    "nut_hole_diameter_mm": 13.0,
+    "acoustic_bore_diameter_mm": 6.5,
+    "thread_diameter_mm": 22.0,
+    "acoustic_bore_depth_mm": 3.0,
+    "nut_hole_depth_mm": 6.0
+  },
+  "Hardware_The_Snitch_Case": {
+    "case_width_mm": 60.0,
+    "case_length_mm": 90.0,
+    "case_height_mm": 35.0
+  },
+  "Hardware_IEM_Box": {
+    "box_width_mm": 80.0,
+    "box_length_mm": 80.0,
+    "box_height_mm": 40.0
+  },
+  "Hardware_Silicone_Mold": {
+    "mold_size_mm": 34.0,
+    "piston_lid_mm": 33.8,
+    "sleeve_outer_mm": 38.0,
+    "sleeve_inner_mm": 34.2,
+    "vent_hole_radius_mm": 11.0,
+    "alignment_pin_offset_mm": 9.0
+  },
+  "Adapter_V26_Acoustic_Base": {
+    "max_outer_diameter_mm": 13.0,
+    "base_diameter_mm": 20.0
+  },
+  "Adapter_V26_Universal": {
+    "max_outer_diameter_mm": 13.0,
+    "base_diameter_mm": 20.0
+  },
+  "Adapter_V26_Air_Single": {
+    "max_outer_diameter_mm": 13.0,
+    "base_diameter_mm": 20.0,
+    "wall_thickness_mm": 0.84
+  },
+  "Adapter_V26_Air_Dual": {
+    "max_outer_diameter_mm": 13.0,
+    "base_diameter_mm": 20.0,
+    "wall_thickness_mm": 0.84
+  },
+  "Adapter_V27_Silicone_Large": {
+    "grip_hole_mm": 7.0,
+    "base_diameter_mm": 20.0,
+    "max_outer_diameter_mm": 13.0
+  },
+  "Adapter_V27_Silicone_Small": {
+    "grip_hole_mm": 6.0,
+    "base_diameter_mm": 20.0,
+    "max_outer_diameter_mm": 13.0
+  },
+  "Adapter_TPU_Marshmallow_Pad": {
+    "max_outer_diameter_mm": 13.0,
+    "base_diameter_mm": 20.0,
+    "pad_thickness_mm": 5.0
+  },
+  "Adapter_TPU_Tiny_Caps": {
+    "max_outer_diameter_mm": 13.0,
+    "base_diameter_mm": 20.0,
+    "cap_height_mm": 6.0
+  },
+  "Adapter_TPU_Bristle_Pad": {
+    "max_outer_diameter_mm": 13.0,
+    "base_diameter_mm": 20.0,
+    "bristle_length_mm": 4.0
+  },
+  "Adapter_TPU_Membrane": {
+    "max_outer_diameter_mm": 13.0,
+    "base_diameter_mm": 20.0,
+    "membrane_thickness_mm": 0.4
+  },
+  "Adapter_Iris_Valve_Concept": {
+    "max_outer_diameter_mm": 13.0,
+    "base_diameter_mm": 20.0,
+    "wall_thickness_mm": 1.2
+  },
+  "Adapter_V26_Collet_Chuck_Trichter": {
+    "max_outer_diameter_mm": 13.0,
+    "base_diameter_mm": 20.0,
+    "funnel_depth_mm": 5.5,
+    "funnel_width_mm": 34.0
+  },
+  "Adapter_V28_True_Cone": {
+    "max_outer_diameter_mm": 13.0,
+    "base_diameter_mm": 20.0,
+    "cone_angle_deg": 45.0
+  },
+  "Adapter_V29_Thin_Layer_Cone": {
+    "max_outer_diameter_mm": 13.0,
+    "base_diameter_mm": 20.0,
+    "wall_thickness_mm": 0.75,
+    "cone_length_mm": 14.6,
+    "tip_outer_mm": 4.0,
+    "tip_inner_mm": 2.5
+  }
+}

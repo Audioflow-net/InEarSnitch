@@ -1,0 +1,182 @@
+# InEar Snitch: Benutzerhandbuch (Hilfedatei)
+
+Willkommen bei InEar Snitch, der professionellen Software für das Messen, Analysieren und Diagnostizieren von In-Ear Monitoren (IEMs).
+
+Dieses Handbuch erklärt die grundlegenden Funktionen und hilft Ihnen, genaue Messungen durchzuführen.
+
+## Keyboard Shortcuts (Tastaturkürzel)
+
+Die folgenden Tastenkombinationen beschleunigen Ihren Workflow:
+- `Space`: Run Sweep (Messung starten)
+- `Ctrl+S` / `Cmd+S`: Trace speichern (Save Trace)
+- `Backspace` / `Delete`: Trace löschen (Clear Trace)
+- `Ctrl+1`, `Ctrl+2`, `Ctrl+3`, `Ctrl+4`: Zwischen den Tabs wechseln (Profile, Measurement, Analysis, History)
+
+## 1. Die Benutzeroberfläche (Tabs)
+
+Die App ist in vier Hauptbereiche (Tabs) unterteilt:
+
+- **Measurement (Messung):** Hier nehmen Sie in Echtzeit neue Frequenzgänge auf.
+- **Analysis (Analyse):** Dieser Bereich widmet sich der detaillierten Untersuchung Ihrer Messungen, inkl. der "Automated Diagnostics Engine" (siehe unten) und detaillierten L/R-Vergleichen.
+- **History (Verlauf / Vault):** Eine Datenbank/Historie all Ihrer bisherigen Messungen. Sie können alte Messungen laden, vergleichen und exportieren.
+- **Profile:** Hier können Sie spezifische Profile für verschiedene IEM-Modelle hinterlegen (inkl. Target-Kurven und Bildern der Modelle).
+
+## 2. Messungen durchführen (Measurement)
+
+Im Tab **Measurement** (Messung) führen Sie die eigentlichen akustischen Messungen durch.
+
+- **Multi-Sweep:** Für genauere Ergebnisse kann die Software mehrere Frequenz-Sweeps (Multi-Sweep) hintereinander ausgeben und den Durchschnitt bilden. Das minimiert Hintergrundrauschen und Störungen.
+- **Smoothing (Glättung):** Rohe akustische Messdaten enthalten oft viele kleine, unhörbare Spitzen (Kammfilter-Effekte). Mit der *Smoothing*-Funktion (z.B. 1/12 oder 1/24 Oktave) wird die Kurve geglättet, sodass sie der menschlichen Wahrnehmung besser entspricht und visuell leichter lesbar wird.
+- **Vorgang:** Um eine Messung zu starten, positionieren Sie den IEM im Mess-Kuppler (Coupler), stellen Sie sicher, dass alles dicht ist, und drücken Sie auf Start (oder `Space`). Sie können die gemessene Kurve anschließend speichern.
+
+## 3. Settings Slide-Out (Routing & Calibration)
+
+An der Seite der App finden Sie das **Settings Slide-Out** (die herausfahrbaren Einstellungen). 
+
+- **Routing:** Hier legen Sie fest, welche Audio-Eingänge (Messmikrofon/Coupler) und Ausgänge (Kopfhörerausgang zum IEM) für die Messung verwendet werden sollen.
+- **Calibration (Kalibrierung):** Mikrofone sind nie zu 100% linear. Hier können Sie eine Kalibrierungsdatei (`.cal` oder `.txt`) laden, um die spezifischen Abweichungen Ihres Mikrofons auszugleichen. Die Kalibrierung wird in Echtzeit auf alle eingehenden Messungen angewendet.
+
+## 4. Automated Diagnostics Engine (Automatische Fehlerdiagnose)
+
+Die "Automated Diagnostics Engine" (im Analysis-Tab) bewertet Ihre Messung und erkennt automatisch Hardware-Defekte oder Fehlbedienungen. Die akustischen Schwellenwerte basieren auf Industrie-Standards und psychoakustischer Fachliteratur (z.B. IEC 711 Standards).
+
+### Wie die Diagnose funktioniert (und warum sie so streng ist):
+
+*   **Relative Phase (Polarity / Phasendreher):** 
+    Die Engine prüft nicht, ob ein einzelner IEM eine "absolute" Phasenumkehr hat (da dies oft durch Soundkarten, Kabel oder gewollte Crossover-Designs, wie z.B. bei Multi-BA IEMs, entsteht und für das Ohr ohnehin unhörbar ist). 
+    Stattdessen prüft die Engine die **relative Phase**: Sind der linke und rechte Kanal *unterschiedlich* gepolt? Wenn ja, wird ein harter Fehler (FAIL) geworfen, da dies zu starken Bass-Auslöschungen und einem Zusammenbruch des Stereo-Bildes führt. (Überprüfen Sie in diesem Fall unbedingt die 2-Pin/MMCX-Kabel).
+
+*   **Bass / Acoustic Seal (Akustisches Leck):**
+    Die Engine vergleicht den Bassbereich (50 Hz) mit den Mitten (1 kHz). 
+    - **WARNUNG:** Wird ausgelöst, wenn der Bass um mindestens -10 dB im Vergleich zu 1 kHz abfällt. Bei einem neutralen In-Ear (z.B. Etymotic oder Diffuse-Field Tuning) ist ein Abfall von -2 bis -6 dB völlig normal. Erst ab -10 dB deutet es stark auf einen nicht optimal sitzenden In-Ear im Messrohr hin (Leckage).
+    - **FEHLER (FAIL):** Wird erst ab -18 dB ausgelöst. Ein solch extremer, steiler Abfall im Tieftonbereich verhält sich physikalisch wie ein Hochpassfilter und beweist ein massives Luftleck (Seal-Bruch) im Coupler oder einen defekten dynamischen Tieftöner.
+
+*   **Highs / Wax Clog (Ohrenschmalz-Verstopfung):**
+    Ein typischer Fehler bei einfachen Messsystemen ist es, exakt *eine* bestimmte Frequenz (z.B. 5 kHz) zu prüfen. Da Messröhrchen (IEC 711) jedoch natürliche stehende Wellen aufweisen, entstehen oft extrem schmale, tiefe Dips genau in diesem Bereich (sog. Notches). 
+    Um falsche Alarme zu vermeiden, berechnet unsere Engine die **Durchschnittsenergie im gesamten Band von 4 kHz bis 8 kHz**. Ein echtes, mit Ohrenschmalz verstopftes Filtergitter wirkt physikalisch wie ein Tiefpassfilter und dämpft dieses gesamte Frequenzband breitbandig ab. Erst wenn dieser Durchschnitt extrem tief fällt (-15 dB für WARN, -20 dB für FAIL), schlägt die Software Alarm.
+
+## 5. History Vault (Verlauf & Datenbank)
+
+Der **History**-Tab fungiert als Ihr sicherer Tresor (Vault). Jede durchgeführte und gespeicherte Messung wird hier strukturiert abgelegt.
+- Sie können mehrere historische Messungen übereinanderlegen (Overlay), um den Verschleiß eines IEMs über die Zeit zu prüfen oder die Konsistenz nach einer Reinigung zu verifizieren.
+- Ausgewählte Kurven können einfach als CSV für externe Analysen oder zum Teilen exportiert werden.
+- **Import CSV:** Klicken Sie auf "Import CSV", um eine externe Messung direkt zur Datenbank hinzuzufügen.
+- **Save as Target:** Exportieren Sie jede Verlaufskurve direkt in Ihren Reference Targets Ordner. Dadurch steht sie sofort als Target-Kurve in der gesamten App zur Verfügung (ähnlich wie Squiglink-Targets).
+- **Messungen umbenennen:** Machen Sie einen Doppelklick auf die Spalte "Notes", um Messungen direkt in der History-Datenbank umzubenennen.
+
+## 6. "Fake 711" Kalibrierung erstellen (Auto-Generate from Reference)
+
+Wenn Sie kein teures, kalibriertes IEC 711 Messmikrofon besitzen (sondern einen günstigen "Fake" Coupler), können Sie die App nutzen, um sich selbst eine passgenaue Kalibrierungsdatei zu erstellen!
+
+Dazu nutzen Sie den Button **"🪄 Auto-Generate from Reference"** im Kalibrierungs-Menü (Calibration):
+
+1. **Eigene Messung erstellen:** Messen Sie einen bekannten, hochwertigen IEM mit Ihrem eigenen (Fake) Coupler und speichern Sie diese Messung im Measurement-Tab als CSV ab.
+2. **Button klicken:** Klicken Sie im Calibration-Menü (im Settings Slide-Out) auf den Button "🪄 Auto-Generate from Reference".
+3. **Dateien auswählen:**
+   - *Step 1:* Wählen Sie zuerst die eben erstellte CSV-Datei Ihrer EIGENEN Messung (mit dem Fake-Coupler) aus.
+   - *Step 2:* Wählen Sie danach die professionelle CSV-Messung (die "True" Reference) desselben IEMs aus dem Ordner `reference_targets` aus.
+4. **Magie!** Die Software interpoliert beide Kurven, gleicht die Lautstärke bei 500Hz automatisch an und berechnet exakt die Differenz. Daraus wird automatisch eine `Auto_Generated_Fake711_Cal.txt` Datei im `calibrations` Ordner erstellt und sofort angewendet. Ihr günstiges Mikrofon misst von nun an genauso linear wie das teure Referenz-Setup!
+
+## 7. Datenbank-Management
+
+Das Einstellungsmenü (Settings) verfügt nun über einen **Database Management** Bereich. Hier können Sie ein Backup Ihrer gesamten SQLite-Datenbank (`inearsnitch.db`) erstellen oder von vorherigen Backups wiederherstellen (Restore). Das System erstellt bei einer Wiederherstellung automatisch eine `.safety.bak`-Datei, um versehentlichen Datenverlust zu verhindern.
+
+## 8. Intelligente Such-Dropdowns (Smart Searchable Dropdowns)
+
+Die Target- und History-Comboboxen (Dropdown-Menüs) in der gesamten Anwendung sind nun vollständig durchsuchbar. Sie können einen beliebigen Teil des Namens (z.B. "v7") eingeben, um schnell die passenden Einträge zu finden (z.B. "Vision Ears v7").
+
+## 9. Live RTA & IEC Guide (Einstecktiefe)
+
+Unten rechts in der Hauptansicht finden Sie den **RTA (Real-Time Analyzer)** Button. Dieser Modus spielt "Pink Noise" ab und zeigt das gemessene Frequenzspektrum in Echtzeit an. Er dient dazu, den In-Ear perfekt im Messkuppler zu positionieren, *bevor* die eigentliche Messung (Sweep) gestartet wird.
+
+Direkt unter dem RTA-Button befindet sich die Checkbox **"IEC Guide"** (früher "8k Helper").
+
+### Wie funktioniert der IEC Guide?
+Wenn der In-Ear in das Messrohr (IEC 711 Kuppler) eingeführt wird, entsteht ein kleiner Hohlraum zwischen dem In-Ear und dem Mikrofon. Die Luft in diesem Hohlraum resoniert physikalisch bei einer ganz bestimmten Frequenz – der sogenannten "Kuppler-Resonanz" (Coupler Resonance). 
+
+Der IEC 711 Standard wurde in den 80er Jahren exakt so entworfen, dass diese Resonanz den menschlichen Gehörgang simuliert. Für eine vergleichbare Messung (z.B. mit Datenbanken von Crinacle oder Super*Review) MUSS der In-Ear so tief eingesteckt werden, dass diese physikalische Resonanz genau im Bereich von **7.000 Hz bis 8.600 Hz** (klassisch ~8 kHz) liegt.
+
+Der *IEC Guide* blendet eine grüne Zielzone (7 - 8.6 kHz) und ein Fadenkreuz ein, das die aktuelle Resonanz in Echtzeit verfolgt.
+- Rote Schrift ("Push Deeper"): Resonanz liegt unter 7 kHz -> Den In-Ear weiter in das Rohr schieben.
+- Rote Schrift ("Pull Out Slightly"): Resonanz liegt über 8.6 kHz -> Den In-Ear ein kleines Stück herausziehen.
+- Grüne Schrift ("Depth OK"): Perfekte Einstecktiefe erreicht!
+
+### Warum immer 8 kHz – selbst bei anderen Kalibrierungen?
+Oft wird gefragt, warum der Guide *immer* auf 8 kHz zielt, selbst wenn man komplett unterschiedliche Mikrofon-Kalibrierungsdateien (Calibration Profiles) geladen hat.
+Die Antwort liegt in der **Physik**: Eine Kalibrierungsdatei (egal ob Dayton, Sonarworks oder "Fake 711") korrigiert nur die internen Schwankungen der winzigen Mikrofonkapsel selbst (z.B. wenn das Mikrofon von Natur aus bei 10kHz etwas zu leise aufnimmt). 
+Das physische Metall-Rohr des Kupplers bleibt aber immer gleich lang. Daher verschiebt eine Software-Kalibrierung niemals die physikalische Luft-Resonanz von 8 kHz. Der Guide zeigt Ihnen also immer den akustisch korrekten physikalischen Sitz an, unabhängig von der gewählten Datei.
+
+## 10. Health & Safety Disclaimer (EULA)
+
+Beim allerersten Start von InEar Snitch erscheint ein **Sicherheits- und Gesundheitshinweis** (Health & Safety Disclaimer). Dieser Dialog informiert Sie über zwei wesentliche Risiken:
+
+- **Gehörschäden:** Tragen Sie **niemals** IEMs im Ohr, während eine Messung (Sweep oder Stress-Test) läuft! Die dabei erzeugten Signalpegel können Ihr Gehör dauerhaft schädigen.
+- **Hardware-Schäden:** Unsachgemäße Level-Einstellungen können empfindliche IEM-Treiber (insbesondere Balanced-Armature-Treiber) beschädigen.
+
+Sie müssen **"Accept"** klicken, um die App verwenden zu können. Wenn Sie auf **"Decline"** klicken, wird die App sofort geschlossen. Dieser Dialog erscheint nur ein einziges Mal – Ihre Zustimmung wird dauerhaft in den Einstellungen gespeichert.
+
+## 11. Output Level Calibration (Ausgangslautstärke-Kalibrierung)
+
+Die App verfügt über eine automatische Lautstärke-Kalibrierung, die den optimalen **Output Level** (Ausgangspegel) für Ihre spezifische Hardware-Konfiguration ermittelt. Sie finden diese Funktion unter **Settings > "Start Auto-Calibration"**.
+
+### Ablauf der Kalibrierung:
+1. Die App spielt eine Serie aufsteigender Testtöne ab (beginnend bei niedrigem Level).
+2. Sie analysiert den aufgenommenen Pegel und findet automatisch die optimale Sweep-Amplitude.
+3. **Ziel-Recording-Peak:** -15 dBFS – dies gewährleistet einen sicheren Abstand zu Clipping bei gleichzeitig ausreichendem Signal-Rausch-Abstand.
+
+### Mögliche Warnungen:
+- **Recording-Peak zu niedrig (< -30 dBFS):** Das aufgenommene Signal ist trotz maximaler Sweep-Amplitude zu leise. **Lösung:** Erhöhen Sie den System-Output-Level (Betriebssystem-Lautstärke) und führen Sie die Kalibrierung erneut durch.
+- **Stress-Test eingeschränkt:** Wenn der Stress-Test nicht lauter als der normale Sweep ausgegeben werden kann (beide am Amplitude-Cap), erscheint eine Warnung, dass die Rub & Buzz Erkennung unzuverlässig sein kann.
+
+> ⚠️ **Wichtiger Hinweis zur Terminologie:** Diese Kalibrierung passt den **Output Level** (Ausgangslautstärke / Sweep-Amplitude) an – NICHT den Gain! Der Gain ist die Vorverstärkung am Mikrofon-Eingang Ihres Audio-Interfaces und wird von der App nicht verändert.
+
+## 12. Preflight Level Check (Automatische Pegelprüfung vor jeder Messung)
+
+Vor **jeder** Messung – sowohl beim normalen Sweep als auch beim Stress-Test – führt InEar Snitch automatisch einen schnellen **Preflight Level Check** durch.
+
+### Ablauf:
+1. Die App spielt einen kurzen Testton (100 ms) ab.
+2. Der aufgenommene Pegel wird mit dem gespeicherten **Kalibrierungs-Referenzwert** verglichen.
+
+### Erkannte Situationen:
+
+- **Level-Abweichung > 4 dB:** Wenn sich der Pegel seit der letzten Kalibrierung um mehr als 4 dB verändert hat (z.B. weil jemand den System-Output-Level verändert hat), erscheint ein Pop-Up:
+  > *„Level shifted by X dB since calibration. Do you want to continue anyway?"*
+  
+  Sie können mit **Yes** trotzdem fortfahren oder mit **No** abbrechen und zunächst eine Re-Kalibrierung durchführen.
+
+- **Clipping erkannt (> -1 dBFS):** Das Eingangssignal übersteuert – der Pegel muss reduziert werden.
+- **Kein Signal erkannt (< -55 dBFS):** Es wird kein verwertbares Signal empfangen – prüfen Sie Ihre Verkabelung und das Routing.
+
+## 13. DSP/EQ Safety Cap (Sicherheitsbegrenzung bei aktivem EQ)
+
+Wenn die eingebaute **DSP Engine** (der integrierte EQ) aktiv ist, können Frequenz-Boosts das Ausgangssignal über die ursprüngliche Sweep-Amplitude hinaus verstärken.
+
+Um Schäden an empfindlichen Treibern zu verhindern, wendet InEar Snitch **nach dem EQ-Processing automatisch einen Sicherheits-Limiter** an. Dieser stellt sicher, dass EQ-Boosts die maximale Sweep-Amplitude **niemals** überschreiten können.
+
+Dies ist besonders wichtig für empfindliche **Balanced-Armature-Treiber**, die bei Übersteuerung dauerhaft beschädigt werden können. Der Safety Cap arbeitet transparent im Hintergrund – Sie müssen nichts konfigurieren.
+
+## 14. Troubleshooting Guide: Auffällige Messungen
+
+> **KERNBOTSCHAFT:** Im Zweifel: IEM rausnehmen, neu einsetzen, nochmal messen. Die meisten Probleme sind Seal-Probleme, keine Defekte.
+
+| Symptom | Ursache | Lösung |
+| :--- | :--- | :--- |
+| **Clipping / Übersteuerung** (Frequenzgang sieht abgeschnitten aus, Plateau bei hohen dB) | Output Level zu hoch eingestellt | Level-Kalibrierung neu machen, Zielwert -15 dBFS |
+| **Bass-Einbruch / Kein Bass** (Unter 200 Hz fällt der Graph steil ab) | 1. Schlechter Seal im Kuppler, 2. Schwacher Kopfhörer-Preamp, 3. Normaler BA-Driver Rolloff | IEM neu einsetzen, Blu-Tack prüfen, ggf. besseren Kopfhörerausgang nutzen |
+| **Phase invertiert** (Diagnostik meldet "L/R OUT OF PHASE") | Billige USB-Soundkarten invertieren die Phase | 2-Pin Kabel-Orientierung prüfen. Wenn beide Seiten invertiert = kein Problem |
+| **Hohe Verzerrung (THD)** (THD-Graph zeigt über 5% im Mittelton) | 1. Hintergrundgeräusche (Klima, Tritte), 2. Interface clippt intern | In ruhiger Umgebung messen, Level prüfen |
+| **Zu leises Signal** (Graph < -50 dBFS, Diagnostik funktioniert nicht) | Mic-Gain am Interface zu niedrig | Gain am Preamp hochdrehen (nicht Output Level!) |
+| **Inkonsistente Ergebnisse** (Jede Messung sieht anders aus) | Kuppler-Position variiert, IEM rutscht | 5x Sweep nutzen (Averaging), IEM mit Blu-Tack fixieren |
+| **Treble-Peaks bei 8 kHz** (Scharfer Peak bei 8 kHz) | IEC-711 Kuppler-Eigenresonanz (normal!) | Das ist normal, kein Defekt. IEC Guide (Depth-Tool) nutzen, um Einstecktiefe zu kalibrieren |
+
+## 15. Weitere Fehlerbehebung & Best Practices (WICHTIG!)
+
+### 1. Mein Frequenzgang ist ein perfekt gerader Strich!
+Wenn Sie nach dem Sweep eine fast perfekt flache, gerade Linie sehen, liegt dies in 99% der Fälle an **Betriebssystem-Filtern** (AGC / Auto-Gain / Voice Isolation):
+- **macOS:** Klicken Sie oben rechts im Control Center auf das gelbe Mikrofon-Symbol und stellen Sie den Modus unbedingt auf **"Standard"** (NICHT "Sprachisolation").
+- **Windows:** Deaktivieren Sie unter den Sound-Einstellungen des Mikrofons alle "Audio-Verbesserungen" (Audio Enhancements).
+Diese Filter versuchen den extrem lauten Sweep künstlich leise zu regeln (Kompression) und zerstören so das Messsignal komplett, was zu einer völlig falschen, geraden Linie führt.
+
+### 2. Warnung: "Signal too quiet" trotz hoher Lautstärke
+Die Software gibt den Sweep absichtlich sehr leise aus (-20 dBFS), um zu verhindern, dass Ihr Mikrofon übersteuert. Ein In-Ear-Monitor erzeugt in einem abgedichteten Silikon-Coupler ohnehin über 115 dB SPL! Ein voll ausgesteuerter Sweep (0 dBFS) würde den ADC (Analog-Digital-Wandler) Ihrer Soundkarte zum "Clippen" bringen, was wiederum eine komplett flache, verfälschte Kurve erzeugt. Wenn das Signal zu leise ist, erhöhen Sie stattdessen den Gain am Mikrofon-Interface.
