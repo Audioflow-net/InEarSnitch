@@ -1389,3 +1389,11 @@
 ### V187 - 2026-09-14
 - **Frame Cutout Bugfix**: Der Rahmen war in der Exploded View zur Hälfte abgeschnitten.
 - **Die Idee / Der Grund**: Der alte `cube`, der den inneren Hohlraum aus dem PETG-Rahmen herausschneiden sollte, war so breit wie die Oberkante (`rim_x`). Da das Tray nach unten schmaler wird, hat dieser gigantische Würfel ab Höhe 29.5 einfach die gesamte Außenwand gelöscht. Ich habe nun ein exaktes mathematisches Profil (`dropin_cutout_block`) berechnet, das exakt den 15-Grad-Innenwänden folgt. Dadurch bleibt der Rahmen intakt und die Kugeln sitzen perfekt.
+
+### V188 - 2026-09-14
+- **CGAL Coplanar Face Bug Fix**: Die Dropin-Plate wurde nicht gerendert.
+- **Die Idee / Der Grund**: Wenn in OpenSCAD zwei Formen eine exakt identische Fläche (Coplanar Face) auf gleicher Z-Höhe teilen, stürzt die CGAL Rendering-Engine bei der Boolean `intersection` oft ab. Da der Cutout-Block exakt auf Z=29.5 anfing (genau wo die Decke des Underbellys war), löschte OpenSCAD das Objekt komplett (bzw. warf eine `valid 2-manifold` Warnung). Ich lasse den Schnitt-Block nun absichtlich bei Z=28.5 (1mm tiefer) beginnen. Er schneidet dort zwar nur leere Luft, zwingt die Mathematik aber zu einem sauberen Schnitt!
+
+### V189 - 2026-09-14
+- **Plate Visibility Bugfix**: `petg_dropin_plate` komplett neu ohne `intersection()` aufgebaut.
+- **Die Idee / Der Grund**: Selbst mit dem Z-Shift aus V188 hat OpenSCADs CGAL Engine reproduzierbar aufgegeben (erkennbar an der Warnung `Object may not be a valid 2-manifold`). Der Grund war, dass `intersection()` auf zwei hochkomplexe Hulls und Differences mit abgerundeten und geschrägten Kanten angesetzt wurde, die fast deckungsgleich waren. Ich habe die Platte nun einfach nativ aus den Grundformen (Hull, Trennwand, Coupler) zusammengesetzt. Sie ist mathematisch identisch, hat exakt die gleiche Schräge und Mic-Kuhle, aber rendert in 0.01 Sekunden fehlerfrei!

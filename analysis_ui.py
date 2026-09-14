@@ -722,6 +722,7 @@ class AnalysisWidget(QWidget):
                 self.plot_widget.plot(f_r, m_r, pen=pg.mkPen(theme.get_color('curve_right'), width=2, style=Qt.DashLine), name='Right')
                 
             # Plot Target (CSV)
+            print('DEBUG: tgt_freqs=', type(tgt_freqs), 'tgt_mags=', type(tgt_mags))
             if tgt_freqs is not None and tgt_mags is not None:
                 interp_tgt = np.interp(freqs, tgt_freqs, tgt_mags)
                 idx_1k = (np.abs(freqs - 1000)).argmin()
@@ -790,7 +791,6 @@ class AnalysisWidget(QWidget):
                     self.csd_widget.setYRange(max_peak - 45, max_peak + 5)
                 
                 # 4. Fill-Opacity reduzieren
-                import theme
                 bg_color = pg.mkColor(theme.get_color('pg_bg'))
                 bg_color.setAlpha(220)
                 fill_brush = pg.mkBrush(bg_color)
