@@ -1325,3 +1325,10 @@
   - User-Foto von Vision Ears Customs zeigte dicke, steife Ear-Hooks am Connector.
   - Eine horizontale Anordnung würde die steifen Kabel sofort gegen die Trennwand biegen und sie extrem abknicken.
   - Die IEMs werden nun vertikal eingelegt (Faceplate oben, Kabel zeigt nach vorne). Die TPU-Wände bilden eine Vase/Trichter-Form (C-Shape), die den Body sicher umschließt, aber unten komplett offen ist (14mm Spalt). So fließt das steife Kabel exakt und knickfrei in den PETG-Ausgang.
+
+### V178 - 2026-09-14
+- **Gegen-Gummi Federn (Living Springs)**: Die inneren TPU-Wände der Pods wurden freigestellt und asymmetrisch nach innen verlagert.
+- **Höhe**: TPU Wände auf 8.5mm hochgezogen, damit sie exakt bündig mit der PETG-Oberkante abschließen.
+- **Die Idee / Der Grund**: 
+  - Die Pods waren zu groß und überlappten sich. Sie wurden auf X=24 und X=62 verschoben (samt PETG-Notches), was einen sauberen Spalt erzeugt.
+  - Die innere Wand wurde an Y=15 durchtrennt und der TPU-Boden exakt darunter weggeschnitten (`spring_floor_cut`). Dadurch liegt die Wand direkt auf dem Druckbett (ohne Boden) und fungiert als 40mm langes schwebendes Gummiband, das beim Einlegen des CIEM nachgibt und ihn unter Spannung festhält.
