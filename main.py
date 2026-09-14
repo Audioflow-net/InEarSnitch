@@ -232,10 +232,12 @@ class MusicianCard(QWidget):
         self.name_lbl.setProperty("class", "title")
         self.name_lbl.setStyleSheet("background-color: transparent; border: none; outline: none;")
         self.name_lbl.setFocusPolicy(Qt.NoFocus)
+        self.name_lbl.setMinimumWidth(1)
         self.role_lbl = QLabel(role)
         self.role_lbl.setProperty("class", "subtitle")
         self.role_lbl.setStyleSheet("background-color: transparent; border: none; outline: none;")
         self.role_lbl.setFocusPolicy(Qt.NoFocus)
+        self.role_lbl.setMinimumWidth(1)
         
         self.bottom_info = QHBoxLayout()
         self.bottom_info.setContentsMargins(0, 0, 0, 0)
@@ -261,6 +263,7 @@ class MusicianCard(QWidget):
         self.status_lbl = QLabel(status)
         self.status_lbl.setStyleSheet("background-color: transparent; color: #00FF99; font-size: 11px; border: none; outline: none;")
         self.status_lbl.setFocusPolicy(Qt.NoFocus)
+        self.status_lbl.setMinimumWidth(1)
         self.bottom_info.addWidget(self.status_lbl)
         
         if self.avatar_btns:
@@ -290,7 +293,7 @@ class MusicianCard(QWidget):
     def _update_layout(self, width):
         from PySide6.QtWidgets import QBoxLayout
         # print(f"MusicianCard width: {width}")
-        if width < 180:
+        if width < 200:
             self.avatar.hide()
             self.role_lbl.hide()
             self.layout.setDirection(QBoxLayout.TopToBottom)
