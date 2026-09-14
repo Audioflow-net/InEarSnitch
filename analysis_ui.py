@@ -299,7 +299,7 @@ class AnalysisWidget(QWidget):
         self.tools_tabs = QTabWidget()
         self.tools_tabs.setElideMode(Qt.ElideNone)
         self.tools_tabs.setUsesScrollButtons(True)
-        self.tools_tabs.setMinimumWidth(280)
+        self.tools_tabs.setMinimumWidth(220)
         self.tools_tabs.setMaximumWidth(400)
         
         # 1. Diagnostics Tool
