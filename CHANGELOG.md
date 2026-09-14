@@ -1381,3 +1381,7 @@
   - Anstatt Löcher in den Boden zu schneiden, hat das TPU-Tray nun einen 100% massiven Boden.
   - Die inneren Klemm-Wände werden durch einen ultrafeinen, 0.4mm hohen horizontalen Schnitt vom Boden separiert.
   - Der Slicer druckt diese Wände eine Schicht lang in die Luft. Sie sinken minimal ab und verbinden sich gerade genug, dass man sie drucken kann. Nach dem Druck fährt man mit dem Finger oder Skalpell darüber, reißt die Sollbruchstelle auf, und die Klemm-Wände sind völlig lose und schwingen frei!
+
+### V186 - 2026-09-14
+- **Snap Bump Fix**: Die Snap-Fit Kugeln schwebten in der Luft.
+- **Die Idee / Der Grund**: Die inneren Wände des Trays haben den gleichen 15-Grad-Winkel (Draft) wie die äußeren Wände. Ich hatte die Kugeln fix bei `X=wall` platziert, aber auf Höhe Z=32.2 ist die Wand durch die Schräge schon weiter nach innen gewandert. Die Position der Kugeln wird jetzt mathematisch exakt berechnet (`1.5 + draft_bump + wall`), sodass sie garantiert genau 0.6mm aus der geschrägten Wand ragen.
