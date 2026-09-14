@@ -799,10 +799,6 @@ class AnalysisWidget(QWidget):
                     self.csd_widget.setYRange(max_peak - 45, max_peak + 5)
                 
                 # 4. Fill-Opacity reduzieren
-                bg_color = pg.mkColor(theme.get_color('pg_bg'))
-                bg_color.setAlpha(220)
-                fill_brush = pg.mkBrush(bg_color)
-                
                 # Draw from back (t=0) to front (t>0) to allow proper occlusion
                 for i in range(num_slices):
                     slice_mag = csd_slices[i]
@@ -816,8 +812,11 @@ class AnalysisWidget(QWidget):
                     r = 0
                     g = int(255 * (1 - blend) + 30 * blend)
                     b = int(255 * (1 - blend) + 40 * blend)
-                    a = int(255 * (1 - blend) + 50 * blend)
+                    a = 255
                     color = pg.mkColor(r, g, b, a)
+                    
+                    # Beautiful shaded body fill for 3D effect
+                    fill_brush = pg.mkBrush(pg.mkColor(r, g, b, 150))
                     
                     # 5. Linienbreite: vorne 2.0, hinten 1.0
                     pen_width = 2.0 - (1.0 * blend)

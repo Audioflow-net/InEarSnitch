@@ -289,7 +289,8 @@ class MusicianCard(QWidget):
         
     def _update_layout(self, width):
         from PySide6.QtWidgets import QBoxLayout
-        if width < 180:
+        # print(f"MusicianCard width: {width}")
+        if width < 250:
             self.avatar.hide()
             self.role_lbl.hide()
             self.layout.setDirection(QBoxLayout.TopToBottom)

@@ -1405,3 +1405,23 @@
 ### V191 - 2026-09-14
 - **TPU Center Crossing Restore**: Die TPU-Wände kreuzen sich wieder in der Mitte.
 - **Die Idee / Der Grund**: Wenn man zuerst beide Außenformen zu einer Figur verschmilzt und dann aushöhlt, fehlt die Wand in der Mitte komplett. Da der User aber genau dieses Kreuzen als Klemm-Widerstand (Beule) für die In-Ears nutzen möchte, habe ich die Reihenfolge geändert: Erst werden die Kammern einzeln ausgehöhlt (mit exakt 1.2mm Wandstärke), und DANN werden die beiden fertigen Wände übereinandergeschoben. So bleibt das Teardrop-Kreuz in der Mitte erhalten.
+
+### V192 - 2026-09-14
+- **TPU Deep Bulge**: Den Pods eine asymmetrische Klemm-Nase hinzugefügt.
+- **Die Idee / Der Grund**: Die einfache 3mm Überlappung der Kreise erzeugte in der Mitte ein zu schmales Teardrop-Kreuz. Damit das Kreuz als massives Gummi-Kissen tief in die IEM-Höhle ragt, streckt sich die linke Kammer nun gezielt 10mm nach rechts (und umgekehrt). Die Überlappung steigt auf 11mm, was ein extrem fettes Teardrop-Kreuz erzeugt. Ein 0.5mm `offset` verrundet die extrem spitzen Klingen-Ecken im Inneren des Kreuzes zu weichen Kissen.
+
+### V193 - 2026-09-14
+- **TPU Leaf Spring Redesign**: TPU-Wand-Klemm-Mechanismus auf Blattfeder (U-Shape) umgestellt.
+- **Die Idee / Der Grund**: Gemäß des Berichts des Mechanik-Subagenten führt das alte, spitze Teardrop-Kreuz (V-Form) in TPU 95A langfristig zu Creep (Plastischer Verformung), da die gesamte Biegespannung in einem punktuellen Scharnier konzentriert wird. Um die Wand stattdessen als langlebige Blattfeder zu nutzen, wird nun zuerst der massive Außenumriss geformt, dann mit `offset(r=5)` in der Mitte zu einem weichen U-Bogen (Leaf Spring) verrundet und erst danach hohl geschnitten (1.2mm Wandstärke). Die Wände kreuzen sich nicht mehr, sondern gehen in einer perfekten, federnden U-Kurve ineinander über.
+
+### V194 - 2026-09-14
+- **TPU Visibility Bugfix**: Reihenfolge von `offset(5)` und `offset(-5)` getauscht.
+- **Die Idee / Der Grund**: OpenSCAD wendet Modifikatoren von rechts nach links an. Da `offset(-5)` zuerst ausgeführt wurde, wurde das gesamte Mittelteil der TPU-Wand auf 0 geschrumpft und das TPU-Inlay zerschnitten. Das führte dazu, dass CGAL den kompletten Körper in der finalen `difference()` gelöscht hat (unsichtbar im Render). Durch das Tauschen der Befehle wird nun korrekterweise *zuerst* aufgeblasen (Lücken füllen) und dann geschrumpft (Ecken verrunden).
+
+### V195 - 2026-09-14
+- **TPU Leaf Spring Fix**: OpenSCAD Offset-Crash (massiver Block) behoben.
+- **Die Idee / Der Grund**: Die verschachtelten `offset()` Befehle, mit denen ich die U-Kurve glätten wollte, haben die Clipper-Geometrie-Engine von OpenSCAD zum Absturz gebracht. Dadurch schlug der letzte Offset (Aushöhlen) fehl, und das TPU wurde als massiver Apfel gerendert. Lösung: Ich habe die Offset-Tricks komplett gelöscht. Stattdessen setze ich jetzt einfach geometrisch einen zentralen Kreis (`d=28`) zwischen die Pods! Das füllt das V-Kreuz mathematisch perfekt und crash-frei mit einer U-Kurve (Leaf Spring) auf.
+
+### V196 - 2026-09-14
+- **TPU Inverted Polygon Fix**: TPU-Wand wurde als negativer Rechteck-Block gerendert.
+- **Die Idee / Der Grund**: Wenn man in OpenSCAD perfekt tangierende Formen in einer union vereint, kommt es oft zu einem sogenannten Inverted Polygon Bug in der Clipper-Engine. OpenSCAD dreht die Innen-/Aussen-Definition der Flaeche (Winding Order) versehentlich um. Dadurch extrudiert der Befehl eine unendliche Flaeche mit einem Apfel-foermigen Loch in der Mitte, anstatt den Apfel selbst! Die Loesung war ein mikroskopischer offset(0.01), der Clipper dazu zwingt, die Umrisse zu bereinigen und die Winding-Order neu zu berechnen.
