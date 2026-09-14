@@ -1342,3 +1342,11 @@
 
 ### V180 - 2026-09-14
 - **TPU Farbe**: Ansichtsfarbe in OpenSCAD von Rot auf DeepSkyBlue geändert, um Konturen und Tiefen besser sichtbar zu machen.
+
+
+### V181 - 2026-09-14
+- **TPU Kontur**: Trennung der Wand entfernt (Pink Box) und weiche, nach innen ragende Einwölbungen in der Mitte hinzugefügt (Yellow Box).
+- **Die Idee / Der Grund**: 
+  - Der User wünschte sich eine 100% kontinuierliche Wand ohne Risse. Die manuelle Trennung unten wurde entfernt.
+  - Um die "Hourglass"-Optik (Einwölbung) im Zentrum zu erreichen, wurden zwei weiche Zylinder-Schnitte (d=10) von der Außenhülle abgezogen. Dies zwingt die TPU-Wand in zwei wunderschöne Radien nach innen zu den IEMs.
+  - Genau unter diesen beiden neuen Einwölbungen schneidet `spring_floor_cut` den TPU-Boden großflächig weg (13x50mm). Die nach innen gewölbte Wand wird somit frei aufs Glasbett gedruckt und federt weich nach außen.
