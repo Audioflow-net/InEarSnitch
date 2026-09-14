@@ -790,17 +790,20 @@ class AnalysisWidget(QWidget):
                     self.csd_widget.setYRange(max_peak - 45, max_peak + 5)
                 
                 # 4. Fill-Opacity reduzieren
-                fill_brush = pg.mkBrush(24, 24, 27, 200)
+                import theme
+                bg_color = pg.mkColor(theme.get_color('pg_bg'))
+                bg_color.setAlpha(220)
+                fill_brush = pg.mkBrush(bg_color)
                 
-                # Draw from back to front (i.e. oldest/last slice first) to allow occlusion
-                for i in range(num_slices - 1, -1, -1):
+                # Draw from back (t=0) to front (t>0) to allow proper occlusion
+                for i in range(num_slices):
                     slice_mag = csd_slices[i]
                     
                     # 3 & 2: Freq-Shift 0.99, Y-Offset 1.5 dB
                     shift_freqs = csd_freqs * (0.99 ** i)
                     shift_mag = slice_mag - (i * 1.5) 
                 
-                    # 6. Farb-Gradient: Vorne = voll Cyan, Hinten = dunkel transparent
+                    # 6. Farb-Gradient: Vorne (i=0) = voll Cyan, Hinten (i=max) = dunkel transparent
                     blend = i / max(1, num_slices - 1)
                     r = 0
                     g = int(255 * (1 - blend) + 30 * blend)

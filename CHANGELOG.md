@@ -1385,3 +1385,7 @@
 ### V186 - 2026-09-14
 - **Snap Bump Fix**: Die Snap-Fit Kugeln schwebten in der Luft.
 - **Die Idee / Der Grund**: Die inneren Wände des Trays haben den gleichen 15-Grad-Winkel (Draft) wie die äußeren Wände. Ich hatte die Kugeln fix bei `X=wall` platziert, aber auf Höhe Z=32.2 ist die Wand durch die Schräge schon weiter nach innen gewandert. Die Position der Kugeln wird jetzt mathematisch exakt berechnet (`1.5 + draft_bump + wall`), sodass sie garantiert genau 0.6mm aus der geschrägten Wand ragen.
+
+### V187 - 2026-09-14
+- **Frame Cutout Bugfix**: Der Rahmen war in der Exploded View zur Hälfte abgeschnitten.
+- **Die Idee / Der Grund**: Der alte `cube`, der den inneren Hohlraum aus dem PETG-Rahmen herausschneiden sollte, war so breit wie die Oberkante (`rim_x`). Da das Tray nach unten schmaler wird, hat dieser gigantische Würfel ab Höhe 29.5 einfach die gesamte Außenwand gelöscht. Ich habe nun ein exaktes mathematisches Profil (`dropin_cutout_block`) berechnet, das exakt den 15-Grad-Innenwänden folgt. Dadurch bleibt der Rahmen intakt und die Kugeln sitzen perfekt.
