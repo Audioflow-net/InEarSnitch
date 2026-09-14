@@ -233,9 +233,9 @@ module tpu_tray_mat() {
         // exakt zwischen dem Boden und der eingewölbten Innenwand!
         // Der Drucker druckt diese Schicht in die Luft, sie droopt minimal an,
         // und nach dem Druck kannst du die Wand einfach mit dem Finger abreißen. 
-        // Ab dann ist die gesamte Innenwand komplett LOSE und federt frei!
-        translate([42.5, 40, mat_thickness + 0.2]) 
-            cube([26, 45, 0.4], center=true);
+        // Ab dann ist die gesamte zentrale Blattfeder komplett LOSE und federt frei!
+        translate([43.5, 40, mat_thickness + 0.2]) 
+            cube([28, 45, 0.4], center=true);
     }
 }
 
