@@ -475,6 +475,64 @@ class AnalysisWidget(QWidget):
             self.current_main_widget.setXRange(np.log10(min_f), np.log10(max_f), padding=0.1)
         else:
             self.plot_widget.setXRange(np.log10(min_f), np.log10(max_f), padding=0.1)
+
+    def mouseMoved(self, evt):
+        import numpy as np
+        if not hasattr(self, 'vLine'): return
+        
+        pos = evt[0] if isinstance(evt, tuple) else evt
+        # Only show crosshair on Freq Response tab
+        if self.plot_widget.sceneBoundingRect().contains(pos) and self.graph_tabs.currentIndex() == 0:
+            mousePoint = self.plot_widget.plotItem.vb.mapSceneToView(pos)
+            
+            if self.vLine not in self.plot_widget.plotItem.items:
+                self.plot_widget.addItem(self.vLine, ignoreBounds=True)
+                self.plot_widget.addItem(self.hLine, ignoreBounds=True)
+                self.plot_widget.addItem(self.crosshair_label, ignoreBounds=True)
+                
+            x_log = mousePoint.x()
+            freq = 10**x_log
+            
+            closest_dist = float('inf')
+            closest_x = None
+            closest_y = None
+            
+            for item in self.plot_widget.plotItem.items:
+                if isinstance(item, pg.PlotDataItem) and item.name() not in ["EQ Curve (0dB = 60dB)", 'Simulated EQ']:
+                    try:
+                        x_data, y_data = item.getData()
+                    except Exception:
+                        continue
+                    if x_data is not None and len(x_data) > 0:
+                        idx = (np.abs(x_data - freq)).argmin()
+                        curve_freq = x_data[idx]
+                        curve_mag = y_data[idx]
+                        
+                        dist = abs(np.log10(curve_freq) - x_log)
+                        if dist < closest_dist:
+                            closest_dist = dist
+                            closest_x = curve_freq
+                            closest_y = curve_mag
+                            
+            if closest_x is not None:
+                self.vLine.setPos(np.log10(closest_x))
+                self.hLine.setPos(closest_y)
+                
+                freq_str = f"{closest_x:.0f} Hz" if closest_x < 1000 else f"{closest_x/1000:.1f} kHz"
+                self.crosshair_label.setText(f"{freq_str} | {closest_y:+.1f} dB")
+                self.crosshair_label.setPos(np.log10(closest_x), closest_y)
+                
+                self.vLine.show()
+                self.hLine.show()
+                self.crosshair_label.show()
+            else:
+                self.vLine.hide()
+                self.hLine.hide()
+                self.crosshair_label.hide()
+        else:
+            self.vLine.hide()
+            self.hLine.hide()
+            self.crosshair_label.hide()
         
     def update_analysis(self, freqs, mag_l, mag_r, ref_mag_l=None, ref_mag_r=None, tgt_freqs=None, tgt_mags=None, thd_data=None, csd_data=None, ir_l=None, ir_r=None, sweep_count="1x"):
         self._last_data = (freqs, mag_l, mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data, ir_l, ir_r, sweep_count)
