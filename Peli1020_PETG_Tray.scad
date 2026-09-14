@@ -169,33 +169,44 @@ module tpu_tray_mat() {
     // Die perfekte, kontinuierliche 2D-Wand (ohne Lücken!)
     module tpu_wall_2d() {
         
-        // 1. Grundform einer Kammer
-        module pod_shape() {
+        // 1. Grundform einer einzelnen Kammer (inkl. Überlappungs-Nase)
+        module pod_shape(is_left) {
             hull() {
                 translate([0, 50]) circle(d=34, $fn=60);
                 translate([0, 30]) circle(d=34, $fn=60);
                 translate([0, 10]) circle(d=16, $fn=60);
-            }
-        }
-        
-        // 2. Massiver Block mit eingebauter Blattfeder-Kurve (Leaf Spring)!
-        module leaf_spring_solid() {
-            // BUGFIX: offset(0.01) zwingt OpenSCAD, die Winding-Order des Polygons 
-            // neu zu berechnen. Das verhindert den Bug, bei dem das TPU als unendlicher 
-            // blauer Rechteck-Block mit einem Loch in der Mitte gerendert wird!
-            offset(r=0.01) {
-                union() {
-                    translate([28, 0]) pod_shape();
-                    translate([59, 0]) pod_shape();
-                    translate([43.5, 40]) circle(d=28, $fn=80);
+                
+                if (is_left) {
+                    translate([10, 40]) circle(d=22, $fn=60);
+                } else {
+                    translate([-10, 40]) circle(d=22, $fn=60);
                 }
             }
         }
         
-        // 3. Erst jetzt höhlen wir das Meisterwerk zu einer exakten 1.2mm Wand aus!
-        difference() {
-            leaf_spring_solid();
-            offset(r = -wall_thickness) leaf_spring_solid();
+        // 2. Einzelne Kammer aushöhlen (absolut crash-frei für CGAL!)
+        module hollow_pod(is_left) {
+            difference() {
+                pod_shape(is_left);
+                offset(r = -wall_thickness) pod_shape(is_left);
+            }
+        }
+        
+        // 3. Ausgehöhlte Kammern vereinen und die Leaf-Spring Glättung einfügen!
+        // offset(0.5) verschmilzt die Wände sanft miteinander.
+        offset(r=0.5) offset(r=-0.5) {
+            union() {
+                translate([28, 0]) hollow_pod(true);
+                translate([59, 0]) hollow_pod(false);
+                
+                // DAS GEHEIMNIS DER BLATTFEDER (Leaf Spring):
+                // Anstatt komplizierter Offset-Ketten, die CGAL zum Absturz bringen,
+                // füllen wir die scharfen V-Kerben im Inneren der Überkreuzung 
+                // einfach direkt mit runden TPU-Tropfen auf! 
+                // Dies eliminiert die Sollbruchstelle und erzeugt eine weiche U-Kurve.
+                translate([43.5, 47]) circle(d=6, $fn=30);
+                translate([43.5, 33]) circle(d=6, $fn=30);
+            }
         }
     }
     
