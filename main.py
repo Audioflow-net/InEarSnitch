@@ -644,7 +644,7 @@ class MainWindow(QMainWindow):
         
         # Hardcode a safe maximum size for 13" MacBooks to prevent it going off screen
         self.resize(1280, 800)
-        self.setMinimumSize(950, 650)
+        self.setMinimumSize(900, 600)
         
         # --- TOP BAR ---
         top_bar = QWidget()
@@ -687,7 +687,7 @@ class MainWindow(QMainWindow):
                     self.settings_panel.raise_()
             if not is_visible:
                 # Reset panel to default width and button label when opening
-                self.settings_panel.setFixedWidth(600)
+                self.settings_panel.setMaximumWidth(600)
                 if hasattr(self, 'btn_expand'):
                     self.btn_expand.setText("Expand")
                 import PySide6.QtGui as QtGui
@@ -964,14 +964,14 @@ class MainWindow(QMainWindow):
         
         self.cb_meas_target = QComboBox()
         self.cb_meas_target.setToolTip("Select a target curve. Type to search.")
-        self.cb_meas_target.setMinimumWidth(220)
+        self.cb_meas_target.setMinimumWidth(100)
         self.cb_meas_target.setMaximumWidth(340)
         self.cb_meas_target.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.cb_meas_target.currentIndexChanged.connect(self.on_meas_target_changed)
         
         self.cb_meas_history = QComboBox()
         self.cb_meas_history.setToolTip("Select a historical measurement. Type to search.")
-        self.cb_meas_history.setMinimumWidth(220)
+        self.cb_meas_history.setMinimumWidth(100)
         self.cb_meas_history.setMaximumWidth(340)
         self.cb_meas_history.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.cb_meas_history.currentIndexChanged.connect(self.on_meas_history_changed)
@@ -1176,14 +1176,24 @@ class MainWindow(QMainWindow):
         self.settings_dimmer.clicked.connect(lambda: self.settings_panel.setVisible(False) or self.settings_dimmer.setVisible(False))
         
         self.page_set = QFrame(central)
-        self.page_set.setFixedWidth(600)
+        self.page_set.setMaximumWidth(600)
         self.page_set.setObjectName("SettingsPanel")
         self.page_set.setStyleSheet(f"#SettingsPanel {{ background-color: {theme.get_color('bg_panel')}; border-left: 1px solid {theme.get_color('border')}; }}")
         self.page_set.hide()
         self.settings_panel = self.page_set
         
-        set_layout = QVBoxLayout(self.page_set)
+        set_scroll = QScrollArea(self.page_set)
+        set_scroll.setWidgetResizable(True)
+        set_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        
+        set_container = QWidget()
+        set_layout = QVBoxLayout(set_container)
         set_layout.setContentsMargins(20, 20, 20, 20)
+        set_scroll.setWidget(set_container)
+        
+        page_set_layout = QVBoxLayout(self.page_set)
+        page_set_layout.setContentsMargins(0, 0, 0, 0)
+        page_set_layout.addWidget(set_scroll)
         
         # Header
         header_layout = QHBoxLayout()

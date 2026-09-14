@@ -123,10 +123,10 @@ class AnalysisWidget(QWidget):
         self.layout.setSpacing(0)
         
         # --- 2026 UI: No giant headers, just a clean rigid layout ---
-        self.split_layout = QHBoxLayout()
+        self.split_layout = QSplitter(Qt.Horizontal)
         self.split_layout.setContentsMargins(0, 0, 0, 0)
-        self.split_layout.setSpacing(0)
-        self.layout.addLayout(self.split_layout)
+        self.split_layout.setHandleWidth(1)
+        self.layout.addWidget(self.split_layout)
         
         # --- Left Pane ---
         left_pane_widget = QWidget()
@@ -292,13 +292,14 @@ class AnalysisWidget(QWidget):
         self.graph_tabs.addTab(self.csd_widget, "Waterfall (CSD)")
         
         left_pane_layout.addWidget(self.graph_tabs)
-        self.split_layout.addWidget(left_pane_widget, stretch=1)
+        self.split_layout.addWidget(left_pane_widget)
         
         # --- Right Pane: Tools (QTabWidget) ---
         self.tools_tabs = QTabWidget()
         self.tools_tabs.setElideMode(Qt.ElideNone)
         self.tools_tabs.setUsesScrollButtons(True)
-        self.tools_tabs.setFixedWidth(345) # Exactly matches RTA(110) + Gap(15) + RUN(220)
+        self.tools_tabs.setMinimumWidth(280)
+        self.tools_tabs.setMaximumWidth(400)
         
         # 1. Diagnostics Tool
         self.diag_container = QWidget()
@@ -318,10 +319,15 @@ class AnalysisWidget(QWidget):
 
         
         # 2. Hardware DSP Tool (Ultra Compact 2026 UI)
-        self.dsp_container = QWidget()
-        dsp_layout = QVBoxLayout(self.dsp_container)
+        self.dsp_container_widget = QWidget()
+        dsp_layout = QVBoxLayout(self.dsp_container_widget)
         dsp_layout.setContentsMargins(6, 6, 6, 6)
         dsp_layout.setSpacing(4)
+        
+        self.dsp_container = QScrollArea()
+        self.dsp_container.setWidgetResizable(True)
+        self.dsp_container.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        self.dsp_container.setWidget(self.dsp_container_widget)
         
 
         
@@ -450,6 +456,8 @@ class AnalysisWidget(QWidget):
         
         self.tools_tabs.addTab(self.dsp_container, "EQ")
         self.split_layout.addWidget(self.tools_tabs)
+        self.split_layout.setStretchFactor(0, 1)
+        self.split_layout.setStretchFactor(1, 0)
         
         self.init_eq_db()
         self.load_eq_presets()
