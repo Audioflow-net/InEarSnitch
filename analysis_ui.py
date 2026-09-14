@@ -163,13 +163,13 @@ class AnalysisWidget(QWidget):
         seg_layout.setContentsMargins(0,0,0,0)
         seg_layout.setSpacing(0)
 
-        self.btn_chan_l = QPushButton("Left")
+        self.btn_chan_l = QPushButton("L")
         self.btn_chan_l.setToolTip("Show/Hide Left Channel Curve")
         self.btn_chan_l.setCheckable(True)
         self.btn_chan_l.setChecked(True)
         self.btn_chan_l.setStyleSheet("QPushButton { background-color: #1f1f23; color: #888; border: 1px solid #3f3f46; border-top-left-radius: 4px; border-bottom-left-radius: 4px; border-right: none; padding: 4px 10px; font-weight: bold; font-size: 11px; } QPushButton:checked { background-color: #0ea5e9; color: white; border-color: #0ea5e9; }")
         
-        self.btn_chan_r = QPushButton("Right")
+        self.btn_chan_r = QPushButton("R")
         self.btn_chan_r.setToolTip("Show/Hide Right Channel Curve")
         self.btn_chan_r.setCheckable(True)
         self.btn_chan_r.setChecked(True)
