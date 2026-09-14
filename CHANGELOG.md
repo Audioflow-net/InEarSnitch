@@ -1365,3 +1365,11 @@
   - Der User wünschte aber ZWEI separate Pods, die extrem dicht nebeneinanderliegen, sodass sie optisch wie eine Acht wirken, aber ihre schwebenden Innenwände behalten.
   - Umgesetzt: `single_pod_solid` generiert nun eine eigene, tief nach innen gewölbte rechte Wand. Unten bei Y=12 wird diese durchtrennt (`FEDER DURCHTRENNEN`). Der Bodenschnitt entfernt das TPU darunter. Das Ganze wird einmal auf X=26 platziert und einmal gespiegelt auf X=59.
   - Das Resultat: Zwei wunderschöne, frei schwingende Gummibänder, die sich in der Mitte tief zu den In-Ears einwölben (Gegen-Gummi-Konzept in Perfektion)!
+
+### V184 - 2026-09-14
+- **2-Teile Snap-Fit PETG System**: Das Tray wurde in `petg_outer_frame` und `petg_dropin_plate` aufgeteilt.
+- **TPU Redesign**: Massiver Boden, durchgehende Wände, starke Klemm-Einwölbungen.
+- **Die Idee / Der Grund**: 
+  - Um PETG zu 100% ohne Support zu drucken, wurde das Tray in zwei flache Teile zerschnitten. Der Rahmen hat eine Auflagefläche bei Z=29.5 und kleine Snap-Bumps bei Z=32.2. Die Bodenplatte (inklusive Mic-Holder) rastet dort perfekt ein.
+  - Das TPU hatte vorher Löcher, weil ich "schwebend" fälschlicherweise als "ohne Boden" interpretiert habe. Das war Unsinn, TPU flext von alleine genug. Der Boden ist jetzt komplett massiv (1.5mm).
+  - Die TPU-Wand wurde über ein extrem sauberes 2D-Offset-Profil generiert. Das sorgt dafür, dass die Wand überall exakt 1.2mm dick ist, nirgendwo Löcher hat und in der Mitte stark nach innen gewölbt ist (Hourglass), um die IEMs massiv festzuklemmen.
