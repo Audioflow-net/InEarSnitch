@@ -172,9 +172,11 @@ module tpu_tray_mat() {
         // 1. Grundform einer einzelnen Kammer (inkl. Überlappungs-Nase)
         module pod_shape(is_left) {
             hull() {
-                translate([0, 50]) circle(d=34, $fn=60);
-                translate([0, 30]) circle(d=34, $fn=60);
-                translate([0, 10]) circle(d=16, $fn=60);
+                // Realistischer Shrink: Durchmesser leicht reduziert,
+                // damit die IEMs am Außenrand anliegen und Gegendruck entsteht!
+                translate([0, 50]) circle(d=31, $fn=60);
+                translate([0, 30]) circle(d=31, $fn=60);
+                translate([0, 10]) circle(d=14, $fn=60);
                 
                 if (is_left) {
                     translate([10, 40]) circle(d=22, $fn=60);
@@ -184,7 +186,7 @@ module tpu_tray_mat() {
             }
         }
         
-        // 2. Einzelne Kammer aushöhlen (absolut crash-frei für CGAL!)
+        // 2. Einzelne Kammer aushöhlen
         module hollow_pod(is_left) {
             difference() {
                 pod_shape(is_left);
@@ -192,20 +194,20 @@ module tpu_tray_mat() {
             }
         }
         
-        // 3. Ausgehöhlte Kammern vereinen und die Leaf-Spring Glättung einfügen!
-        // offset(0.5) verschmilzt die Wände sanft miteinander.
+        // 3. Ausgehöhlte Kammern vereinen, Leaf-Spring und Kabelblöcke hinzufügen
         offset(r=0.5) offset(r=-0.5) {
             union() {
                 translate([28, 0]) hollow_pod(true);
                 translate([59, 0]) hollow_pod(false);
                 
-                // DAS GEHEIMNIS DER BLATTFEDER (Leaf Spring):
-                // Anstatt komplizierter Offset-Ketten, die CGAL zum Absturz bringen,
-                // füllen wir die scharfen V-Kerben im Inneren der Überkreuzung 
-                // einfach direkt mit runden TPU-Tropfen auf! 
-                // Dies eliminiert die Sollbruchstelle und erzeugt eine weiche U-Kurve.
-                translate([43.5, 47]) circle(d=6, $fn=30);
-                translate([43.5, 33]) circle(d=6, $fn=30);
+                // Blattfeder (Leaf Spring) Brücken
+                translate([43.5, 45]) circle(d=10, $fn=30);
+                translate([43.5, 32]) circle(d=10, $fn=30);
+                
+                // Massive Blöcke für die Kabelausgänge (Snap-Fit)
+                // Diese Blöcke geben uns genug Material, um einen Kabelkanal hineinzufräsen.
+                translate([28, 5]) square([8, 10], center=true);
+                translate([59, 5]) square([8, 10], center=true);
             }
         }
     }
@@ -223,10 +225,17 @@ module tpu_tray_mat() {
             linear_extrude(height = wall_h + eps) 
                 tpu_wall_2d();
         
-        // Trichter links öffnen (Kabelausgang)
-        translate([28, 0, 0]) translate([-7, -5, -eps]) cube([14, 25, 20]);
-        // Trichter rechts öffnen
-        translate([59, 0, 0]) translate([-7, -5, -eps]) cube([14, 25, 20]);
+        // Snap-Fit Kabelausgang Links (Omega-Klemme)
+        translate([28, 0, -eps]) {
+            translate([-1.2, -5, 0]) cube([2.4, 12, 20]);      // Enger Eingang (2.4mm Spalt)
+            translate([0, 5, 0]) cylinder(h=20, d=4.5, $fn=30); // 4.5mm Kammer für das Kabel
+        }
+        
+        // Snap-Fit Kabelausgang Rechts (Omega-Klemme)
+        translate([59, 0, -eps]) {
+            translate([-1.2, -5, 0]) cube([2.4, 12, 20]);      // Enger Eingang (2.4mm Spalt)
+            translate([0, 5, 0]) cylinder(h=20, d=4.5, $fn=30); // 4.5mm Kammer für das Kabel
+        }
         
         // 3. SOLLBRUCHSTELLE (Tear-Away Schnitt für lose Innenwände)
         // Wie von dir genial vorgeschlagen: Wir schneiden einen 0.4mm Spalt 
@@ -335,7 +344,7 @@ module petg_dropin_plate() {
 // ==========================================
 // RENDER STEUERUNG (V185)
 // ==========================================
-render_mode = "exploded"; 
+render_mode = "print_mat"; 
 
 if (render_mode == "exploded") {
     // Zeigt alle Teile auseinandergebaut!
