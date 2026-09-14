@@ -2639,11 +2639,13 @@ class MainWindow(QMainWindow):
 
             
         if hasattr(self, 'settings_panel') and self.settings_panel is not None:
+            cw_width = self.centralWidget().width() if self.centralWidget() else self.width()
+            cw_height = self.centralWidget().height() if self.centralWidget() else self.height()
             self.settings_panel.setGeometry(
-                self.width() - self.settings_panel.width(),
+                cw_width - self.settings_panel.width() - 20,
                 40, # top bar height approximation
                 self.settings_panel.width(),
-                self.height() - 40
+                cw_height - 40
             )
 
 
