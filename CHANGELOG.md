@@ -1339,3 +1339,6 @@
   - Der User favorisierte die optisch geschlossene "8er-Form" (Überlappung der Pods in der Mitte).
   - Die Mulden wurden minimal enger gezogen (d=34 statt 36), damit sie näher am IEM anliegen.
   - Der TPU-Boden unter der exakten Mitte wurde herausgeschnitten (`spring_floor_cut` bei X=35 bis 50), und die Wände dort unten durchtrennt. Dadurch hängt das gesamte verschmolzene Mittelstück als schwebende "Trampolin-Brücke" in der Luft, federt den Druck von beiden CIEMs ab und erfüllt den Wunsch nach dem Gegen-Gummi in Perfektion.
+
+### V180 - 2026-09-14
+- **TPU Farbe**: Ansichtsfarbe in OpenSCAD von Rot auf DeepSkyBlue geändert, um Konturen und Tiefen besser sichtbar zu machen.
