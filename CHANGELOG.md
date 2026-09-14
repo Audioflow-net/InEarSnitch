@@ -1350,3 +1350,10 @@
   - Der User wünschte sich eine 100% kontinuierliche Wand ohne Risse. Die manuelle Trennung unten wurde entfernt.
   - Um die "Hourglass"-Optik (Einwölbung) im Zentrum zu erreichen, wurden zwei weiche Zylinder-Schnitte (d=10) von der Außenhülle abgezogen. Dies zwingt die TPU-Wand in zwei wunderschöne Radien nach innen zu den IEMs.
   - Genau unter diesen beiden neuen Einwölbungen schneidet `spring_floor_cut` den TPU-Boden großflächig weg (13x50mm). Die nach innen gewölbte Wand wird somit frei aufs Glasbett gedruckt und federt weich nach außen.
+
+### V182 - 2026-09-14
+- **TPU Kontur**: Komplette Überarbeitung der Booleschen Logik auf eine 2D-basierte Berechnung (2D Offset Smoothing) zur Beseitigung von Geometriefehlern.
+- **Die Idee / Der Grund**: 
+  - Die negativen Zylinder in V181 hinterließen hohle "Säulen" im Modell und brachen die Wandstruktur.
+  - Die Form wird nun komplett in 2D erzeugt. Die V-förmige Kerbe, die bei der Überlappung der beiden Pods entsteht, wird durch eine clevere Kombination aus `offset(r=5)` und `offset(r=-5)` (Minkowski-Addition/Subtraktion) automatisch zu einer perfekten, 100% kontinuierlichen 5mm-Rundung (Hourglass-Sanduhr) geglättet.
+  - Die Pink-Box-Lücke ist dauerhaft geschlossen. Die Yellow-Box ist nun eine makellose Kurve, die durch den Bodenschnitt nach wie vor als schwebende Trampolin-Feder fungiert.

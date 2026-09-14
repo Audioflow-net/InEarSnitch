@@ -2075,17 +2075,44 @@ class MainWindow(QMainWindow):
                 else:
                     tone_stereo[:, 1] = tone
                 
+                import threading
+                n_frames = len(tone_stereo)
+                
+                def run_stream(in_channels):
+                    out_pos = 0
+                    in_pos = 0
+                    rec_buf = np.zeros((n_frames, in_channels))
+                    event = threading.Event()
+
+                    def callback(indata, outdata, frames, time, status):
+                        nonlocal out_pos, in_pos
+                        chunk = min(frames, n_frames - out_pos)
+                        if chunk > 0:
+                            outdata[:chunk] = tone_stereo[out_pos:out_pos+chunk]
+                            out_pos += chunk
+                        if chunk < frames:
+                            outdata[chunk:] = 0.0
+                            
+                        r_chunk = min(frames, n_frames - in_pos)
+                        if r_chunk > 0:
+                            rec_buf[in_pos:in_pos+r_chunk] = indata[:r_chunk, :]
+                            in_pos += r_chunk
+                            
+                        if out_pos >= n_frames and in_pos >= n_frames:
+                            event.set()
+                            raise sd.CallbackStop
+
+                    with sd.Stream(device=(self.selected_in_idx, self.selected_out_idx),
+                                   samplerate=self.audio_engine.sample_rate, channels=(in_channels, 2),
+                                   callback=callback):
+                        event.wait(timeout=1.0)
+                    return rec_buf[:, 0:1]
+
                 try:
-                    rec = sd.playrec(tone_stereo, samplerate=self.audio_engine.sample_rate,
-                                     channels=1, device=(self.selected_in_idx, self.selected_out_idx),
-                                     blocking=True)
+                    rec = run_stream(1)
                 except Exception:
                     in_chans = sd.query_devices(self.selected_in_idx)['max_input_channels']
-                    rec = sd.playrec(tone_stereo, samplerate=self.audio_engine.sample_rate,
-                                     channels=in_chans, device=(self.selected_in_idx, self.selected_out_idx),
-                                     blocking=True)
-                    rec = rec[:, 0:1]
-                sd.wait()
+                    rec = run_stream(in_chans)
                 
                 peak = np.max(np.abs(rec))
                 peak_dbfs = 20 * np.log10(peak + 1e-12)
