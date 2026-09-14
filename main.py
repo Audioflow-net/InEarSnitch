@@ -203,7 +203,7 @@ class MusicianCard(QWidget):
     def __init__(self, name, role, iems, status="Ready", profile_pic=None):
         super().__init__()
         self.setAttribute(Qt.WA_StyledBackground, True)
-        self.layout = QVBoxLayout(self)
+        self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(10, 10, 10, 10)
         self.name = name
         
@@ -228,20 +228,18 @@ class MusicianCard(QWidget):
         info_layout = QVBoxLayout()
         info_layout.setSpacing(2)
         
-        name_lbl = QLabel(name)
-        name_lbl.setProperty("class", "title")
-        name_lbl.setStyleSheet("background-color: transparent; border: none; outline: none;")
-        name_lbl.setFocusPolicy(Qt.NoFocus)
-        role_lbl = QLabel(role)
-        role_lbl.setProperty("class", "subtitle")
-        role_lbl.setStyleSheet("background-color: transparent; border: none; outline: none;")
-        role_lbl.setFocusPolicy(Qt.NoFocus)
+        self.name_lbl = QLabel(name)
+        self.name_lbl.setProperty("class", "title")
+        self.name_lbl.setStyleSheet("background-color: transparent; border: none; outline: none;")
+        self.name_lbl.setFocusPolicy(Qt.NoFocus)
+        self.role_lbl = QLabel(role)
+        self.role_lbl.setProperty("class", "subtitle")
+        self.role_lbl.setStyleSheet("background-color: transparent; border: none; outline: none;")
+        self.role_lbl.setFocusPolicy(Qt.NoFocus)
         
-        bottom_info = QVBoxLayout()
-        bottom_info.setContentsMargins(0, 0, 0, 0)
-        bottom_info.setSpacing(4)
-        bottom_info.setAlignment(Qt.AlignCenter)
-        name_lbl.setAlignment(Qt.AlignCenter)
+        self.bottom_info = QHBoxLayout()
+        self.bottom_info.setContentsMargins(0, 0, 0, 0)
+        self.bottom_info.setSpacing(4)
         
         self.iems_data = iems
         self.current_iem_id = iems[0][0] if iems else -1
@@ -256,34 +254,55 @@ class MusicianCard(QWidget):
             display_name = custom_name if custom_name else iem_name
             btn = AvatarButton(iem_id, display_name, pic_path, abbr, self)
             self.avatar_btns.append((iem_id, btn))
-            bottom_info.addWidget(btn)
+            self.bottom_info.addWidget(btn)
             
-        bottom_info.addStretch()
+        self.bottom_info.addStretch()
         
-        status_lbl = QLabel(status)
-        status_lbl.setStyleSheet("background-color: transparent; color: #00FF99; font-size: 11px; border: none; outline: none;")
-        status_lbl.setFocusPolicy(Qt.NoFocus)
-        bottom_info.addWidget(status_lbl)
+        self.status_lbl = QLabel(status)
+        self.status_lbl.setStyleSheet("background-color: transparent; color: #00FF99; font-size: 11px; border: none; outline: none;")
+        self.status_lbl.setFocusPolicy(Qt.NoFocus)
+        self.bottom_info.addWidget(self.status_lbl)
         
         if self.avatar_btns:
             self.select_iem(self.current_iem_id, self.current_iem_name, self.avatar_btns[0][1])
 
         
-        info_layout.addWidget(name_lbl)
-        role_lbl.hide()
-        info_layout.addLayout(bottom_info)
+        info_layout.addWidget(self.name_lbl)
+        info_layout.addWidget(self.role_lbl)
+        info_layout.addLayout(self.bottom_info)
         
-        self.avatar.hide()
+        self.layout.addWidget(self.avatar)
         self.layout.addLayout(info_layout)
         
         self.setObjectName("musicianCardObj")
         self.setFocusPolicy(Qt.NoFocus)
         self.setCursor(Qt.PointingHandCursor)
         
-        # Make non-interactive children transparent to mouse events
-        # so clicks pass through to the card's mousePressEvent
-        for child in [self.avatar, name_lbl, role_lbl, status_lbl]:
+        for child in [self.avatar, self.name_lbl, self.role_lbl, self.status_lbl]:
             child.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+            
+        self._update_layout(self.width())
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._update_layout(event.size().width())
+        
+    def _update_layout(self, width):
+        from PySide6.QtWidgets import QBoxLayout
+        if width < 180:
+            self.avatar.hide()
+            self.role_lbl.hide()
+            self.layout.setDirection(QBoxLayout.TopToBottom)
+            self.bottom_info.setDirection(QBoxLayout.TopToBottom)
+            self.name_lbl.setAlignment(Qt.AlignCenter)
+            self.bottom_info.setAlignment(Qt.AlignCenter)
+        else:
+            self.avatar.show()
+            self.role_lbl.show()
+            self.layout.setDirection(QBoxLayout.LeftToRight)
+            self.bottom_info.setDirection(QBoxLayout.LeftToRight)
+            self.name_lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            self.bottom_info.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         
         import theme
         if theme.CURRENT_MODE == "light":
