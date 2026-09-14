@@ -1166,6 +1166,15 @@ class MainWindow(QMainWindow):
         self.cb_smooth.setStyleSheet("QComboBox { background-color: #222; color: white; border: 1px solid #444; padding: 2px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; min-height: 20px; }")
         view_layout.addWidget(self.cb_smooth)
         view_layout.addWidget(self.btn_reset_view)
+        
+        self.btn_toggle_tools = QPushButton("TOOLS")
+        self.btn_toggle_tools.setCheckable(True)
+        self.btn_toggle_tools.setChecked(True)
+        self.btn_toggle_tools.setToolTip("Show/Hide Diagnostics & EQ")
+        self.btn_toggle_tools.setStyleSheet("QPushButton { background-color: #222; color: #888; border: 1px solid #444; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px; } QPushButton:checked { background-color: #3b82f6; color: white; border-color: #3b82f6; } QPushButton:hover { background-color: #444; }")
+        self.btn_toggle_tools.toggled.connect(self.page_ana.tools_tabs.setVisible)
+        view_layout.addWidget(self.btn_toggle_tools)
+        
         corner_layout.addWidget(view_widget)
         
 
