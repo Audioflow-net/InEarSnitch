@@ -168,29 +168,28 @@ module tpu_tray_mat() {
     
     // Die perfekte, kontinuierliche 2D-Wand (ohne Lücken!)
     module tpu_wall_2d() {
-        module outer_shape() {
-            // offset(r) glättet die Übergänge zwischen den beiden Hulls weich ab!
-            offset(r=2) offset(r=-2) {
-                // Die Grundform der beiden Pods (Überlappen in der Mitte um 3mm!)
-                union() {
-                    hull() {
-                        translate([28, 50]) circle(d=34, $fn=60);
-                        translate([28, 30]) circle(d=34, $fn=60);
-                        translate([28, 10]) circle(d=16, $fn=60);
-                    }
-                    hull() {
-                        translate([59, 50]) circle(d=34, $fn=60);
-                        translate([59, 30]) circle(d=34, $fn=60);
-                        translate([59, 10]) circle(d=16, $fn=60);
-                    }
-                }
+        // 1. Grundform einer EINZELNEN Kammer definieren
+        module pod_shape() {
+            hull() {
+                translate([0, 50]) circle(d=34, $fn=60);
+                translate([0, 30]) circle(d=34, $fn=60);
+                translate([0, 10]) circle(d=16, $fn=60);
             }
         }
         
-        // Wand generieren: Garantiert fehlerfreie 1.2mm Wandstärke
-        difference() {
-            outer_shape();
-            offset(r = -wall_thickness) outer_shape();
+        // 2. Die Kammer aushöhlen (exakt 1.2mm Wandstärke)
+        module hollow_pod() {
+            difference() {
+                pod_shape();
+                offset(r = -wall_thickness) pod_shape();
+            }
+        }
+        
+        // 3. Beide ausgehöhlten Kammern überlappend zusammenfügen!
+        // Dadurch kreuzen sich die Wände in der Mitte und bilden die "Beule" nach innen!
+        union() {
+            translate([28, 0]) hollow_pod();
+            translate([59, 0]) hollow_pod();
         }
     }
     

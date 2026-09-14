@@ -1397,3 +1397,7 @@
 ### V189 - 2026-09-14
 - **Plate Visibility Bugfix**: `petg_dropin_plate` komplett neu ohne `intersection()` aufgebaut.
 - **Die Idee / Der Grund**: Selbst mit dem Z-Shift aus V188 hat OpenSCADs CGAL Engine reproduzierbar aufgegeben (erkennbar an der Warnung `Object may not be a valid 2-manifold`). Der Grund war, dass `intersection()` auf zwei hochkomplexe Hulls und Differences mit abgerundeten und geschrägten Kanten angesetzt wurde, die fast deckungsgleich waren. Ich habe die Platte nun einfach nativ aus den Grundformen (Hull, Trennwand, Coupler) zusammengesetzt. Sie ist mathematisch identisch, hat exakt die gleiche Schräge und Mic-Kuhle, aber rendert in 0.01 Sekunden fehlerfrei!
+
+### V190 - 2026-09-14
+- **TPU Figure-8 Restore**: Die extremen Einwölbungen (Hourglass Subtractions) aus der TPU-Wand entfernt.
+- **Die Idee / Der Grund**: Die Zylinder-Abzüge haben die TPU-Wand in der Mitte komplett durchtrennt, wodurch zwei lose C-Formen entstanden sind. Der User wollte die ursprüngliche, zusammenhängende überlappende Form (Figure-8) zurück. Die Pods liegen nun wieder bei X=28 und X=59 (3mm Überlappung) und bilden eine makellose, durchgehende 1.2mm dicke Endloswand.
