@@ -1199,7 +1199,7 @@ class MainWindow(QMainWindow):
         self.settings_dimmer.clicked.connect(lambda: self.settings_panel.setVisible(False) or self.settings_dimmer.setVisible(False))
         
         self.page_set = QFrame(central)
-        self.page_set.setMaximumWidth(600)
+        self.page_set.setFixedWidth(450)
         self.page_set.setObjectName("SettingsPanel")
         self.page_set.setStyleSheet(f"#SettingsPanel {{ background-color: {theme.get_color('bg_panel')}; border-left: 1px solid {theme.get_color('border')}; }}")
         self.page_set.hide()
