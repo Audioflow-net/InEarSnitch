@@ -1,10 +1,10 @@
-import sqlite3
 import os
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                              QLineEdit, QPushButton, QFrame, QFormLayout, 
                              QTextEdit, QFileDialog, QInputDialog, QGridLayout, 
                              QSizePolicy, QScrollArea, QMessageBox)
 from PySide6.QtCore import Signal, Property, QTimer, QPropertyAnimation, QEasingCurve, Qt, QSize
+from flow_layout import FlowLayout
 from PySide6.QtGui import QPixmap, QImageReader, QPainter, QPainterPath
 
 def create_circular_pixmap(image_reader, size):
@@ -612,12 +612,11 @@ class ProfileWidget(QWidget):
 
         self.iem_scroll = QScrollArea()
         self.iem_scroll.setWidgetResizable(True)
-        self.iem_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.iem_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.iem_scroll.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
         
         self.iem_container = QWidget()
-        self.iem_layout = QHBoxLayout(self.iem_container)
-        self.iem_layout.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.iem_layout = FlowLayout(self.iem_container, margin=0, hSpacing=20, vSpacing=20)
         self.iem_layout.setContentsMargins(0, 0, 0, 0)
         self.iem_layout.setSpacing(20)
         
