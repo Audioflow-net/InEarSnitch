@@ -1357,3 +1357,11 @@
   - Die negativen Zylinder in V181 hinterließen hohle "Säulen" im Modell und brachen die Wandstruktur.
   - Die Form wird nun komplett in 2D erzeugt. Die V-förmige Kerbe, die bei der Überlappung der beiden Pods entsteht, wird durch eine clevere Kombination aus `offset(r=5)` und `offset(r=-5)` (Minkowski-Addition/Subtraktion) automatisch zu einer perfekten, 100% kontinuierlichen 5mm-Rundung (Hourglass-Sanduhr) geglättet.
   - Die Pink-Box-Lücke ist dauerhaft geschlossen. Die Yellow-Box ist nun eine makellose Kurve, die durch den Bodenschnitt nach wie vor als schwebende Trampolin-Feder fungiert.
+
+### V183 - 2026-09-14
+- **Getrennte Pods mit eigenen Federn**: Das 2D-Union-Modell wurde wieder in 3D-Geometrie für ZWEI völlig separate Pods umgeschrieben.
+- **Die Idee / Der Grund**: 
+  - Die mathematische Verschmelzung (`union`) in V182 hatte die Wände zwischen den Pods zwangsläufig komplett gelöscht (aus der 8er-Form wurde eine einzige große Wanne).
+  - Der User wünschte aber ZWEI separate Pods, die extrem dicht nebeneinanderliegen, sodass sie optisch wie eine Acht wirken, aber ihre schwebenden Innenwände behalten.
+  - Umgesetzt: `single_pod_solid` generiert nun eine eigene, tief nach innen gewölbte rechte Wand. Unten bei Y=12 wird diese durchtrennt (`FEDER DURCHTRENNEN`). Der Bodenschnitt entfernt das TPU darunter. Das Ganze wird einmal auf X=26 platziert und einmal gespiegelt auf X=59.
+  - Das Resultat: Zwei wunderschöne, frei schwingende Gummibänder, die sich in der Mitte tief zu den In-Ears einwölben (Gegen-Gummi-Konzept in Perfektion)!

@@ -404,7 +404,7 @@ class AnalysisWidget(QWidget):
                         base_mag = self.current_mag_l if self.current_mag_l is not None else self.current_mag_r
                         if base_mag is not None:
                             from audio_engine import AudioEngine
-                            f_eq, m_eq, _ = AudioEngine.smooth_spectrum(self.current_freqs, base_mag + eq_delta, points=240)
+                            f_eq, m_eq, _ = AudioEngine.smooth_spectrum(self.current_freqs, base_mag + eq_delta, points=getattr(self, "current_smoothing_pts", 240))
                             self.virtual_eq_line.setData(f_eq, m_eq)
                             if self.btn_dsp_master.isChecked():
                                 self.virtual_eq_line.show()
@@ -535,8 +535,8 @@ class AnalysisWidget(QWidget):
             self.hLine.hide()
             self.crosshair_label.hide()
         
-    def update_analysis(self, freqs, mag_l, mag_r, ref_mag_l=None, ref_mag_r=None, tgt_freqs=None, tgt_mags=None, thd_data=None, csd_data=None, ir_l=None, ir_r=None, sweep_count="1x"):
-        self._last_data = (freqs, mag_l, mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data, ir_l, ir_r, sweep_count)
+    def update_analysis(self, freqs, mag_l, mag_r, ref_mag_l=None, ref_mag_r=None, tgt_freqs=None, tgt_mags=None, thd_data=None, csd_data=None, ir_l=None, ir_r=None, sweep_count="1x", smoothing_pts=240):
+        self._last_data = (freqs, mag_l, mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data, ir_l, ir_r, sweep_count, smoothing_pts)
         
         # Auto-switch to the channel that actually has data
         if mag_l is None and mag_r is not None:
@@ -548,65 +548,57 @@ class AnalysisWidget(QWidget):
         
     def render_diagnostics(self):
         """Render compact diagnostics report cards, filtered by active graph tab."""
-        if not hasattr(self, 'report_layout'):
-            return
-        for i in reversed(range(self.report_layout.count())):
-            w = self.report_layout.itemAt(i).widget()
-            if w:
-                w.deleteLater()
-
         if not hasattr(self, '_last_report') or not self._last_report:
             return
-
-        from PySide6.QtWidgets import QFrame, QLabel, QVBoxLayout as QVL
-        from PySide6.QtCore import Qt
+            
         import numpy as np
-
-        # Filter cards by current graph tab
+        
+        # Determine active tab
         tab_idx = self.graph_tabs.currentIndex()
-        tab_cat_map = {0: 'FR', 1: 'THD', 2: 'CSD'}
-        active_cat = tab_cat_map.get(tab_idx, None)  # None = show all
+        if tab_idx == 0:
+            target_cats = ['FR']
+        elif tab_idx == 1:
+            target_cats = ['THD']
+        elif tab_idx == 2:
+            target_cats = ['CSD']
+        else:
+            target_cats = []
+            
+        # Only show cards matching the current tab category
+        filtered_report = [item for item in self._last_report if item.get('category') in target_cats]
 
-        import theme
-        is_light = theme.is_light()
-        status_style = {
-            'OK':   ('#dcfce7' if is_light else '#0d3320', '#16a34a' if is_light else '#22c55e', '✓'),
-            'WARN': ('#fef3c7' if is_light else '#422006', '#d97706' if is_light else '#f59e0b', '⚠'),
-            'FAIL': ('#fee2e2' if is_light else '#450a0a', '#dc2626' if is_light else '#ef4444', '✗'),
-        }
+        # Clear old items
+        for i in reversed(range(self.report_layout.count())): 
+            w = self.report_layout.itemAt(i).widget()
+            if w: w.deleteLater()
+            
+        is_light = theme.CURRENT_MODE == 'light'
 
-        for item in self._last_report:
-            cat = item.get('category', 'FR')
-            # Filter: show only matching category, or all if no specific tab
-            if active_cat is not None and cat != active_cat:
-                continue
+        for item in filtered_report:
+            card = QFrame()
+            card.setStyleSheet(f"QFrame {{ background: {theme.get_color('bg_alt')}; border: 1px solid {theme.get_color('border')}; border-radius: 4px; padding: 4px; margin-bottom: 2px; }} QFrame:hover {{ border: 1px solid {theme.get_color('active')}; background: {theme.get_color('bg')}; }}")
+            cl = QVBoxLayout(card)
+            cl.setContentsMargins(8, 6, 8, 8)
+            cl.setSpacing(2)
 
             status = item.get('status', 'OK')
-            bg, accent, icon = status_style.get(status, status_style['OK'])
             band = item.get('band')
-
-            card = QFrame()
-            card.setCursor(Qt.PointingHandCursor if band else Qt.ArrowCursor)
-            card.setStyleSheet(f"QFrame {{ background: {bg}; border-left: 3px solid {accent}; border-radius: 3px; padding: 3px 6px; margin: 1px 0; }}")
-            cl = QVL(card)
-            cl.setContentsMargins(4, 2, 4, 2)
-            cl.setSpacing(0)
-
+            cat = item.get('category', '')
+            icon, accent = ("✅", "#10b981") if status == 'OK' else ("⚠️", "#eab308") if status == 'WARN' else ("❌", "#ef4444")
+            
             hdr = QLabel(f"<span style='color:{accent};font-weight:bold;'>{icon}</span>  <b>{item.get('title','')}</b>  <span style='color:{'#52525b' if is_light else '#666'};font-size:9px;'>[{cat}]</span>")
             hdr.setStyleSheet(f"color: {accent}; font-size: 11px; background: transparent; border: none;")
             cl.addWidget(hdr)
 
             desc = QLabel(item.get('desc', ''))
             desc.setWordWrap(True)
-            desc.setStyleSheet(f"color: {'#3f3f47' if is_light else '#999'}; font-size: 10px; background: transparent; border: none; padding-left: 16px;")
+            desc.setStyleSheet(f"color: {theme.get_color('text_muted')}; font-size: 10px; background: transparent; border: none;")
             cl.addWidget(desc)
 
-            # Click-to-zoom: zoom the correct graph for this card's category
             if band:
                 def make_zoom(b=band, c=cat):
                     def zoom_handler(event):
                         f_min, f_max = b
-                        # Pick the right widget for the category
                         if c == 'THD':
                             self.graph_tabs.setCurrentIndex(1)
                             self.thd_widget.setXRange(np.log10(f_min), np.log10(f_max), padding=0.1)
@@ -618,22 +610,27 @@ class AnalysisWidget(QWidget):
                             self.plot_widget.setXRange(np.log10(f_min), np.log10(f_max), padding=0.1)
                     return zoom_handler
                 card.mousePressEvent = make_zoom(band, cat)
+                card.setCursor(Qt.PointingHandCursor)
 
             self.report_layout.addWidget(card)
 
     def refresh_view(self):
         if not hasattr(self, '_last_data'): return
         sweep_count = "1x"
+        smoothing_pts = 240
         try:
-            freqs, orig_mag_l, orig_mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data, ir_l, ir_r, sweep_count = self._last_data
+            freqs, orig_mag_l, orig_mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data, ir_l, ir_r, sweep_count, smoothing_pts = self._last_data
         except ValueError:
             try:
-                freqs, orig_mag_l, orig_mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data, ir_l, ir_r = self._last_data
+                freqs, orig_mag_l, orig_mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data, ir_l, ir_r, sweep_count = self._last_data
             except ValueError:
-                freqs, orig_mag_l, orig_mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data = self._last_data
-                ir_l = None
-                ir_r = None
-        
+                try:
+                    freqs, orig_mag_l, orig_mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data, ir_l, ir_r = self._last_data
+                except ValueError:
+                    freqs, orig_mag_l, orig_mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data = self._last_data
+                    ir_l = None
+                    ir_r = None
+        self.current_smoothing_pts = smoothing_pts
         if freqs is None:
             self.plot_widget.clear()
             self.thd_widget.clear()
@@ -710,10 +707,10 @@ class AnalysisWidget(QWidget):
         if freqs is not None:
             from audio_engine import AudioEngine
             if mag_l is not None:
-                f_l, m_l, _ = AudioEngine.smooth_spectrum(freqs, mag_l, points=240)
+                f_l, m_l, _ = AudioEngine.smooth_spectrum(freqs, mag_l, points=getattr(self, "current_smoothing_pts", 240))
                 self.plot_widget.plot(f_l, m_l, pen=pg.mkPen(theme.get_color('curve_left'), width=2), name='Left')
             if mag_r is not None:
-                f_r, m_r, _ = AudioEngine.smooth_spectrum(freqs, mag_r, points=240)
+                f_r, m_r, _ = AudioEngine.smooth_spectrum(freqs, mag_r, points=getattr(self, "current_smoothing_pts", 240))
                 self.plot_widget.plot(f_r, m_r, pen=pg.mkPen(theme.get_color('curve_right'), width=2, style=Qt.DashLine), name='Right')
                 
             # Plot Target (CSV)
@@ -723,16 +720,16 @@ class AnalysisWidget(QWidget):
                 meas_val = mag_l[idx_1k] if mag_l is not None else (mag_r[idx_1k] if mag_r is not None else 80)
                 tgt_val = interp_tgt[idx_1k]
                 interp_tgt += (meas_val - tgt_val)
-                f_tgt, m_tgt, _ = AudioEngine.smooth_spectrum(freqs, interp_tgt, points=240)
+                f_tgt, m_tgt, _ = AudioEngine.smooth_spectrum(freqs, interp_tgt, points=getattr(self, "current_smoothing_pts", 240))
                 self.plot_widget.plot(f_tgt, m_tgt, pen=pg.mkPen(theme.get_color('curve_target'), width=2, style=Qt.DashLine), name='Target')
                 
             # Plot History (DB)
             hist_pen = pg.mkPen((255, 165, 0, 150), width=2, style=Qt.DashLine)
             if ref_mag_l is not None and show_l:
-                f_ref_l, m_ref_l, _ = AudioEngine.smooth_spectrum(freqs, ref_mag_l, points=240)
+                f_ref_l, m_ref_l, _ = AudioEngine.smooth_spectrum(freqs, ref_mag_l, points=getattr(self, "current_smoothing_pts", 240))
                 self.plot_widget.plot(f_ref_l, m_ref_l, pen=hist_pen, name='History L')
             if ref_mag_r is not None and show_r:
-                f_ref_r, m_ref_r, _ = AudioEngine.smooth_spectrum(freqs, ref_mag_r, points=240)
+                f_ref_r, m_ref_r, _ = AudioEngine.smooth_spectrum(freqs, ref_mag_r, points=getattr(self, "current_smoothing_pts", 240))
                 self.plot_widget.plot(f_ref_r, m_ref_r, pen=hist_pen, name='History R')
                 
         self._last_report = report

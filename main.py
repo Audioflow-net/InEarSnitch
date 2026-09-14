@@ -3445,6 +3445,15 @@ class MainWindow(QMainWindow):
         out_tgt_f = tgt_f
         out_tgt_m = tgt_m
 
+        pts = 240
+        if hasattr(self, 'cb_smooth'):
+            smooth_txt = self.cb_smooth.currentText()
+            if smooth_txt == "1/24 Oct": pts = 240
+            elif smooth_txt == "1/48 Oct": pts = 480
+            elif smooth_txt == "1/12 Oct": pts = 120
+            elif smooth_txt == "1/6 Oct": pts = 60
+            elif smooth_txt == "Raw": pts = 0
+
         self.page_ana.update_analysis(
             base_f, 
             live_ml, 
@@ -3457,7 +3466,8 @@ class MainWindow(QMainWindow):
             csd_data=csd_data,
             ir_l=ir_l,
             ir_r=ir_r,
-            sweep_count=self.get_current_sweeps()
+            sweep_count=self.get_current_sweeps(),
+            smoothing_pts=pts
         )
 
     def on_measurement_finished(self, freqs, mag, phase, ir, channel):
