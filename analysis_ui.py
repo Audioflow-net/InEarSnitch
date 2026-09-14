@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 import theme
-from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QFrame, QSplitter, QTabWidget, QComboBox, QDial, QLineEdit
+from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QFrame, QSplitter, QTabWidget, QComboBox, QDial, QLineEdit, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 import pyqtgraph as pg
 
