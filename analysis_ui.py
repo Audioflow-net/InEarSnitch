@@ -126,6 +126,7 @@ class AnalysisWidget(QWidget):
         self.split_layout = QSplitter(Qt.Horizontal)
         self.split_layout.setContentsMargins(0, 0, 0, 0)
         self.split_layout.setHandleWidth(1)
+        self.split_layout.setChildrenCollapsible(False)
         self.layout.addWidget(self.split_layout)
         
         # --- Left Pane ---
