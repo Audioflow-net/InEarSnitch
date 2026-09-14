@@ -169,27 +169,38 @@ module tpu_tray_mat() {
     // Die perfekte, kontinuierliche 2D-Wand (ohne Lücken!)
     module tpu_wall_2d() {
         // 1. Grundform einer EINZELNEN Kammer definieren
-        module pod_shape() {
+        module pod_shape(is_left) {
             hull() {
                 translate([0, 50]) circle(d=34, $fn=60);
                 translate([0, 30]) circle(d=34, $fn=60);
                 translate([0, 10]) circle(d=16, $fn=60);
+                
+                // KÜNSTLICHE KLEMM-NASE: Streckt die Kammer zur Mitte!
+                // Dadurch wird die Überlappung massiv vergrößert (auf 11mm).
+                if (is_left) {
+                    translate([10, 40]) circle(d=22, $fn=60);
+                } else {
+                    translate([-10, 40]) circle(d=22, $fn=60);
+                }
             }
         }
         
         // 2. Die Kammer aushöhlen (exakt 1.2mm Wandstärke)
-        module hollow_pod() {
+        module hollow_pod(is_left) {
             difference() {
-                pod_shape();
-                offset(r = -wall_thickness) pod_shape();
+                pod_shape(is_left);
+                offset(r = -wall_thickness) pod_shape(is_left);
             }
         }
         
         // 3. Beide ausgehöhlten Kammern überlappend zusammenfügen!
-        // Dadurch kreuzen sich die Wände in der Mitte und bilden die "Beule" nach innen!
-        union() {
-            translate([28, 0]) hollow_pod();
-            translate([59, 0]) hollow_pod();
+        // Die Nasen formen in der Mitte ein riesiges, tiefes Teardrop-Kreuz!
+        // offset(0.5) verrundet die spitzen inneren Ecken zu weichen Kissen.
+        offset(r=0.5) offset(r=-0.5) {
+            union() {
+                translate([28, 0]) hollow_pod(true);
+                translate([59, 0]) hollow_pod(false);
+            }
         }
     }
     

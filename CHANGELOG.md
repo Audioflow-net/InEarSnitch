@@ -1401,3 +1401,7 @@
 ### V190 - 2026-09-14
 - **TPU Figure-8 Restore**: Die extremen Einwölbungen (Hourglass Subtractions) aus der TPU-Wand entfernt.
 - **Die Idee / Der Grund**: Die Zylinder-Abzüge haben die TPU-Wand in der Mitte komplett durchtrennt, wodurch zwei lose C-Formen entstanden sind. Der User wollte die ursprüngliche, zusammenhängende überlappende Form (Figure-8) zurück. Die Pods liegen nun wieder bei X=28 und X=59 (3mm Überlappung) und bilden eine makellose, durchgehende 1.2mm dicke Endloswand.
+
+### V191 - 2026-09-14
+- **TPU Center Crossing Restore**: Die TPU-Wände kreuzen sich wieder in der Mitte.
+- **Die Idee / Der Grund**: Wenn man zuerst beide Außenformen zu einer Figur verschmilzt und dann aushöhlt, fehlt die Wand in der Mitte komplett. Da der User aber genau dieses Kreuzen als Klemm-Widerstand (Beule) für die In-Ears nutzen möchte, habe ich die Reihenfolge geändert: Erst werden die Kammern einzeln ausgehöhlt (mit exakt 1.2mm Wandstärke), und DANN werden die beiden fertigen Wände übereinandergeschoben. So bleibt das Teardrop-Kreuz in der Mitte erhalten.
