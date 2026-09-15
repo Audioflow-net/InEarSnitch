@@ -238,6 +238,10 @@ class HistoryWidget(QWidget):
         
         btn_style_base = "QPushButton { background-color: #222; color: #888; font-weight: bold; padding: 6px 6px; border-radius: 4px; border: 1px solid #444; font-size: 11px;} QPushButton:disabled { color: #555; border-color: #333; }"
         
+        self.btn_import_history = QPushButton("+ Import")
+        self.btn_import_history.setStyleSheet(btn_style_base + " QPushButton:hover { color: #f59e0b; border-color: #f59e0b; background-color: #111; }")
+        self.btn_import_history.clicked.connect(self.show_import_menu)
+
         self.btn_export_history = QPushButton("Export CSV")
         self.btn_export_history.setStyleSheet(btn_style_base + " QPushButton:hover { color: #0ea5e9; border-color: #0ea5e9; background-color: #111; }")
         self.btn_export_history.clicked.connect(self.export_selected_csv)
@@ -251,6 +255,7 @@ class HistoryWidget(QWidget):
         self.btn_delete_history.clicked.connect(self.delete_selected)
         
         right_edit_layout.addStretch()
+        right_edit_layout.addWidget(self.btn_import_history)
         right_edit_layout.addWidget(self.btn_export_history)
         right_edit_layout.addWidget(self.btn_save_target)
         right_edit_layout.addWidget(self.btn_delete_history)
@@ -295,15 +300,7 @@ class HistoryWidget(QWidget):
         self.search_bar.setStyleSheet(f"background-color: {bg_hover}; color: {fg}; border: 1px solid {border}; padding: 6px; border-radius: 4px;")
         self.search_bar.textChanged.connect(self.filter_history)
         
-        self.btn_import_history = QPushButton("+ Import")
-        self.btn_import_history.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.btn_import_history.setToolTip("Import CSV")
-        self.btn_import_history.setStyleSheet(f"QPushButton {{ background-color: {bg_hover}; color: {fg}; border: 1px solid {border}; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; }} QPushButton:hover {{ background-color: {active}; color: white; }}")
-        self.btn_import_history.setCursor(Qt.PointingHandCursor)
-        self.btn_import_history.clicked.connect(self.show_import_menu)
-        
         search_layout.addWidget(self.search_bar, stretch=1)
-        search_layout.addWidget(self.btn_import_history)
         target_layout.addLayout(search_layout)
         
         # List Widget
@@ -320,7 +317,7 @@ class HistoryWidget(QWidget):
         bottom_container.setContentsMargins(0, 0, 0, 0)
         bottom_container.addWidget(self.edit_container)
         self.layout.addLayout(bottom_container)
-        self.edit_container.setEnabled(False)
+        self.set_edit_controls_enabled(False)
         
         self.measurements = []
         self.colors = [
@@ -432,7 +429,7 @@ class HistoryWidget(QWidget):
         self.list_widget.clear()
         self.measurements = []
         self.plot_widget.clear()
-        self.edit_container.setEnabled(False)
+        self.set_edit_controls_enabled(False)
         self.txt_notes.clear()
         
         if not os.path.exists(self.db_path):
@@ -516,14 +513,20 @@ class HistoryWidget(QWidget):
             match = query in data['iem_name'].lower() or query in data['timestamp'].lower()
             item.setHidden(not match)
 
+    def set_edit_controls_enabled(self, enabled):
+        self.txt_notes.setEnabled(enabled)
+        self.btn_export_history.setEnabled(enabled)
+        self.btn_save_target.setEnabled(enabled)
+        self.btn_delete_history.setEnabled(enabled)
+
     def on_selection_changed(self):
         items = self.list_widget.selectedItems()
         if not items:
-            self.edit_container.setEnabled(False)
+            self.set_edit_controls_enabled(False)
             self.txt_notes.clear()
             return
             
-        self.edit_container.setEnabled(True)
+        self.set_edit_controls_enabled(True)
         data = items[0].data(Qt.UserRole)
         self.txt_notes.blockSignals(True)
         self.txt_notes.setPlainText(data.get('notes', ''))
