@@ -71,11 +71,13 @@ class HistoryCardWidget(QWidget):
         lbl_iem = QLabel(iem_name)
         lbl_iem.setObjectName("lbl_iem")
         lbl_iem.setMinimumWidth(1)
+        lbl_iem.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         lbl_iem.setStyleSheet(f"font-weight: bold; font-size: 13px; color: {fg};")
         
         lbl_date = QLabel(timestamp)
         lbl_date.setObjectName("lbl_date")
         lbl_date.setMinimumWidth(1)
+        lbl_date.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         lbl_date.setStyleSheet(f"font-size: 10px; color: {text_sec};")
         
         info_layout.addWidget(lbl_iem)
@@ -89,7 +91,7 @@ class HistoryCardWidget(QWidget):
         else:
             lbl_side.setStyleSheet("background-color: #10b981; color: {fg}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
             
-        layout.addLayout(info_layout)
+        layout.addLayout(info_layout, stretch=1)
         layout.addWidget(lbl_side)
         layout.addStretch()
         
@@ -252,7 +254,8 @@ class HistoryWidget(QWidget):
         
         # Right Edit Pane (Matches tools_tabs width)
         right_edit = QFrame()
-        right_edit.setFixedWidth(345)
+        right_edit.setMaximumWidth(345)
+        right_edit.setMinimumWidth(220)
         right_edit_layout = QHBoxLayout(right_edit)
         right_edit_layout.setContentsMargins(15, 12, 15, 12)
         right_edit_layout.setSpacing(6)
@@ -303,7 +306,8 @@ class HistoryWidget(QWidget):
         self.right_pane_layout.addWidget(self.btn_toggle_tools)
         
         self.tools_tabs = QTabWidget()
-        self.tools_tabs.setFixedWidth(345)
+        self.tools_tabs.setMaximumWidth(345)
+        self.tools_tabs.setMinimumWidth(220)
         self.tools_tabs.setStyleSheet(f"QTabWidget::tab-bar {{ alignment: center; }} QTabWidget::pane {{ border: 1px solid {border}; border-radius: 4px; }} QTabBar::tab {{ background: {bg}; color: {text_sec}; padding: 4px 10px; min-width: 80px; border: 1px solid {border}; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: bold; font-size: 11px; }} QTabBar::tab:selected {{ background: {active}; color: {fg}; }}")
         self.right_pane_layout.addWidget(self.tools_tabs)
         
