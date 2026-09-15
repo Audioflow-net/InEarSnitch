@@ -782,8 +782,7 @@ class MainWindow(QMainWindow):
         
         # SIDEBAR 2 (Profiles)
         profile_bar = QWidget()
-        profile_bar.setMinimumWidth(170)
-        profile_bar.setMaximumWidth(280)
+        profile_bar.setFixedWidth(220)
         profile_bar.setObjectName("ProfileBar")
         profile_bar.setStyleSheet("#ProfileBar { background-color: #18181b; border-right: 1px solid #222; }")
         prof_layout = QVBoxLayout(profile_bar)
@@ -1438,6 +1437,7 @@ class MainWindow(QMainWindow):
         # --- Force wrap to prevent horizontal scroll ---
         self.manual_browser.setLineWrapMode(QTextBrowser.WidgetWidth)
         self.manual_browser.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+        self.manual_browser.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         
         # --- Fix for missing anchor jumps in Qt Markdown ---
         self.manual_browser.setOpenLinks(False)
