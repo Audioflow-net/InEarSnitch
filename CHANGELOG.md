@@ -1425,3 +1425,15 @@
 ### V196 - 2026-09-14
 - **TPU Inverted Polygon Fix**: TPU-Wand wurde als negativer Rechteck-Block gerendert.
 - **Die Idee / Der Grund**: Wenn man in OpenSCAD perfekt tangierende Formen in einer union vereint, kommt es oft zu einem sogenannten Inverted Polygon Bug in der Clipper-Engine. OpenSCAD dreht die Innen-/Aussen-Definition der Flaeche (Winding Order) versehentlich um. Dadurch extrudiert der Befehl eine unendliche Flaeche mit einem Apfel-foermigen Loch in der Mitte, anstatt den Apfel selbst! Die Loesung war ein mikroskopischer offset(0.01), der Clipper dazu zwingt, die Umrisse zu bereinigen und die Winding-Order neu zu berechnen.
+
+### V197 - 2026-09-14
+- **TPU Leaf Spring 100% Bugfix**: Rollback auf die stabile Architektur aus V192 kombiniert mit Leaf Spring.
+- **Die Idee / Der Grund**: Der Versuch, einen komplett massiven Block auszuhöhlen, hat unablässig den CGAL Inverted Polygon Bug ausgelöst. Ich bin daher zur Architektur von V192 zurückgekehrt (Kammern werden einzeln ausgehöhlt und erst dann überlappend vereint), die bewiesenermaßen zu 100% crash-frei rendert. Um trotzdem die Leaf Spring (Blattfeder) zu erhalten und Creep zu vermeiden, habe ich zwei explizite TPU-Kreise () genau in die spitzen inneren V-Kerben des Kreuzes platziert. Dadurch wird das scharfe Scharnier mit einer dicken runden U-Kurve ausgegossen. Optisch perfekt, mechanisch perfekt und für CGAL extrem einfach zu berechnen.
+
+### V198 - 2026-09-14
+- **TPU Leaf Spring Freilauf**: Tear-Away Schlitz vergrößert und zentriert.
+- **Die Idee / Der Grund**: Damit die dicke U-Blattfeder (Leaf Spring) in der Mitte ihre Spannkraft aufbauen kann, muss sie sich beim Eindruecken frei nach aussen in den Leerraum des Trays dehnen koennen. Da sie von unten an den massiven TPU-Boden gedruckt wird, waere sie festgeleimt und starr. Daher habe ich den Tear-Away Schlitz (0.4mm Spalt) exakt unter das gesamte U-Profil gesetzt. So ist die gesamte Mittelpartie der Wand nach dem Abloesen des Tear-Away-Drucks voellig losgeloest vom Boden und fungiert als freie Gummimembran.
+
+### V199 - 2026-09-14
+- **Desktop Tray Upgrade (Gegendruck & Snap-Fit)**: Kammern moderat geschrumpft, Kabel-Auslaesse zu Omega-Klemmen umgebaut.
+- **Die Idee / Der Grund**: Da das Tray als Desktop-Ablage gedacht ist, aus der die IEMs nicht herausfallen duerfen, reicht loses Schwimmen nicht. Ich habe das Volumen der Kammern leicht reduziert (d=34 -> d=31), damit die CIEMs die Aussenwand beruehren und die Blattfeder echten Gegendruck aufbauen kann. Um die dicken Custom-Kabel sicher zu klemmen, wurden die unbrauchbaren 14mm Auslaesse durch echte Snap-Fit Omega-Kanaele ersetzt (2.4mm Klick-Spalt, der in eine 4.5mm Kammer fuehrt).
