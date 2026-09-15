@@ -1,7 +1,32 @@
-Third-Party Licenses
+THIRD-PARTY NOTICES
 
-- PyQtGraph (MIT)
-- NumPy (BSD)
-- SciPy (BSD)
+InEar Snitch uses the following open-source libraries:
 
-WARNING: PyQt5 is licensed under GPLv3 / Commercial. Please ensure compliance if distributing, or obtain a commercial license.
+PySide6 - Qt for Python (LGPLv3)
+  Copyright (C) The Qt Company Ltd.
+  License: GNU Lesser General Public License v3.0
+  https://www.qt.io/licensing/
+  
+  This application dynamically links against PySide6.
+  Users may obtain the source code of PySide6 at:
+  https://code.qt.io/cgit/pyside/pyside-setup.git/
+
+NumPy (BSD 3-Clause)
+  Copyright (C) NumPy Developers
+  https://numpy.org/doc/stable/license.html
+
+SciPy (BSD 3-Clause)
+  Copyright (C) SciPy Developers
+  https://scipy.org/
+
+PyQtGraph (MIT License)
+  Copyright (C) PyQtGraph Contributors
+  https://github.com/pyqtgraph/pyqtgraph
+
+sounddevice (MIT License)
+  Copyright (C) Matthias Geier
+  https://github.com/spatialaudio/python-sounddevice
+
+APPLICATION ICON
+  Generated using OpenAI ChatGPT (DALL-E).
+  No third-party attribution required.
