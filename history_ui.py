@@ -69,10 +69,12 @@ class HistoryCardWidget(QWidget):
         info_layout.setSpacing(2)
         
         lbl_iem = QLabel(iem_name)
+        lbl_iem.setObjectName("lbl_iem")
         lbl_iem.setMinimumWidth(1)
         lbl_iem.setStyleSheet(f"font-weight: bold; font-size: 13px; color: {fg};")
         
         lbl_date = QLabel(timestamp)
+        lbl_date.setObjectName("lbl_date")
         lbl_date.setMinimumWidth(1)
         lbl_date.setStyleSheet(f"font-size: 10px; color: {text_sec};")
         
@@ -210,23 +212,43 @@ class HistoryWidget(QWidget):
         edit_layout.setContentsMargins(0, 0, 0, 0)
         edit_layout.setSpacing(0)
         
-        # Left Edit Pane (Matches graph width)
+                # Left Edit Pane (Matches graph width)
         left_edit = QFrame()
-        left_edit_layout = QHBoxLayout(left_edit)
-        left_edit_layout.setContentsMargins(15, 12, 15, 12)
+        left_edit_layout = QVBoxLayout(left_edit)
+        left_edit_layout.setContentsMargins(15, 8, 15, 8)
+        left_edit_layout.setSpacing(6)
+        
+        meta_layout = QHBoxLayout()
+        meta_layout.setSpacing(10)
+        
+        self.edit_meas_name = QLineEdit()
+        self.edit_meas_name.setPlaceholderText("Measurement Name (Leave blank for default IEM name)")
+        self.edit_meas_name.setStyleSheet(f"background-color: {bg_hover}; color: {fg}; border: 1px solid {border}; padding: 4px 8px; border-radius: 4px; font-size: 11px;")
+        
+        self.edit_meas_date = QLineEdit()
+        self.edit_meas_date.setPlaceholderText("Date/Time (YYYY-MM-DD HH:MM:SS)")
+        self.edit_meas_date.setStyleSheet(f"background-color: {bg_hover}; color: {text_sec}; border: 1px solid {border}; padding: 4px 8px; border-radius: 4px; font-size: 11px;")
+        self.edit_meas_date.setFixedWidth(160)
+        
+        meta_layout.addWidget(self.edit_meas_name, stretch=1)
+        meta_layout.addWidget(self.edit_meas_date)
         
         from PySide6.QtWidgets import QPlainTextEdit
         self.txt_notes = QPlainTextEdit()
         self.txt_notes.setPlaceholderText("Measurement Notes...")
-        self.txt_notes.setStyleSheet(f"background-color: {bg_hover}; color: {fg}; border: 1px solid {border}; padding: 8px 12px; border-radius: 6px; font-size: 12px;")
+        self.txt_notes.setStyleSheet(f"background-color: {bg_hover}; color: {fg}; border: 1px solid {border}; padding: 6px 10px; border-radius: 6px; font-size: 12px;")
         
         self.notes_timer = QTimer(self)
         self.notes_timer.setSingleShot(True)
         self.notes_timer.setInterval(1000)
         self.notes_timer.timeout.connect(self.save_notes)
-        self.txt_notes.textChanged.connect(self.notes_timer.start)
         
-        left_edit_layout.addWidget(self.txt_notes)
+        self.txt_notes.textChanged.connect(self.notes_timer.start)
+        self.edit_meas_name.textChanged.connect(self.notes_timer.start)
+        self.edit_meas_date.textChanged.connect(self.notes_timer.start)
+        
+        left_edit_layout.addLayout(meta_layout)
+        left_edit_layout.addWidget(self.txt_notes, stretch=1)
         
         # Right Edit Pane (Matches tools_tabs width)
         right_edit = QFrame()
@@ -442,8 +464,16 @@ class HistoryWidget(QWidget):
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
+            # Ensure meas_name exists
+            cursor.execute("PRAGMA table_info(Measurements)")
+            columns = [info[1] for info in cursor.fetchall()]
+            if 'meas_name' not in columns:
+                cursor.execute("ALTER TABLE Measurements ADD COLUMN meas_name TEXT")
+                conn.commit()
+
+            
             cursor.execute('''
-                SELECT m.timestamp, m.notes, m.photo_path, m.frequencies, m.magnitude_l, m.magnitude_r, iem.model_name, iem.custom_name
+                SELECT m.timestamp, m.notes, m.photo_path, m.frequencies, m.magnitude_l, m.magnitude_r, iem.model_name, iem.custom_name, m.meas_name
                 FROM Measurements m
                 JOIN IEM_Models iem ON m.iem_id = iem.id
                 WHERE iem.musician_id = ?
@@ -453,8 +483,9 @@ class HistoryWidget(QWidget):
             rows = cursor.fetchall()
             
             for row in rows:
-                timestamp, notes, photo_path, freq_blob, mag_l_blob, mag_r_blob, iem_name, custom_name = row
-                display_name = custom_name if custom_name else iem_name
+                timestamp, notes, photo_path, freq_blob, mag_l_blob, mag_r_blob, iem_name, custom_name, meas_name = row
+                base_name = custom_name if custom_name else iem_name
+                display_name = meas_name if meas_name else base_name
                 
                 # Parse blobs
                 freq = None
@@ -481,6 +512,8 @@ class HistoryWidget(QWidget):
                     'mag_l': mag_l,
                     'mag_r': mag_r,
                     'iem_name': display_name,
+                    'meas_name': meas_name if meas_name else '',
+                    'base_name': base_name,
                     'side': side_text
                 }
                 
@@ -515,6 +548,8 @@ class HistoryWidget(QWidget):
 
     def set_edit_controls_enabled(self, enabled):
         self.txt_notes.setEnabled(enabled)
+        self.edit_meas_name.setEnabled(enabled)
+        self.edit_meas_date.setEnabled(enabled)
         self.btn_export_history.setEnabled(enabled)
         self.btn_save_target.setEnabled(enabled)
         self.btn_delete_history.setEnabled(enabled)
@@ -524,13 +559,24 @@ class HistoryWidget(QWidget):
         if not items:
             self.set_edit_controls_enabled(False)
             self.txt_notes.clear()
+            self.edit_meas_name.clear()
+            self.edit_meas_date.clear()
             return
             
         self.set_edit_controls_enabled(True)
         data = items[0].data(Qt.UserRole)
+        
         self.txt_notes.blockSignals(True)
+        self.edit_meas_name.blockSignals(True)
+        self.edit_meas_date.blockSignals(True)
+        
         self.txt_notes.setPlainText(data.get('notes', ''))
+        self.edit_meas_name.setText(data.get('meas_name', ''))
+        self.edit_meas_date.setText(data.get('timestamp', ''))
+        
         self.txt_notes.blockSignals(False)
+        self.edit_meas_name.blockSignals(False)
+        self.edit_meas_date.blockSignals(False)
 
     def save_notes(self):
         items = self.list_widget.selectedItems()
