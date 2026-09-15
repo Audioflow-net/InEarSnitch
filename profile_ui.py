@@ -746,6 +746,7 @@ class ProfileWidget(QWidget):
             self.band_input.setText(m_res[1] or "")
             self.notes_input.setText(m_res[2] or "")
             self.pic_widget.set_image(m_res[3])
+            self.btn_remove_profile_pic.setVisible(bool(m_res[3]))
             
         # Clear old cards
         for i in reversed(range(self.iem_layout.count())):
@@ -775,7 +776,13 @@ class ProfileWidget(QWidget):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select Musician Photo", "", "Images (*.png *.jpg *.jpeg);;All Files (*)", options=options)
         if file_path:
             self.pic_widget.set_image(file_path)
+            self.btn_remove_profile_pic.show()
             self.save_all()
+
+    def remove_pic(self):
+        self.pic_widget.set_image("")
+        self.btn_remove_profile_pic.hide()
+        self.save_all()
             
     def add_another_iem(self):
         if not self.current_musician_id: return
