@@ -1015,21 +1015,21 @@ class MainWindow(QMainWindow):
         chan_layout.setContentsMargins(0,0,0,0)
         chan_layout.setSpacing(0)
         self.btn_grp_chan = QButtonGroup(chan_widget)
-        btn_l = QPushButton("L")
-        btn_l.setCheckable(True)
-        btn_l.setChecked(True)
-        btn_l.setCursor(Qt.PointingHandCursor)
-        btn_r = QPushButton("R")
-        btn_r.setCheckable(True)
-        btn_r.setCursor(Qt.PointingHandCursor)
-        btn_l.setStyleSheet("QPushButton { background-color: #222; color: #888; border: 1px solid #444; border-top-left-radius: 6px; border-bottom-left-radius: 6px; border-right: none; padding: 12px 10px; font-weight: bold; font-size: 14px; } QPushButton:checked { background-color: #16a34a; color: white; border-color: #16a34a; }")
-        btn_r.setStyleSheet("QPushButton { background-color: #222; color: #888; border: 1px solid #444; border-top-right-radius: 6px; border-bottom-right-radius: 6px; padding: 12px 10px; font-weight: bold; font-size: 14px; } QPushButton:checked { background-color: #dc2626; color: white; border-color: #dc2626; }")
-        btn_l.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        btn_r.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.btn_grp_chan.addButton(btn_l, 0)
-        self.btn_grp_chan.addButton(btn_r, 1)
-        chan_layout.addWidget(btn_l)
-        chan_layout.addWidget(btn_r)
+        self.btn_l = QPushButton("L")
+        self.btn_l.setCheckable(True)
+        self.btn_l.setChecked(True)
+        self.btn_l.setCursor(Qt.PointingHandCursor)
+        self.btn_r = QPushButton("R")
+        self.btn_r.setCheckable(True)
+        self.btn_r.setCursor(Qt.PointingHandCursor)
+        self.btn_l.setStyleSheet("QPushButton { background-color: #222; color: #888; border: 1px solid #444; border-top-left-radius: 6px; border-bottom-left-radius: 6px; border-right: none; padding: 12px 28px; font-weight: bold; font-size: 14px; } QPushButton:checked { background-color: #16a34a; color: white; border-color: #16a34a; }")
+        self.btn_r.setStyleSheet("QPushButton { background-color: #222; color: #888; border: 1px solid #444; border-top-right-radius: 6px; border-bottom-right-radius: 6px; padding: 12px 28px; font-weight: bold; font-size: 14px; } QPushButton:checked { background-color: #dc2626; color: white; border-color: #dc2626; }")
+        self.btn_l.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.btn_r.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.btn_grp_chan.addButton(self.btn_l, 0)
+        self.btn_grp_chan.addButton(self.btn_r, 1)
+        chan_layout.addWidget(self.btn_l)
+        chan_layout.addWidget(self.btn_r)
         self.btn_grp_chan.buttonClicked.connect(self.update_watermark)
         self.btn_grp_chan.buttonClicked.connect(self.on_target_channel_changed)
         
@@ -2637,6 +2637,16 @@ class MainWindow(QMainWindow):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        
+        # Dynamically adjust L/R button padding to prevent text clipping while keeping them large on big screens
+        if hasattr(self, 'btn_l') and hasattr(self, 'btn_r'):
+            if event.size().width() < 1000:
+                self.btn_l.setStyleSheet("QPushButton { background-color: #222; color: #888; border: 1px solid #444; border-top-left-radius: 6px; border-bottom-left-radius: 6px; border-right: none; padding: 12px 10px; font-weight: bold; font-size: 14px; } QPushButton:checked { background-color: #16a34a; color: white; border-color: #16a34a; }")
+                self.btn_r.setStyleSheet("QPushButton { background-color: #222; color: #888; border: 1px solid #444; border-top-right-radius: 6px; border-bottom-right-radius: 6px; padding: 12px 10px; font-weight: bold; font-size: 14px; } QPushButton:checked { background-color: #dc2626; color: white; border-color: #dc2626; }")
+            else:
+                self.btn_l.setStyleSheet("QPushButton { background-color: #222; color: #888; border: 1px solid #444; border-top-left-radius: 6px; border-bottom-left-radius: 6px; border-right: none; padding: 12px 28px; font-weight: bold; font-size: 14px; } QPushButton:checked { background-color: #16a34a; color: white; border-color: #16a34a; }")
+                self.btn_r.setStyleSheet("QPushButton { background-color: #222; color: #888; border: 1px solid #444; border-top-right-radius: 6px; border-bottom-right-radius: 6px; padding: 12px 28px; font-weight: bold; font-size: 14px; } QPushButton:checked { background-color: #dc2626; color: white; border-color: #dc2626; }")
+
         if hasattr(self, 'settings_dimmer'):
             self.settings_dimmer.setGeometry(0, 0, self.width(), self.height())
 
