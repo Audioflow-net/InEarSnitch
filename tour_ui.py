@@ -229,8 +229,8 @@ class TourManager(QWidget):
             {
                 "title": "Automated Diagnostics",
                 "text": "After measuring both sides, the engine automatically checks for hardware issues:<br><br>• <b>Phase Inversion:</b> Reversed wiring.<br>• <b>Bass Drop:</b> Massive air leak or broken dynamic driver.<br>• <b>Highs Drop:</b> Wax-clogged acoustic filter.",
-                "get_target": lambda: getattr(self.main_window, 'page_ana', self.main_window).diagnostics_scroll if hasattr(getattr(self.main_window, 'page_ana', self.main_window), 'diagnostics_scroll') else self.main_window.btn_capture,
-                "setup": lambda: None
+                "get_target": lambda: getattr(self.main_window, 'page_ana', self.main_window).diag_container if hasattr(getattr(self.main_window, 'page_ana', self.main_window), 'diag_container') else self.main_window.btn_capture,
+                "setup": lambda: self._setup_diagnostics_step()
             },
             {
                 "title": "History Vault",
@@ -263,10 +263,10 @@ class TourManager(QWidget):
         elif tab_idx == 2 and hasattr(self.main_window, 'btn_nav_hist'):
             self.main_window.btn_nav_hist.click()
             
-    def _scroll_diagnostics(self):
-        if hasattr(self.main_window, 'page_ana') and hasattr(self.main_window.page_ana, 'diagnostics_scroll'):
-            scroll = self.main_window.page_ana.diagnostics_scroll
-            scroll.verticalScrollBar().setValue(scroll.verticalScrollBar().maximum())
+    def _setup_diagnostics_step(self):
+        self._close_settings_and_go(1)
+        if hasattr(self.main_window, 'page_ana') and hasattr(self.main_window.page_ana, 'tools_tabs'):
+            self.main_window.page_ana.tools_tabs.setCurrentIndex(0)
 
     def start_tour(self):
         self.show()

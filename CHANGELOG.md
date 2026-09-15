@@ -1467,3 +1467,8 @@
   1. **Snap-Fit Verankerung:** Im TPU (Z=0 bis Z=1) gibt es nun eine enge Lippe (25x32). Die PETG Bodenplatte (26x33) ist größer als dieses Loch. Beim Einsetzen dehnt sich das TPU, das PETG springt hinein und ist fortan unlösbar im TPU verankert (fällt nicht heraus, wenn man das TPU-Insert entnimmt).
   2. **Auto-Return Blattfedern:** Auf der PETG Bodenplatte sitzen nun links und rechts zwei im 30-Grad-Winkel gedruckte, freischwebende Blattfedern (V-Wings). Sie reichen bis Z=11.5. Zieht man den Fahrstuhl hoch, werden sie gegen die TPU-Decke gepresst und flachen ab. Lässt man los, drücken sie den Fahrstuhl automatisch wieder auf den Boden.
 - **Die Idee / Der Grund:** User-Feedback: Ohne Verankerung würde das Teil herausfallen, und ohne Feder bliebe der leere Fahrstuhl nach Entnahme des Mikrofons oben stehen. Die Blattfedern nutzen die Biege-Elastizität von PETG perfekt aus.
+
+## V31 (XL) - 2026-09-15
+**Das betroffene Bauteil:** Silikon-Spitze (Gussformen & Tamper)
+**Maße (Alt vs. Neu):** Inneres Einsteckloch wächst von 4.0 mm (V30) auf satte 6.0 mm (V31-XL). Die torus-förmige Außenlippe wächst von 7.0 mm (V30) auf massive 10.0 mm (V31-XL).
+**Der Grund:** Für besonders dicke Custom IEMs (CIEMs), bei denen das 4 mm Loch der V30 zu eng war. Durch das Aufblasen der Lippe auf 10 mm bleibt eine gewaltige Wandstärke von 2.0 mm erhalten, was der Spitze trotz des riesigen Lochs extreme mechanische Stabilität und Reißfestigkeit verleiht.

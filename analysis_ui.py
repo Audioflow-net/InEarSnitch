@@ -118,9 +118,9 @@ class AutoWrapLabel(QLabel):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        w = event.size().width()
+        w = self.width()
         h = self.heightForWidth(w)
-        if self.minimumHeight() != h:
+        if h > self.minimumHeight():
             self.setMinimumHeight(h)
 
 class StableTabWidget(QTabWidget):
@@ -132,7 +132,7 @@ class StableTabWidget(QTabWidget):
     def minimumSizeHint(self):
         from PySide6.QtCore import QSize
         hint = super().minimumSizeHint()
-        return QSize(220, hint.height())
+        return QSize(220, 0)
 
 class AnalysisWidget(QWidget):
     request_measurement = Signal()
@@ -244,6 +244,7 @@ class AnalysisWidget(QWidget):
         self.plot_widget.setLogMode(x=True, y=False)
         self.plot_widget.showGrid(x=True, y=True, alpha=0.3)
         self.plot_widget.setLabel('bottom', 'Frequency', units='Hz')
+        self.plot_widget.getAxis('bottom').setHeight(25)
         self.plot_widget.setLabel('left', 'Magnitude', units='dB')
         self.plot_widget.getAxis('left').setWidth(45)
         self.plot_widget.setXRange(np.log10(20), np.log10(20000))
@@ -282,6 +283,7 @@ class AnalysisWidget(QWidget):
         self.thd_widget.setLogMode(x=True, y=False)
         self.thd_widget.showGrid(x=True, y=True, alpha=0.3)
         self.thd_widget.setLabel('bottom', 'Frequency', units='Hz')
+        self.thd_widget.getAxis('bottom').setHeight(25)
         self.thd_widget.setLabel('left', 'THD', units='%')
         self.thd_widget.getAxis('left').setWidth(45)
         self.thd_widget.setXRange(np.log10(20), np.log10(10000))
@@ -314,6 +316,7 @@ class AnalysisWidget(QWidget):
         self.csd_widget.setLogMode(x=True, y=False)
         self.csd_widget.showGrid(x=True, y=True, alpha=0.3)
         self.csd_widget.setLabel('bottom', 'Frequency', units='Hz')
+        self.csd_widget.getAxis('bottom').setHeight(25)
         self.csd_widget.setLabel('left', 'Magnitude (dB)')
         self.csd_widget.getAxis('left').setWidth(45)
         self.csd_widget.setXRange(np.log10(200), np.log10(20000))
@@ -704,6 +707,7 @@ class AnalysisWidget(QWidget):
         self.report_layout.addStretch()
 
     def refresh_view(self):
+        print('[DEBUG] refresh_view called!')
         if not hasattr(self, '_last_data'): return
         sweep_count = "1x"
         smoothing_pts = 240
