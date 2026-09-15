@@ -87,7 +87,7 @@ class ProfilePicWidget(QWidget):
         self.img_label.setFixedSize(size, size)
         self.overlay.setFixedSize(size, size)
         
-        self.font_size = max(9, int(size * 0.12))
+        self.font_size = max(16, int(size * 0.25))
         self.overlay.setStyleSheet(f"background-color: rgba(0, 0, 0, 160); border-radius: {size//2}px; color: white; font-weight: bold; font-size: {self.font_size}px;")
         
         if self.has_image and self.current_pic_path:
@@ -106,7 +106,7 @@ class ProfilePicWidget(QWidget):
         self.img_label.setPixmap(circ_pix)
         self.img_label.setStyleSheet("background-color: transparent; border: none;")
         self.has_image = True
-        self.overlay.setText("Change<br><br>🗑️")
+        self.overlay.setText("⚙︎")
 
     def set_empty_style(self):
         font_size = max(9, int(self.size_val * 0.12))
@@ -114,7 +114,7 @@ class ProfilePicWidget(QWidget):
         self.img_label.setText(self.placeholder)
         self.img_label.setStyleSheet(f"background-color: transparent; border-radius: {self.size_val//2}px; border: 1px dashed #555; color: #888; font-size: {font_size}px;")
         self.has_image = False
-        self.overlay.setText("Change")
+        self.overlay.setText("⚙︎")
 
     def set_image(self, pic_path):
         self.current_pic_path = pic_path
@@ -135,10 +135,26 @@ class ProfilePicWidget(QWidget):
         
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            if self.has_image and event.position().y() > self.size_val * 0.6:
-                self.delete_clicked.emit()
-            else:
-                self.clicked.emit()
+            from PySide6.QtWidgets import QMenu
+            from PySide6.QtGui import QAction
+            
+            menu = QMenu(self)
+            menu.setStyleSheet("""
+                QMenu { background-color: #2d2d34; color: white; border: 1px solid #444; border-radius: 4px; padding: 4px; }
+                QMenu::item { padding: 6px 24px; border-radius: 2px; }
+                QMenu::item:selected { background-color: #00FFFF; color: black; }
+            """)
+            
+            action_upload = QAction("Upload Photo", self)
+            action_upload.triggered.connect(self.clicked.emit)
+            menu.addAction(action_upload)
+            
+            if self.has_image:
+                action_delete = QAction("Remove Photo", self)
+                action_delete.triggered.connect(self.delete_clicked.emit)
+                menu.addAction(action_delete)
+                
+            menu.exec(event.globalPosition().toPoint())
 
 
 class IEMCardWidget(QFrame):
