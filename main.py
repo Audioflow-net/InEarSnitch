@@ -13,6 +13,29 @@ if getattr(sys, 'frozen', False):
     # Set the working directory to the user's documents folder
     # so all relative paths (inearsnitch.db, reference_targets, etc) are saved there.
     os.chdir(app_dir)
+    
+    # Sync bundled files to Documents folder
+    import shutil
+    meipass = sys._MEIPASS
+    
+    # 1. Sync manual files (always overwrite with latest)
+    import glob
+    for manual in glob.glob(os.path.join(meipass, "manual_*.md")):
+        shutil.copy2(manual, app_dir)
+        
+    # 2. Sync reference targets (copy missing/updated files)
+    src_targets = os.path.join(meipass, "reference_targets")
+    dst_targets = os.path.join(app_dir, "reference_targets")
+    if os.path.exists(src_targets):
+        os.makedirs(dst_targets, exist_ok=True)
+        shutil.copytree(src_targets, dst_targets, dirs_exist_ok=True)
+        
+    # 3. Sync calibrations (copy missing/updated files)
+    src_cals = os.path.join(meipass, "calibrations")
+    dst_cals = os.path.join(app_dir, "calibrations")
+    if os.path.exists(src_cals):
+        os.makedirs(dst_cals, exist_ok=True)
+        shutil.copytree(src_cals, dst_cals, dirs_exist_ok=True)
 # ------------------------------------------
 
 import theme
@@ -208,7 +231,7 @@ class MusicianCard(QWidget):
         super().__init__()
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.layout = QHBoxLayout(self)
-        self.layout.setContentsMargins(10, 10, 10, 10)
+        self.layout.setContentsMargins(8, 10, 8, 10)
         self.name = name
         
         self.avatar = QLabel()
@@ -230,6 +253,7 @@ class MusicianCard(QWidget):
             self.avatar.setStyleSheet("background-color: #444; border-radius: 30px; border: none; outline: none;")
         
         info_layout = QVBoxLayout()
+        info_layout.setContentsMargins(0, 0, 0, 0)
         info_layout.setSpacing(2)
         
         self.name_lbl = QLabel(name)
