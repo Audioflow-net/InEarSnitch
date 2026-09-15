@@ -1454,3 +1454,8 @@
 - **Maße (Alt vs. Neu):** TPU-Bodenlasche wieder entfernt. Stattdessen 12mm tiefe Hub-Kammer im TPU (X=95..122, Y=55..80) als Führungsschacht. Neues PETG-Teil mit 2mm Bodenplatte und 10mm Hubraum.
 - **Formen-Änderung:** Die `cutouts()` haben jetzt den "PETG ELEVATOR SHAFT". Dieser besteht aus einer weiten Bodenkammer (als Anschlag/Limiter) und engen Durchführungen nach oben. Das neue, separate Bauteil `petg_elevator()` ist ein Schlitten aus hartem PETG. Er hat eine abgerundete Wiege, die sich von unten an den Mic-Kopf schmiegt, und einen dicken 9mm "T-Bar" (Rollen-Griff) an Position X=118, der massiv aus der Oberfläche ragt.
 - **Die Idee / Der Grund:** User wünschte sich eine saubere, geführte Mechanik aus PETG anstatt einer wabbligen TPU-Zunge. Da man das PETG-Teil von unten in das weiche TPU drückt, ist es zwischen TPU-Decke und Peli-Case-Boden gefangen (Fail-Safe), gleitet aber beim Ziehen am T-Bar präzise 10mm nach oben und drückt das Mic sanft heraus. Der dicke T-Bar-Griff lässt sich blind und extrem sicher mit zwei Fingern greifen.
+
+### V31 (Seitlicher Griff Fix) - 2026-09-15
+- **Das betroffene Bauteil:** PETG Elevator & TPU Führungsschacht
+- **Formen-Änderung:** Der Pull-Tab des Elevators wurde von `X=118` (Kollision mit dem Mic-Tip) auf die Vorderseite des Mikrofons verschoben. Der T-Bar sitzt nun bei `X=98..112` und `Y=50..54`. Die Bodenplatte und die Mic-Wiege wurden entsprechend zentriert (`X=95..115`).
+- **Die Idee / Der Grund:** Der Griff war versehentlich exakt an dem Ende, an dem die sensible Messspitze des Mikrofons herausragt. Durch die Platzierung VOR dem Mikrofon (`Y=50`) gibt es keinerlei Konflikte mehr, und der Griff ist zentral und noch leichter erreichbar.
