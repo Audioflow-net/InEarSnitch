@@ -1307,6 +1307,10 @@ class MainWindow(QMainWindow):
         self.out_combo = QComboBox()
         routing_layout.addWidget(self.out_combo)
 
+        # Live-update device indices when user changes combo (no Save needed)
+        self.in_combo.currentIndexChanged.connect(lambda: setattr(self, 'selected_in_idx', self.in_combo.currentData()))
+        self.out_combo.currentIndexChanged.connect(lambda: setattr(self, 'selected_out_idx', self.out_combo.currentData()))
+
         # Refresh devices button (for hot-plugged interfaces)
         btn_refresh_dev = QPushButton("Refresh Device List")
         btn_refresh_dev.setToolTip("Refresh audio device list")
