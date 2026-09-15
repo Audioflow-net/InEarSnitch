@@ -1454,6 +1454,20 @@ class MainWindow(QMainWindow):
                         rect = self.manual_browser.cursorRect(cursor)
                         scrollbar = self.manual_browser.verticalScrollBar()
                         scrollbar.setValue(scrollbar.value() + rect.top() - 20)
+                elif "#hardware-guide" in link:
+                    self.manual_browser.moveCursor(QTextCursor.Start)
+                    found = self.manual_browser.find("Hardware Guide")
+                    if not found:
+                        self.manual_browser.moveCursor(QTextCursor.Start)
+                        found = self.manual_browser.find("Guía de hardware")
+                        
+                    if found:
+                        cursor = self.manual_browser.textCursor()
+                        cursor.clearSelection()
+                        self.manual_browser.setTextCursor(cursor)
+                        rect = self.manual_browser.cursorRect(cursor)
+                        scrollbar = self.manual_browser.verticalScrollBar()
+                        scrollbar.setValue(scrollbar.value() + rect.top() - 20)
                     
         self.manual_browser.anchorClicked.connect(handle_manual_link)
         

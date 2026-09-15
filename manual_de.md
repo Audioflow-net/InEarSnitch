@@ -4,6 +4,8 @@ Willkommen bei InEar Snitch, der professionellen Software für das Messen, Analy
 
 Dieses Handbuch erklärt die grundlegenden Funktionen und hilft Ihnen, genaue Messungen durchzuführen.
 
+👉 **Neu hier?** Lies zuerst den [Was du brauchst – Hardware Guide](#hardware-guide), um dein Audio-Setup richtig einzurichten!
+
 ## Keyboard Shortcuts (Tastaturkürzel)
 
 Die folgenden Tastenkombinationen beschleunigen Ihren Workflow:
@@ -11,6 +13,123 @@ Die folgenden Tastenkombinationen beschleunigen Ihren Workflow:
 - `Ctrl+S` / `Cmd+S`: Trace speichern (Save Trace)
 - `Backspace` / `Delete`: Trace löschen (Clear Trace)
 - `Ctrl+1`, `Ctrl+2`, `Ctrl+3`, `Ctrl+4`: Zwischen den Tabs wechseln (Profile, Measurement, Analysis, History)
+
+<a name="hardware-guide"></a>
+## Was du brauchst – Hardware Guide
+
+Bevor du mit dem Messen beginnen kannst, benötigst du die richtige Hardware. InEar Snitch erfasst akustische Signale, daher ist ein korrektes Setup der "Messkette" essenziell.
+
+### 1. Die Messkette erklärt
+
+Die Messkette beschreibt den Weg des Audiosignals von der Software bis zum IEM und wieder zurück in den Computer.
+
+```text
+[Computer] ──OUTPUT──▶ [IEM] ──▶ [IEC711 Kuppler] ◀── [Messmikrofon] ──INPUT──▶ [Computer]
+```
+
+**Wie es funktioniert:**
+- Es gibt einen **OUTPUT-Pfad** (Ton zum IEM) und einen **INPUT-Pfad** (Mikrofon zurück zum Computer).
+- Beides muss **GLEICHZEITIG** funktionieren (Full-Duplex).
+- InEar Snitch unterstützt **SEPARATE** Geräte für Input und Output (z.B. MacBook-Ausgang + USB-Mic-Interface).
+
+### 2. Voraussetzungen an das Audio-System
+
+**Was dein Audio-Setup können MUSS:**
+- Gleichzeitig abspielen UND aufnehmen (Full-Duplex).
+- In InEar Snitch als separates Input UND Output Device erscheinen.
+- Stabile Treiber (Core Audio auf macOS, WASAPI auf Windows).
+
+**💡 macOS Besonderheit:**
+- Input und Output **DÜRFEN** verschiedene Geräte sein!
+- Beispiel: MacBook Kopfhörerausgang (Output) + USB Audio Interface (Input) → funktioniert!
+- Die App nutzt intern `sd.Stream()` statt `sd.playrec()`, was separate Devices problemlos unterstützt.
+
+**⚠️ Windows Besonderheit:**
+- Input und Output **MÜSSEN** auf exakt der gleichen Sample Rate stehen (z.B. beide 48000 Hz).
+- Prüfe das unter: Systemsteuerung → Sound → Aufnahme/Wiedergabe → Eigenschaften → Erweitert.
+- Wenn die Sample Rates nicht übereinstimmen, crasht die App beim Messen!
+
+### 3. Drei Setup-Varianten (Preisklassen)
+
+#### 💰 Budget Setup (~50-80€) – "Ich hab schon einen Mac/PC"
+
+**Was du brauchst:**
+- **IEC711 Kuppler mit eingebautem Mikrofon** (ca. 30€)
+  - Suche auf AliExpress: "IEC711 coupler microphone ear simulator"
+  - Kaufe "Typ 4" (ohne individuelle Kalibrierung) – die App hat eine generische IEC711-Korrekturdatei eingebaut.
+- **USB Audio Interface** (ca. 35-45€)
+  - Behringer UM2 (ca. 35€) oder Behringer UMC22 (ca. 45€)
+  - Hat eigenen Kopfhörerausgang (Output) + Klinke/XLR-Eingang (Input).
+
+**ODER noch günstiger auf macOS:**
+- **Output:** Der eingebaute 3.5mm Kopfhörerausgang am MacBook/iMac reicht als Output für den IEM! Einfach IEM einstecken.
+- **Input:** Ein günstiges USB-Mic-Interface (ab ca. 15€, Suche: "USB audio adapter microphone input").
+- **IEC711 Kuppler:** AliExpress Typ 4 (ca. 30€).
+- **In InEar Snitch:** Settings → Routing → Input = USB-Interface, Output = "Built-in Output".
+- **Gesamtkosten: ab ca. 45€!**
+
+#### 💰💰 Empfohlenes Setup (~100-200€)
+
+- **IEC711 Kuppler** mit individuellem Kalibrierungsfile (ca. 60€)
+- **USB Audio Interface:** Focusrite Scarlett Solo (ca. 100€) oder MOTU M2 (ca. 180€)
+  - Bessere Preamps = weniger Rauschen = sauberere Messungen.
+  - Stabile, gut getestete Treiber für macOS und Windows.
+- Wenn du SCHON ein Audio-Interface hast (egal welche Marke: Focusrite, MOTU, RME, Universal Audio, PreSonus, Steinberg, Audient, Behringer...): Nur den Kuppler kaufen!
+
+#### 💰💰💰 Pro/Labor Setup (~400€+)
+
+- **GRAS RA0045** oder **Brüel & Kjær** Kuppler (ca. 300-500€)
+- **RME Babyface Pro FS** (ca. 500€) oder **MOTU M2** (ca. 180€)
+- Vorteil: Laborqualität, Messungen sind veröffentlichbar und vergleichbar mit Crinacle/Headphones.com.
+
+### 4. ⚠️ Funktioniert mein Setup? Der 60-Sekunden-Test
+
+**Schritt-für-Schritt-Anleitung:**
+1. Öffne InEar Snitch → Settings (oben rechts) → Routing Tab.
+2. Wähle dein Interface als **Input** (das Gerät mit dem Mikrofon).
+3. Wähle dein Interface oder den eingebauten Ausgang als **Output** (wo der IEM dranhängt).
+4. Klicke "Save".
+5. Drücke **"RTA"** in der unteren Leiste.
+6. Siehst du eine **lebendige, zappelnde Kurve**? → Dein Mikrofon-Input funktioniert ✅
+7. Hörst du **Pink Noise** (ein Rauschen) im IEM? → Dein Output funktioniert ✅
+8. Stoppe RTA. Gehe zu Settings → Calibration Tab → "Start Auto-Calibration".
+9. Die Balken MÜSSEN von links nach rechts **ANSTEIGEN** (leise → laut).
+10. Wenn alle Balken gleich lang sind (ca. -40 dBFS): Dein Setup empfängt kein echtes Signal. Prüfe Verkabelung!
+
+### 5. ❌ Was NICHT funktioniert
+
+| Setup | Problem |
+|-------|---------|
+| **Billige 3€ USB-auf-Klinke-Dongles** (Amazon/AliExpress) | Sind meist NUR Output ODER NUR Input, nicht beides gleichzeitig. |
+| **Bluetooth-Kopfhörer / AirPods** | Viel zu hohe Latenz, kein Sweep möglich. |
+| **TWS Earbuds (kabellos)** | Können nicht in den Kuppler gesteckt werden. |
+| **Handy-Kopfhörerausgang** | Zu schwach, meist kein Full-Duplex möglich. |
+| **Windows: Unterschiedliche Sample Rates** | App crasht! Input UND Output müssen auf gleicher Sample Rate stehen (z.B. 48000 Hz). |
+
+### 6. Empfohlene Kabel & Adapter
+
+- **3.5mm auf 6.3mm Klinke-Adapter** (für Interface-Kopfhörerausgang → IEM, falls nötig)
+- **TRS-auf-TRRS Adapter** (nur wenn du den MacBook-Jack gleichzeitig als Input nutzen willst – nicht empfohlen)
+- ⚠️ **LEBENSWICHTIG: XLR-auf-Klinke Adapter für Messmikrofone**
+  Wenn dein Audio-Interface nur XLR-Eingänge hat und der IEC711-Kuppler einen 3.5mm Klinkenstecker besitzt, mach nicht den Fehler, einen simplen Adapter zu kaufen! 
+  - **Das Problem:** Audio-Interfaces liefern **48V Phantomspeisung** über XLR. Das kleine Mikrofon im Kuppler verträgt aber nur **3 bis 5 Volt (Plug-in-Power)**. Schickst du 48V direkt in das Mikrofon, brennt es sofort durch.
+  - **Die Lösung:** Du brauchst zwingend einen Adapter mit integriertem Spannungswandler ("Power Converter").
+  - **Wie du das in den Specs erkennst:** Achte in der Produktbeschreibung auf Formulierungen wie *"Converts 12-48V Phantom Power to 3-5V Plug-in Power"*. Steht das nicht explizit dort, leitet der Adapter die 48V ungebremst weiter!
+  - **Empfehlung:** Kaufe den **Rode VXLR+** (das "Plus" ist wichtig!) oder den **Antlion Audio XLR Power Converter**.
+
+### 7. 🔗 Nützliche Ressourcen & Community
+
+- **[REW Forum (Room EQ Wizard)](https://www.avnirvana.com/forums/rew-room-eq-wizard.4/)** → Community-Erfahrungsberichte zu Audio-Interfaces für Messungen
+- **[Head-Fi IEM Community](https://www.head-fi.org/)** → Die größte IEM-Community der Welt
+- **[AudioScienceReview](https://www.audiosciencereview.com/)** → Objektive Reviews und Messungen von Audio-Hardware
+- **[Squig.link](https://squig.link/)** → IEM-Frequenzgang-Vergleichstool (zum Vergleichen deiner eigenen Messungen)
+- **[Crinacle IEM Rankings](https://crinacle.com/rankings/iems/)** → Referenz für IEM-Bewertungen basierend auf Messungen
+
+**Suchbegriffe für Hardware:**
+- AliExpress: `IEC711 coupler microphone`, `IEC711 ear simulator`, `artificial ear IEC711`
+- Amazon: `USB audio interface recording`, `Behringer UM2`, `Focusrite Scarlett Solo`
+- Speziell für Kuppler mit Kalibrierung: `IEC711 calibrated coupler with certificate`
+
 
 ## 1. Die Benutzeroberfläche (Tabs)
 

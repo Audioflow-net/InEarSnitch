@@ -3,6 +3,8 @@
 Bienvenido a InEar Snitch, el software profesional para medir, analizar y diagnosticar monitores in-ear (IEMs).
 Este manual explica las funciones principales y le guía para realizar mediciones precisas.
 
+👉 **¿Nuevo aquí?** ¡Lee primero la [Guía de hardware](#hardware-guide) para configurar correctamente tu equipo de audio!
+
 ## Atajos de Teclado (Keyboard Shortcuts)
 
 Los siguientes atajos acelerarán su flujo de trabajo:
@@ -10,6 +12,117 @@ Los siguientes atajos acelerarán su flujo de trabajo:
 - `Ctrl+S` / `Cmd+S`: Guardar curva (Save Trace)
 - `Retroceso` / `Suprimir`: Borrar curva (Clear Trace)
 - `Ctrl+1`, `Ctrl+2`, `Ctrl+3`, `Ctrl+4`: Cambiar entre pestañas (Profile, Measurement, Analysis, History)
+
+<a name="hardware-guide"></a>
+## Lo que necesitas – Guía de hardware
+
+Antes de poder comenzar a medir, necesitas el hardware adecuado. InEar Snitch captura señales acústicas, por lo que configurar correctamente la "cadena de medición" es esencial.
+
+### 1. La cadena de medición explicada
+
+La cadena de medición describe el camino de la señal de audio desde el software hasta el IEM y de vuelta a la computadora.
+
+```text
+[Ordenador] ──OUTPUT──▶ [IEM] ──▶ [Acoplador IEC711] ◀── [Micrófono de medición] ──INPUT──▶ [Ordenador]
+```
+
+**Cómo funciona:**
+- Hay una **ruta de SALIDA (OUTPUT)** (sonido hacia el IEM) y una **ruta de ENTRADA (INPUT)** (micrófono de vuelta al ordenador).
+- Ambos deben funcionar **SIMULTÁNEAMENTE** (Full-Duplex).
+- InEar Snitch soporta dispositivos **SEPARADOS** para la entrada y la salida (p. ej., salida de auriculares de MacBook + interfaz de micrófono USB).
+
+### 2. Requisitos del sistema de audio
+
+**Lo que DEBE poder hacer tu configuración de audio:**
+- Reproducir y grabar al mismo tiempo (Full-Duplex).
+- Aparecer en InEar Snitch como dispositivos de entrada Y salida separados.
+- Controladores estables (Core Audio en macOS, WASAPI en Windows).
+
+**💡 Particularidad en macOS:**
+- ¡La entrada y la salida **PUEDEN** ser dispositivos diferentes!
+- Ejemplo: Salida de auriculares del MacBook (Output) + Interfaz de audio USB (Input) → ¡funciona perfectamente!
+- La aplicación usa internamente `sd.Stream()` en lugar de `sd.playrec()`, lo que soporta dispositivos separados sin problemas.
+
+**⚠️ Particularidad en Windows:**
+- La entrada y la salida **DEBEN** estar configuradas exactamente con la misma frecuencia de muestreo (Sample Rate, p. ej., ambas a 48000 Hz).
+- Compruébalo en: Panel de control → Sonido → Grabar/Reproducir → Propiedades → Opciones avanzadas.
+- ¡Si las frecuencias de muestreo no coinciden, la aplicación fallará (crash) al medir!
+
+### 3. Tres variantes de configuración (Gamas de precio)
+
+#### 💰 Configuración Económica (~50-80€) – "Ya tengo un Mac/PC"
+
+**Lo que necesitas:**
+- **Acoplador IEC711 con micrófono integrado** (aprox. 30€)
+  - Busca en AliExpress: "IEC711 coupler microphone ear simulator"
+  - Compra el "Tipo 4" (sin calibración individual) – la app tiene un archivo de corrección IEC711 genérico integrado.
+- **Interfaz de audio USB** (aprox. 35-45€)
+  - Behringer UM2 (aprox. 35€) o Behringer UMC22 (aprox. 45€)
+  - Tiene su propia salida de auriculares (Output) + entrada Jack/XLR (Input).
+
+**O incluso MÁS BARATO en macOS:**
+- **Salida (Output):** ¡El conector de auriculares de 3.5mm incorporado en el MacBook/iMac es suficiente como salida para el IEM! Simplemente enchufa el IEM.
+- **Entrada (Input):** Una interfaz de micrófono USB económica (desde aprox. 15€, busca: "USB audio adapter microphone input").
+- **Acoplador IEC711:** AliExpress Tipo 4 (aprox. 30€).
+- **En InEar Snitch:** Settings → Routing → Input = Interfaz USB, Output = "Built-in Output".
+- **Costo total: ¡desde aprox. 45€!**
+
+#### 💰💰 Configuración Recomendada (~100-200€)
+
+- **Acoplador IEC711** con archivo de calibración individual (aprox. 60€)
+- **Interfaz de audio USB:** Focusrite Scarlett Solo (aprox. 100€) o MOTU M2 (aprox. 180€)
+  - Mejores previos = menos ruido = mediciones más limpias.
+  - Controladores estables y bien probados para macOS y Windows.
+- Si YA tienes una interfaz de audio (cualquier marca: Focusrite, MOTU, RME, Universal Audio, PreSonus, Steinberg, Audient, Behringer...): ¡Solo necesitas comprar el acoplador!
+
+#### 💰💰💰 Configuración Pro/Laboratorio (~400€+)
+
+- **Acoplador GRAS RA0045** o **Brüel & Kjær** (aprox. 300-500€)
+- **RME Babyface Pro FS** (aprox. 500€) o **MOTU M2** (aprox. 180€)
+- Ventaja: Calidad de laboratorio, las mediciones son publicables y comparables con Crinacle/Headphones.com.
+
+### 4. ⚠️ ¿Funciona mi configuración? La prueba de 60 segundos
+
+**Guía paso a paso:**
+1. Abre InEar Snitch → Settings (arriba a la derecha) → Pestaña Routing.
+2. Selecciona tu interfaz como **Input** (el dispositivo con el micrófono).
+3. Selecciona tu interfaz o la salida incorporada como **Output** (donde está enchufado el IEM).
+4. Haz clic en "Save" (Guardar).
+5. Pulsa **"RTA"** en la barra inferior.
+6. ¿Ves una **curva viva y en movimiento**? → Tu entrada de micrófono funciona ✅
+7. ¿Escuchas **Pink Noise** (ruido rosa) en el IEM? → Tu salida funciona ✅
+8. Detén RTA. Ve a Settings → Pestaña Calibration → "Start Auto-Calibration".
+9. Las barras DEBEN **AUMENTAR** de izquierda a derecha (silencioso → fuerte).
+10. Si todas las barras tienen la misma longitud (aprox. -40 dBFS): Tu configuración no está recibiendo una señal real. ¡Revisa el cableado!
+
+### 5. ❌ Qué NO funciona
+
+| Configuración | Problema |
+|-------|---------|
+| **Dongles baratos USB a Jack de 3€** (Amazon/AliExpress) | Suelen ser SOLO Salida O SOLO Entrada, no ambas al mismo tiempo. |
+| **Auriculares Bluetooth / AirPods** | La latencia es demasiado alta, no es posible el barrido. |
+| **Auriculares TWS (inalámbricos)** | No se pueden insertar en el acoplador. |
+| **Salida de auriculares de teléfono móvil** | Demasiado débil, normalmente no es posible el Full-Duplex. |
+| **Windows: Diferentes frecuencias de muestreo** | ¡La aplicación falla! Input Y Output deben estar en la misma frecuencia de muestreo (p. ej., 48000 Hz). |
+
+### 6. Cables y adaptadores recomendados
+
+- **Adaptador Jack de 3.5mm a 6.3mm (1/4")** (para la salida de auriculares de la interfaz → IEM, si es necesario)
+- **Adaptador XLR a Jack** (si la interfaz solo tiene entradas XLR y el micrófono del acoplador usa un conector jack)
+- **Adaptador TRS a TRRS** (solo si deseas usar el conector del MacBook como entrada al mismo tiempo – no recomendado)
+
+### 7. 🔗 Recursos útiles y comunidad
+
+- **[Foro REW (Room EQ Wizard)](https://www.avnirvana.com/forums/rew-room-eq-wizard.4/)** → Experiencias de la comunidad con interfaces de audio para mediciones
+- **[Comunidad IEM en Head-Fi](https://www.head-fi.org/)** → La comunidad IEM más grande del mundo
+- **[AudioScienceReview](https://www.audiosciencereview.com/)** → Reseñas objetivas y mediciones de hardware de audio
+- **[Squig.link](https://squig.link/)** → Herramienta de comparación de respuestas de frecuencia de IEM (para comparar tus propias mediciones)
+- **[Crinacle IEM Rankings](https://crinacle.com/rankings/iems/)** → Referencia para evaluaciones de IEM basadas en mediciones
+
+**Términos de búsqueda para hardware:**
+- AliExpress: `IEC711 coupler microphone`, `IEC711 ear simulator`, `artificial ear IEC711`
+- Amazon: `USB audio interface recording`, `Behringer UM2`, `Focusrite Scarlett Solo`
+- Específicamente para acopladores con calibración: `IEC711 calibrated coupler with certificate`
 
 ## 1. La Interfaz de Usuario (Pestañas)
 

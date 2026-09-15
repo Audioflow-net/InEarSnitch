@@ -10,5 +10,16 @@ Por favor, seleccione su idioma:
 
 ---
 
+### 🔌 HARDWARE SETUP Quick-Link
+**What you need?**
+- [English (EN) - Hardware Guide](./manual_en.md#hardware-guide)
+- [Deutsch (DE) - Hardware Guide](./manual_de.md#hardware-guide)
+- [Español (ES) - Guía de hardware](./manual_es.md#hardware-guide)
+
+---
+
 ### ⚠️ TROUBLESHOOTING Quick-Link
-**Measurement problems?** -> [Troubleshooting Guide (EN)](./manual_en.md#14) | [Fehlerbehebung (DE)](./manual_de.md#14) | [Guía (ES)](./manual_es.md#14)
+**Measurement problems?**
+- [English (EN) - Troubleshooting Guide](./manual_en.md#14)
+- [Deutsch (DE) - Fehlerbehebung](./manual_de.md#14)
+- [Español (ES) - Solución de problemas](./manual_es.md#14)

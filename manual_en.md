@@ -3,6 +3,8 @@
 Welcome to InEar Snitch, the professional software for measuring, analyzing, and diagnosing In-Ear Monitors (IEMs).
 This manual explains the core features and guides you through performing accurate measurements.
 
+👉 **New here?** Read the [What You Need – Hardware Guide](#hardware-guide) first to set up your audio equipment correctly!
+
 ## Keyboard Shortcuts
 
 The following shortcuts will speed up your workflow:
@@ -10,6 +12,122 @@ The following shortcuts will speed up your workflow:
 - `Ctrl+S` / `Cmd+S`: Save Trace
 - `Backspace` / `Delete`: Clear Trace
 - `Ctrl+1`, `Ctrl+2`, `Ctrl+3`, `Ctrl+4`: Switch between tabs (Profile, Measurement, Analysis, History)
+
+<a name="hardware-guide"></a>
+## What You Need – Hardware Guide
+
+Before you can start measuring, you need the right hardware. InEar Snitch captures acoustic signals, so a correctly set up "measurement chain" is essential.
+
+### 1. The Measurement Chain Explained
+
+The measurement chain describes the path of the audio signal from the software to the IEM and back into the computer.
+
+```text
+[Computer] ──OUTPUT──▶ [IEM] ──▶ [IEC711 Coupler] ◀── [Measurement Mic] ──INPUT──▶ [Computer]
+```
+
+**How it works:**
+- There is an **OUTPUT path** (sound to the IEM) and an **INPUT path** (microphone back to the computer).
+- Both must work **SIMULTANEOUSLY** (Full-Duplex).
+- InEar Snitch supports **SEPARATE** devices for input and output (e.g., MacBook headphone output + USB mic interface).
+
+### 2. Audio System Requirements
+
+**What your audio setup MUST be capable of:**
+- Play and record at the same time (Full-Duplex).
+- Appear in InEar Snitch as separate Input AND Output devices.
+- Stable drivers (Core Audio on macOS, WASAPI on Windows).
+
+**💡 macOS Specifics:**
+- Input and Output **MAY** be different devices!
+- Example: MacBook headphone output (Output) + USB Audio Interface (Input) → works perfectly!
+- The app uses `sd.Stream()` internally instead of `sd.playrec()`, smoothly supporting separate devices.
+
+**⚠️ Windows Specifics:**
+- Input and Output **MUST** be set to the exact same sample rate (e.g., both 48000 Hz).
+- Check this under: Control Panel → Sound → Recording/Playback → Properties → Advanced.
+- If the sample rates do not match, the app will crash during measurements!
+
+### 3. Three Setup Tiers (Price Ranges)
+
+#### 💰 Budget Setup (~50-80€) – "I already have a Mac/PC"
+
+**What you need:**
+- **IEC711 Coupler with built-in microphone** (approx. 30€)
+  - Search AliExpress: "IEC711 coupler microphone ear simulator"
+  - Buy "Type 4" (without individual calibration) – the app has a built-in generic IEC711 correction file.
+- **USB Audio Interface** (approx. 35-45€)
+  - Behringer UM2 (approx. 35€) or Behringer UMC22 (approx. 45€)
+  - Has its own headphone output (Output) + Jack/XLR input (Input).
+
+**OR even cheaper on macOS:**
+- **Output:** The built-in 3.5mm headphone jack on the MacBook/iMac is perfectly fine as an output for the IEM! Just plug the IEM in.
+- **Input:** A cheap USB mic interface (starting at approx. 15€, Search: "USB audio adapter microphone input").
+- **IEC711 Coupler:** AliExpress Type 4 (approx. 30€).
+- **In InEar Snitch:** Settings → Routing → Input = USB Interface, Output = "Built-in Output".
+- **Total cost: starting around 45€!**
+
+#### 💰💰 Recommended Setup (~100-200€)
+
+- **IEC711 Coupler** with individual calibration file (approx. 60€)
+- **USB Audio Interface:** Focusrite Scarlett Solo (approx. 100€) or MOTU M2 (approx. 180€)
+  - Better preamps = less noise = cleaner measurements.
+  - Stable, well-tested drivers for macOS and Windows.
+- If you ALREADY own an audio interface (any brand: Focusrite, MOTU, RME, Universal Audio, PreSonus, Steinberg, Audient, Behringer...): Just buy the coupler!
+
+#### 💰💰💰 Pro/Lab Setup (~400€+)
+
+- **GRAS RA0045** or **Brüel & Kjær** Coupler (approx. 300-500€)
+- **RME Babyface Pro FS** (approx. 500€) or **MOTU M2** (approx. 180€)
+- Advantage: Lab quality, measurements are publishable and comparable with Crinacle/Headphones.com.
+
+### 4. ⚠️ Is my setup working? The 60-Second Test
+
+**Step-by-step guide:**
+1. Open InEar Snitch → Settings (top right) → Routing Tab.
+2. Select your interface as **Input** (the device with the microphone).
+3. Select your interface or built-in output as **Output** (where the IEM is plugged in).
+4. Click "Save".
+5. Press **"RTA"** in the bottom bar.
+6. Do you see a **lively, moving curve**? → Your microphone input is working ✅
+7. Do you hear **Pink Noise** (a static sound) in the IEM? → Your output is working ✅
+8. Stop RTA. Go to Settings → Calibration Tab → "Start Auto-Calibration".
+9. The bars MUST **RISE** from left to right (quiet → loud).
+10. If all bars are the same length (approx. -40 dBFS): Your setup is not receiving a real signal. Check your cables!
+
+### 5. ❌ What does NOT work
+
+| Setup | Problem |
+|-------|---------|
+| **Cheap 3€ USB-to-Jack dongles** (Amazon/AliExpress) | Are usually ONLY Output OR ONLY Input, not both at the same time. |
+| **Bluetooth Headphones / AirPods** | Latency is way too high, no sweep possible. |
+| **TWS Earbuds (wireless)** | Cannot be inserted into the coupler. |
+| **Phone headphone jack** | Too weak, usually no full-duplex possible. |
+| **Windows: Different Sample Rates** | App crashes! Input AND Output must be set to the same sample rate (e.g., 48000 Hz). |
+
+### 6. Recommended Cables & Adapters
+
+- **3.5mm to 6.3mm (1/4") Jack Adapter** (for interface headphone output → IEM, if needed)
+- **TRS-to-TRRS Adapter** (only if you want to use the MacBook jack as an input at the same time – not recommended)
+- ⚠️ **CRITICAL: XLR-to-Jack Adapter for Measurement Mics**
+  If your audio interface only has XLR inputs and your IEC711 coupler has a 3.5mm jack, do not make the mistake of buying a simple, cheap adapter!
+  - **The Problem:** Audio interfaces provide **48V Phantom Power** over XLR. However, the small microphone inside the coupler can only handle **3 to 5 Volts (Plug-in Power)**. If you send 48V directly into the mic, it will fry instantly.
+  - **The Solution:** You absolutely need an adapter with a built-in voltage step-down ("Power Converter").
+  - **How to read adapter specs:** Look for exact phrases in the product description like *"Converts 12-48V Phantom Power to 3-5V Plug-in Power"*. If this is not explicitly stated, the adapter will pass the full 48V through and destroy your mic!
+  - **Recommendation:** Buy the **Rode VXLR+** (the "Plus" is crucial!) or the **Antlion Audio XLR Power Converter**.
+
+### 7. 🔗 Useful Resources & Community
+
+- **[REW Forum (Room EQ Wizard)](https://www.avnirvana.com/forums/rew-room-eq-wizard.4/)** → Community experiences with audio interfaces for measurements
+- **[Head-Fi IEM Community](https://www.head-fi.org/)** → The largest IEM community in the world
+- **[AudioScienceReview](https://www.audiosciencereview.com/)** → Objective reviews and measurements of audio hardware
+- **[Squig.link](https://squig.link/)** → IEM frequency response comparison tool (to compare your own measurements)
+- **[Crinacle IEM Rankings](https://crinacle.com/rankings/iems/)** → Reference for IEM evaluations based on measurements
+
+**Search terms for hardware:**
+- AliExpress: `IEC711 coupler microphone`, `IEC711 ear simulator`, `artificial ear IEC711`
+- Amazon: `USB audio interface recording`, `Behringer UM2`, `Focusrite Scarlett Solo`
+- Specifically for couplers with calibration: `IEC711 calibrated coupler with certificate`
 
 ## 1. The User Interface (Tabs)
 
