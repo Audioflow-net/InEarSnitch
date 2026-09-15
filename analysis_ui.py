@@ -114,7 +114,7 @@ class AutoWrapLabel(QLabel):
     def __init__(self, text=""):
         super().__init__(text)
         self.setWordWrap(True)
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
