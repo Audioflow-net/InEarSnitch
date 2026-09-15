@@ -64,11 +64,13 @@ def create_circular_pixmap(image_reader, size):
 class ProfilePicWidget(QWidget):
     clicked = Signal()
     delete_clicked = Signal()
+    color_clicked = Signal()
     
-    def __init__(self, size=120, placeholder="Upload", parent=None):
+    def __init__(self, size=120, placeholder="Upload", enable_color=False, parent=None):
         super().__init__(parent)
         self.setCursor(Qt.PointingHandCursor)
         self.placeholder = placeholder
+        self.enable_color = enable_color
         self.has_image = False
         self.current_pic_path = ""
         
@@ -149,6 +151,11 @@ class ProfilePicWidget(QWidget):
             action_upload.triggered.connect(self.clicked.emit)
             menu.addAction(action_upload)
             
+            if self.enable_color:
+                action_color = QAction("Set Color", self)
+                action_color.triggered.connect(self.color_clicked.emit)
+                menu.addAction(action_color)
+            
             if self.has_image:
                 action_delete = QAction("Remove Photo", self)
                 action_delete.triggered.connect(self.delete_clicked.emit)
@@ -195,7 +202,7 @@ class IEMCardWidget(QFrame):
         self.avatar_layout.setContentsMargins(20, 20, 20, 20)
         self.avatar_layout.setAlignment(Qt.AlignCenter)
         
-        self.pic_widget = ProfilePicWidget(size=100, placeholder="Add Photo")
+        self.pic_widget = ProfilePicWidget(size=100, placeholder="Add Photo", enable_color=True)
         self.pic_widget.clicked.connect(self.handle_pic_click)
         self.pic_widget.set_image(self.pic_path)
         self.avatar_layout.addWidget(self.pic_widget, alignment=Qt.AlignCenter)
@@ -207,13 +214,8 @@ class IEMCardWidget(QFrame):
         self.lbl_title.setWordWrap(True)
         self.avatar_layout.addWidget(self.lbl_title)
         
-        self.btn_pick_color = QPushButton("Set Color")
-        self.btn_pick_color.setStyleSheet("QPushButton { background-color: #333; color: white; border-radius: 4px; padding: 4px 8px; font-size: 10px; margin-top: 5px; } QPushButton:hover { background-color: #444; }")
-        self.btn_pick_color.setCursor(Qt.PointingHandCursor)
-        self.btn_pick_color.clicked.connect(self.choose_color)
-        self.avatar_layout.addWidget(self.btn_pick_color)
-        
         self.pic_widget.delete_clicked.connect(self.remove_pic)
+        self.pic_widget.color_clicked.connect(self.choose_color)
         
         # Initial color application
         self.apply_color()
@@ -398,10 +400,7 @@ class IEMCardWidget(QFrame):
         # Sizing is handled by CSS now
         
     def handle_pic_click(self):
-        if not self.expanded:
-            self.toggle_expand()
-        else:
-            self.choose_pic()
+        self.choose_pic()
             
     def enterEvent(self, event):
         if not self.expanded:
