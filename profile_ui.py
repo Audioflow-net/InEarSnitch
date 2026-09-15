@@ -809,7 +809,16 @@ class ProfileWidget(QWidget):
 
     def delete_musician(self):
         if not self.current_musician_id: return
-        reply = QMessageBox.question(self, 'Remove Musician Profile', 'Are you sure? This will permanently delete this musician, all their IEMs, and all measurements.\n\nThis cannot be undone.', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(
+            self, 'Remove Musician Profile',
+            'Are you sure you want to remove this Musician?\n\n'
+            'This will permanently delete:\n'
+            '• The Musician profile\n'
+            '• All their IEMs\n'
+            '• All saved measurements\n\n'
+            'This cannot be undone.',
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        )
         if reply == QMessageBox.Yes:
             conn = sqlite3.connect("inearsnitch.db")
             c = conn.cursor()
@@ -824,7 +833,15 @@ class ProfileWidget(QWidget):
             self.profile_deleted.emit()
 
     def delete_iem(self, iem_id):
-        reply = QMessageBox.question(self, 'Remove IEM', 'Are you sure? This will permanently delete this IEM and all its measurements.\n\nThis cannot be undone.', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(
+            self, 'Remove IEM',
+            'Are you sure you want to remove this IEM?\n\n'
+            'This will permanently delete:\n'
+            '• The IEM profile\n'
+            '• All measurements for this IEM\n\n'
+            'This cannot be undone.',
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        )
         if reply == QMessageBox.Yes:
             conn = sqlite3.connect("inearsnitch.db")
             c = conn.cursor()

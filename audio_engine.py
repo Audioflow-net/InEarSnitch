@@ -203,7 +203,14 @@ class AudioEngine:
                 out_sr = int(sd.query_devices(output_device_idx)['default_samplerate'])
                 in_sr = int(sd.query_devices(input_device_idx)['default_samplerate'])
                 if out_sr != in_sr:
-                    raise RuntimeError(f"Sample Rate Mismatch!\n\nWindows WASAPI requires identical sample rates for Input and Output.\nOutput: {out_sr} Hz\nInput: {in_sr} Hz\n\nPlease go to Windows Sound Control Panel -> Properties -> Advanced and set both devices to exactly the same format (e.g. 24-bit, 48000 Hz).")
+                    raise RuntimeError(
+                        "Your audio input and output have different sample rates.\n\n"
+                        "Windows needs both to match for measurements to work.\n\n"
+                        "Try these steps:\n"
+                        "• Go to Windows Sound Settings → Device Properties → Advanced\n"
+                        "• Set both your input and output to exactly the same format (e.g., 24-bit, 48000 Hz).\n\n"
+                        f"Technical detail: Output: {out_sr} Hz, Input: {in_sr} Hz"
+                    )
             except RuntimeError:
                 raise
             except Exception:
@@ -248,7 +255,14 @@ class AudioEngine:
                     if progress_callback:
                         progress_callback(time.time() - start_t)
                     if time.time() - start_t > timeout:
-                        raise RuntimeError("Audio Engine Timeout: The audio interface did not respond. Check macOS Microphone permissions.")
+                        raise RuntimeError(
+                            "The audio interface isn't responding.\n\n"
+                            "Try these steps:\n"
+                            "• Make sure InEar Snitch has Microphone permissions in macOS System Settings\n"
+                            "• Unplug and replug your audio interface\n"
+                            "• Restart the app\n\n"
+                            "Technical detail: Audio Engine Timeout"
+                        )
                     done_event.wait(timeout=0.015)  # ~60fps UI update
             
             return rec_buf[:, 0]
@@ -262,14 +276,28 @@ class AudioEngine:
         except RuntimeError:
             raise
         except Exception as e:
-            raise RuntimeError(f"Audio device error: {str(e)}")
+            raise RuntimeError(
+                "Something went wrong with your audio device.\n\n"
+                "Try these steps:\n"
+                "• Unplug and replug your audio interface\n"
+                "• Check Settings → Routing for the correct devices\n"
+                "• Restart InEar Snitch\n\n"
+                f"Technical detail: {str(e)}"
+            )
 
         rec_signal = rec_signal
 
         peak_amp = np.max(np.abs(rec_signal))
         peak_dbfs = 20 * np.log10(peak_amp + 1e-12)
         if peak_dbfs < -60.0:
-            raise RuntimeError(f"Measurement failed (Signal too quiet: {peak_dbfs:.1f} dBFS).\n\nThe microphone only recorded background noise. Ensure the IEM is playing, the volume is up, and the correct mic is selected.")
+            raise RuntimeError(
+                "The recording is too quiet. We only heard background noise.\n\n"
+                "Try these steps:\n"
+                "• Check if the IEM is properly connected and playing sound\n"
+                "• Make sure your audio interface volume is turned up\n"
+                "• Check if you selected the right microphone in Settings → Routing\n\n"
+                f"Technical detail: Signal too quiet: {peak_dbfs:.1f} dBFS"
+            )
                                
         # 3. Deconvolution via FFT convolution to get Impulse Response (IR)
         ir = fftconvolve(rec_signal, inv_sweep, mode='same')
@@ -282,7 +310,13 @@ class AudioEngine:
         latency_ms = (latency_samples / self.sample_rate) * 1000.0
         
         if abs(latency_ms) < 0.1:
-            raise RuntimeError("Electrical Loopback Detected! The signal has zero acoustic delay. Turn off 'Direct Monitoring' on your audio interface and ensure you selected the correct measurement microphone.")
+            raise RuntimeError(
+                "The audio signal bypassed the microphone completely.\n\n"
+                "Try these steps:\n"
+                "• Turn off 'Direct Monitoring' or 'Loopback' on your audio interface\n"
+                "• Ensure you selected the measurement microphone as Input (not a virtual loopback channel)\n\n"
+                "Technical detail: Electrical Loopback Detected (zero acoustic delay)"
+            )
             
         # Advanced Electrical Loopback Check (Flatness)
         # IEMs are never perfectly flat. If the IR is perfectly flat, it's a hardware loopback
@@ -294,14 +328,26 @@ class AudioEngine:
         if np.any(valid):
             mag_range = np.max(temp_mag[valid]) - np.min(temp_mag[valid])
             if mag_range < 3.0:
-                raise RuntimeError(f"Electrical Loopback Detected! The frequency response is completely flat ({mag_range:.1f} dB variance). You are measuring the soundcard itself, not the microphone.\n\nTurn off 'Direct Monitoring' / 'Loopback' on your audio interface, and check your input selection.")
+                raise RuntimeError(
+                    "We are measuring the soundcard itself, not the microphone.\n\n"
+                    "Try these steps:\n"
+                    "• Turn off 'Direct Monitoring' or 'Loopback' on your audio interface\n"
+                    "• Make sure you selected the correct Input device in Settings → Routing\n\n"
+                    f"Technical detail: Electrical Loopback Detected, flat response ({mag_range:.1f} dB variance)"
+                )
         
         # SNR / Crest Factor Check to prevent "ghost" curves from background noise
         rms_ir = np.sqrt(np.mean(ir**2))
         crest_factor = 20 * np.log10((np.max(np.abs(ir)) + 1e-12) / (rms_ir + 1e-12))
         if crest_factor < 25.0:
-            raise RuntimeError(f"Measurement failed: No valid sweep detected in the recording (SNR too low, Crest Factor: {crest_factor:.1f} dB).\n\n"
-                               "The microphone only picked up background noise. Ensure the IEM is playing sound and is properly seated in the coupler.")
+            raise RuntimeError(
+                "We couldn't hear the measurement sweep clearly over the background noise.\n\n"
+                "Try these steps:\n"
+                "• Check if the IEM is seated properly in the coupler\n"
+                "• Turn up the volume on your audio interface slightly\n"
+                "• Try measuring in a quieter room\n\n"
+                f"Technical detail: No valid sweep detected, Crest Factor: {crest_factor:.1f} dB"
+            )
         
         # 4. Compute Frequency Response via FFT
         # WISSENSCHAFTLICHES UPDATE: Time-Domain Windowing!

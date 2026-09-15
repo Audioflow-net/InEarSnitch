@@ -1644,7 +1644,7 @@ class MainWindow(QMainWindow):
         if is_error and not text.startswith("Warning"):
             if hasattr(self, 'sub_lbl'):
                 short_text = text.strip().split('\n')[-1][:60]
-                self.sub_lbl.setText(f"Error: {short_text} — see Settings → Console for the full log.")
+                self.sub_lbl.setText("Something went wrong — check the Console in Settings for details.")
                 self.sub_lbl.setStyleSheet("color: #ff4444; font-size: 12px; font-weight: bold;")
 
     def _align_target(self, tgt_f, tgt_m, meas_freqs, meas_mag, anchor_hz=1000):
@@ -2051,7 +2051,12 @@ class MainWindow(QMainWindow):
             self.reload_target_list()
             self.load_targets()
         except Exception as e:
-            QMessageBox.critical(self, "Import Failed", f"We couldn't import the file(s). Please check the file format (CSV with Frequency and Magnitude columns) and try again.\n\nTechnical detail: {e}")
+            QMessageBox.critical(self, "Import Failed",
+                "We couldn't import your target curve.\n\n"
+                "Please check:\n"
+                "• Is the file a valid CSV?\n"
+                "• Does it have 'Frequency' and 'Magnitude' columns?\n\n"
+                f"Technical detail: {e}")
 
     def export_target_template(self):
         from PySide6.QtWidgets import QFileDialog, QMessageBox
@@ -2069,7 +2074,12 @@ class MainWindow(QMainWindow):
             shutil.copy2(src_path, dst_path)
             QMessageBox.information(self, "Export Successful", "Target curve exported successfully.")
         except Exception as e:
-            QMessageBox.critical(self, "Export Failed", f"We couldn't save the file. Please check the destination path and try again.\n\nTechnical detail: {e}")
+            QMessageBox.critical(self, "Export Failed",
+                "We couldn't save the file.\n\n"
+                "Please check:\n"
+                "• Do you have write permissions for this folder?\n"
+                "• Is there enough disk space?\n\n"
+                f"Technical detail: {e}")
 
     def delete_target_template(self):
         from PySide6.QtWidgets import QMessageBox
@@ -2086,7 +2096,12 @@ class MainWindow(QMainWindow):
                 self.reload_target_list()
                 self.load_targets()
             except Exception as e:
-                QMessageBox.critical(self, "Couldn't Delete", f"We couldn't remove this file. Please check the app has the right permissions.\n\nTechnical detail: {e}")
+                QMessageBox.critical(self, "Couldn't Delete File",
+                "We couldn't remove this target curve.\n\n"
+                "Please check:\n"
+                "• Is the file currently open in another program?\n"
+                "• Do you have permission to delete it?\n\n"
+                f"Technical detail: {e}")
 
     def backup_database(self):
         from PySide6.QtWidgets import QFileDialog, QMessageBox
@@ -2102,7 +2117,12 @@ class MainWindow(QMainWindow):
             shutil.copy2(self.db.db_path, path)
             QMessageBox.information(self, "Backup Saved", f"Database backed up to:\n{path}")
         except Exception as e:
-            QMessageBox.critical(self, "Backup Failed", f"We couldn't create the backup file. Please check the destination folder and try again.\n\nTechnical detail: {e}")
+            QMessageBox.critical(self, "Backup Failed",
+                "We couldn't create the database backup.\n\n"
+                "Please check:\n"
+                "• Do you have write permissions for the selected folder?\n"
+                "• Is there enough free space on your drive?\n\n"
+                f"Technical detail: {e}")
 
     def restore_database(self):
         from PySide6.QtWidgets import QFileDialog, QMessageBox
@@ -2145,12 +2165,19 @@ class MainWindow(QMainWindow):
             self.switch_workspace_tab(0) # Go to profiles tab
             
         except Exception as e:
-            QMessageBox.critical(self, "Restore Failed", f"We couldn't restore the backup. Please make sure the file is a valid InEar Snitch database.\n\nTechnical detail: {e}")
+            QMessageBox.critical(self, "Restore Failed",
+                "We couldn't restore your backup.\n\n"
+                "Please check:\n"
+                "• Is the selected file a valid InEar Snitch database (.db)?\n"
+                "• Is the file corrupted?\n\n"
+                f"Technical detail: {e}")
 
     def _run_level_calibration(self):
         """Auto-calibration: plays ascending test tones to find optimal output level."""
         if self.selected_in_idx is None or self.selected_out_idx is None:
-            QMessageBox.warning(self, "Audio Not Set Up", "Please select your Input and Output devices in the Routing tab first before running Calibration.")
+            QMessageBox.warning(self, "Audio Not Set Up",
+                "We don't know which devices to use yet.\n\n"
+                "Please open Settings (top right) and select your Input and Output devices in the Routing tab before running Calibration.")
             return
 
         self.btn_auto_cal.setEnabled(False)
@@ -2350,7 +2377,9 @@ class MainWindow(QMainWindow):
             return
         
         if self.selected_in_idx is None or self.selected_out_idx is None:
-            QMessageBox.warning(self, "Audio Not Set Up", "Please open Settings (top right) and select your Input and Output devices before running the Stress Test.")
+            QMessageBox.warning(self, "Audio Not Set Up",
+                "We don't know which audio devices to use.\n\n"
+                "Please open Settings (top right) and select your Input and Output devices before running the Stress Test.")
             return
         
         # Confirmation
@@ -2512,7 +2541,13 @@ class MainWindow(QMainWindow):
         self.page_ana.btn_stress_test.setEnabled(True)
         self.sub_lbl.setText("Stress Test failed — check your audio interface connection and try again.")
         self.sub_lbl.setStyleSheet("color: #ef4444; font-size: 12px;")
-        QMessageBox.critical(self, "Stress Test Couldn't Complete", f"The Rub & Buzz test ran into an audio problem.\n\nPlease check that your IEM is seated in the coupler and your audio interface is connected, then try again.\n\nTechnical detail: {msg}")
+        QMessageBox.critical(self, "Stress Test Stopped",
+            "The Rub & Buzz test ran into an audio problem.\n\n"
+            "Please check:\n"
+            "• Is your IEM securely seated in the coupler?\n"
+            "• Is your audio interface connected and turned on?\n"
+            "• Are the correct devices selected in Settings → Routing?\n\n"
+            f"Technical detail: {msg}")
 
 
     def save_settings(self):
@@ -2697,7 +2732,10 @@ class MainWindow(QMainWindow):
             self.on_profile_selected(card)
         except Exception as e:
             from PySide6.QtWidgets import QMessageBox
-            QMessageBox.critical(self, "Couldn't Load Profile", f"We couldn't load this profile properly. Please try clicking it again.\n\nTechnical detail: {str(e)}")
+            QMessageBox.critical(self, "Couldn't Load Profile",
+                "We couldn't switch to this profile. Please try clicking on it again.\n\n"
+                "If this keeps happening, restart the app.\n\n"
+                f"Technical detail: {str(e)}")
 
 
 
@@ -2931,7 +2969,9 @@ class MainWindow(QMainWindow):
         # UI Hardening: prevent deletion while sweep is running
         if self.is_measuring:
             from PySide6.QtWidgets import QMessageBox
-            QMessageBox.warning(self, "Measurement Running", "Please wait for the current measurement to finish before deleting a profile.")
+            QMessageBox.warning(self, "Measurement Running",
+                "A measurement is currently running.\n\n"
+                "Please wait for it to finish before deleting a profile.")
             return
         # Simple inline deletion to avoid modal question box
         conn = sqlite3.connect(self.db.db_path)
@@ -3223,7 +3263,9 @@ class MainWindow(QMainWindow):
         import pyqtgraph as pg
         if checked:
             if self.selected_in_idx is None or self.selected_out_idx is None:
-                QMessageBox.critical(self, "Audio Not Set Up", "We can't hear anything! Please open Settings (top right) and select your Input and Output devices first.")
+                QMessageBox.warning(self, "Audio Not Set Up",
+                "We can't hear anything!\n\n"
+                "Please open Settings (top right) and select your Input and Output devices first.")
                 self.btn_rta_raw.setChecked(False)
                 self.btn_iec_guide.setChecked(False)
                 return
@@ -3456,16 +3498,22 @@ class MainWindow(QMainWindow):
         from PySide6.QtWidgets import QMessageBox
         
         if not self.current_iem_id:
-            QMessageBox.warning(self, "No Profile Selected", "Please select or create a Musician Profile from the sidebar on the left before running a measurement.")
+            QMessageBox.warning(self, "No Profile Selected",
+                "You need to select a profile before measuring.\n\n"
+                "Please select or create a Musician Profile from the sidebar on the left.")
             return
         
         # UI Hardening: block concurrent sweep attempts
         if self.is_measuring:
-            QMessageBox.warning(self, "Measurement Running", "A measurement is already in progress. Please wait for it to complete before starting a new one.")
+            QMessageBox.warning(self, "Measurement Running",
+                "A measurement is already in progress.\n\n"
+                "Please wait for it to complete before starting a new one.")
             return
             
         if self.selected_in_idx is None or self.selected_out_idx is None:
-            QMessageBox.critical(self, "Audio Not Set Up", "We can't hear anything!\n\nPlease open Settings (top right corner) and select your Input and Output devices first.")
+            QMessageBox.warning(self, "Audio Not Set Up",
+                "We can't hear anything!\n\n"
+                "Please open Settings (top right corner) and select your Input and Output devices first.")
             return
             
         target_ch = "L" if self.get_current_channel() == "Left" else "R"
@@ -3692,7 +3740,7 @@ class MainWindow(QMainWindow):
             failures = [i['desc'] for i in report_l + report_r if i['status'] in ('FAIL', 'WARN')]
             
             if failures:
-                self.sub_lbl.setText(f"WARNING: {failures[0]}")
+                self.sub_lbl.setText(f"Measurement issue: {failures[0]}")
                 self.sub_lbl.setStyleSheet("color: #FF8C00; font-size: 13px; font-weight: bold;")
             else:
                 self.sub_lbl.setText("Status: Capture Complete (L & R matched!). Ready to save.")
@@ -3740,7 +3788,12 @@ class MainWindow(QMainWindow):
             self.sub_lbl.setText(f"Saved as Reference: {name}")
             self.sub_lbl.setStyleSheet("color: #8b5cf6; font-weight: bold;")
         except Exception as e:
-            QMessageBox.critical(self, "Couldn't Save Reference", f"We couldn't save this as a reference target. Please check that the app has write permissions.\n\nTechnical detail: {e}")
+            QMessageBox.critical(self, "Save Failed",
+                "We couldn't save this as a reference target.\n\n"
+                "Please check:\n"
+                "• Do you have write permissions for the targets folder?\n"
+                "• Is your hard drive full?\n\n"
+                f"Technical detail: {e}")
 
     def export_csv(self):
         if self.temp_freqs is None or self.temp_mag_l is None:
@@ -3764,7 +3817,7 @@ class MainWindow(QMainWindow):
                 self.sub_lbl.setText(f"Exported to {path}")
                 self.sub_lbl.setStyleSheet("color: #00FF99;")
             except Exception as e:
-                self.sub_lbl.setText(f"Export failed — {e}")
+                self.sub_lbl.setText("Export failed — please check the destination folder and try again.")
                 self.sub_lbl.setStyleSheet("color: red;")
 
     def save_trace_to_db(self):
@@ -3810,7 +3863,7 @@ class MainWindow(QMainWindow):
             self.load_targets()
             
         except Exception as e:
-            self.sub_lbl.setText(f"Could not save to database — {e}")
+            self.sub_lbl.setText("We couldn't save to the database — please try again.")
             self.sub_lbl.setStyleSheet("color: red; font-size: 12px; font-weight: bold;")
             print(f"DB Save Error: {e}")
         
