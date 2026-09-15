@@ -124,8 +124,12 @@ class AutoWrapLabel(QLabel):
 class StableTabWidget(QTabWidget):
     def sizeHint(self):
         from PySide6.QtCore import QSize
-        # Provide a stable width hint so QSplitter doesn't auto-collapse when empty
         hint = super().sizeHint()
+        return QSize(345, hint.height())
+        
+    def minimumSizeHint(self):
+        from PySide6.QtCore import QSize
+        hint = super().minimumSizeHint()
         return QSize(345, hint.height())
 
 class AnalysisWidget(QWidget):
