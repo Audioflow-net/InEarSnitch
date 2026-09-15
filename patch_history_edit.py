@@ -1,116 +1,187 @@
 import re
 
 with open("history_ui.py", "r") as f:
-    code = f.read()
+    content = f.read()
 
-# 1. Update setEditTriggers in __init__
-pattern_edit = r'''        self\.table\.setSelectionMode\(QAbstractItemView\.SingleSelection\)
-        self\.table\.setEditTriggers\(QAbstractItemView\.NoEditTriggers\)'''
-replacement_edit = r'''        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.table.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.EditKeyPressed)
-        self.table.itemChanged.connect(self.on_item_changed)'''
-code = re.sub(pattern_edit, replacement_edit, code)
+# 1. Add schema migration to load_history
+migration_code = """        if not os.path.exists(self.db_path):
+            print(f"Database {self.db_path} not found.")
+            return
 
-# 2. Update the table loading logic
-pattern_load = r'''                # Date
-                date_item = QTableWidgetItem\(str\(timestamp\)\)
-                self\.table\.setItem\(row_idx, 0, date_item\)
-                
-                # Notes
-                notes_item = QTableWidgetItem\(str\(notes\) if notes else ""\)
-                self\.table\.setItem\(row_idx, 1, notes_item\)
-                
-                # Photo icon
-                photo_item = QTableWidgetItem\("Photo" if photo_path else ""\)
-                photo_item\.setTextAlignment\(Qt\.AlignCenter\)
-                self\.table\.setItem\(row_idx, 2, photo_item\)
-                
-                # Checkbox for Graph
-                checkbox_widget = QWidget\(\)
-                checkbox_layout = QHBoxLayout\(checkbox_widget\)
-                checkbox_layout\.setContentsMargins\(0, 0, 0, 0\)
-                checkbox_layout\.setAlignment\(Qt\.AlignCenter\)
-                checkbox = QCheckBox\(\)
-                checkbox\.stateChanged\.connect\(self\.on_item_checked\)
-                checkbox_layout\.addWidget\(checkbox\)
-                self\.table\.setCellWidget\(row_idx, 3, checkbox_widget\)'''
+        try:
+            import sqlite3
+            import numpy as np
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Ensure meas_name exists
+            cursor.execute("PRAGMA table_info(Measurements)")
+            columns = [info[1] for info in cursor.fetchall()]
+            if 'meas_name' not in columns:
+                cursor.execute("ALTER TABLE Measurements ADD COLUMN meas_name TEXT")
+                conn.commit()
+"""
+content = content.replace("""        if not os.path.exists(self.db_path):
+            print(f"Database {self.db_path} not found.")
+            return
 
-replacement_load = r'''                # 0: Date
-                date_item = QTableWidgetItem(str(timestamp))
-                date_item.setFlags(date_item.flags() & ~Qt.ItemIsEditable)
-                self.table.setItem(row_idx, 0, date_item)
-                
-                # 1: IEM
-                iem_item = QTableWidgetItem(str(iem_name))
-                iem_item.setFlags(iem_item.flags() & ~Qt.ItemIsEditable)
-                self.table.setItem(row_idx, 1, iem_item)
-                
-                # 2: Side (L/R/Stereo)
-                side = "Stereo" if (mag_l is not None and mag_r is not None) else ("L" if mag_l is not None else "R")
-                side_item = QTableWidgetItem(side)
-                side_item.setFlags(side_item.flags() & ~Qt.ItemIsEditable)
-                self.table.setItem(row_idx, 2, side_item)
-                
-                # 3: Notes (Custom Name) -> EDITABLE!
-                notes_item = QTableWidgetItem(str(notes) if notes else "")
-                self.table.setItem(row_idx, 3, notes_item)
-                
-                # 4: Photo icon
-                photo_item = QTableWidgetItem("Photo" if photo_path else "")
-                photo_item.setTextAlignment(Qt.AlignCenter)
-                photo_item.setFlags(photo_item.flags() & ~Qt.ItemIsEditable)
-                self.table.setItem(row_idx, 4, photo_item)
-                
-                # 5: Checkbox for Graph
-                checkbox_widget = QWidget()
-                checkbox_layout = QHBoxLayout(checkbox_widget)
-                checkbox_layout.setContentsMargins(0, 0, 0, 0)
-                checkbox_layout.setAlignment(Qt.AlignCenter)
-                checkbox = QCheckBox()
-                checkbox.stateChanged.connect(self.on_item_checked)
-                checkbox_layout.addWidget(checkbox)
-                self.table.setCellWidget(row_idx, 5, checkbox_widget)'''
+        try:
+            import sqlite3
+            import numpy as np
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()""", migration_code)
 
-code = re.sub(pattern_load, replacement_load, code)
-
-# 3. Add blockSignals to load_history
-code = code.replace(
-    'self.table.setRowCount(0)',
-    'self.table.blockSignals(True)\n        self.table.setRowCount(0)'
-)
-code = code.replace(
-    'conn.close()',
-    'conn.close()\n            self.table.blockSignals(False)'
+# 2. Update SELECT query
+content = content.replace(
+    "SELECT m.timestamp, m.notes, m.photo_path, m.frequencies, m.magnitude_l, m.magnitude_r, iem.model_name, iem.custom_name",
+    "SELECT m.timestamp, m.notes, m.photo_path, m.frequencies, m.magnitude_l, m.magnitude_r, iem.model_name, iem.custom_name, m.meas_name"
 )
 
-# 4. Inject on_item_changed
-injection = r'''    def on_item_changed(self, item):
-        if item.column() == 3: # Notes
-            new_notes = item.text()
-            row = item.row()
-            if row < len(self.measurements):
-                ts = self.measurements[row]['timestamp']
-                try:
-                    conn = sqlite3.connect(self.db_path)
-                    c = conn.cursor()
-                    c.execute("UPDATE Measurements SET notes = ? WHERE timestamp = ?", (new_notes, ts))
-                    conn.commit()
-                    conn.close()
-                    self.measurements[row]['notes'] = new_notes
-                    
-                    # Also notify the main window to update its dropdowns!
-                    import __main__
-                    if hasattr(__main__, 'window') and hasattr(__main__.window, 'load_targets'):
-                        __main__.window.load_targets()
-                except Exception as e:
-                    print(f"Error saving notes: {e}")
+# 3. Update row unpacking
+content = content.replace(
+    "timestamp, notes, photo_path, freq_blob, mag_l_blob, mag_r_blob, iem_name, custom_name = row\n                display_name = custom_name if custom_name else iem_name",
+    "timestamp, notes, photo_path, freq_blob, mag_l_blob, mag_r_blob, iem_name, custom_name, meas_name = row\n                base_name = custom_name if custom_name else iem_name\n                display_name = meas_name if meas_name else base_name"
+)
 
-    def on_item_selected(self):'''
+# 4. Update data_dict
+content = content.replace(
+    "'iem_name': display_name,",
+    "'iem_name': display_name,\n                    'meas_name': meas_name if meas_name else '',\n                    'base_name': base_name,"
+)
 
-code = code.replace('    def on_item_selected(self):', injection)
+# 5. Add UI elements
+ui_replacement = """        # Left Edit Pane (Matches graph width)
+        left_edit = QFrame()
+        left_edit_layout = QVBoxLayout(left_edit)
+        left_edit_layout.setContentsMargins(15, 8, 15, 8)
+        left_edit_layout.setSpacing(6)
+        
+        meta_layout = QHBoxLayout()
+        meta_layout.setSpacing(10)
+        
+        self.edit_meas_name = QLineEdit()
+        self.edit_meas_name.setPlaceholderText("Measurement Name (Leave blank for default IEM name)")
+        self.edit_meas_name.setStyleSheet(f"background-color: {bg_hover}; color: {fg}; border: 1px solid {border}; padding: 4px 8px; border-radius: 4px; font-size: 11px;")
+        
+        self.edit_meas_date = QLineEdit()
+        self.edit_meas_date.setPlaceholderText("Date/Time (YYYY-MM-DD HH:MM:SS)")
+        self.edit_meas_date.setStyleSheet(f"background-color: {bg_hover}; color: {text_sec}; border: 1px solid {border}; padding: 4px 8px; border-radius: 4px; font-size: 11px;")
+        self.edit_meas_date.setFixedWidth(160)
+        
+        meta_layout.addWidget(self.edit_meas_name, stretch=1)
+        meta_layout.addWidget(self.edit_meas_date)
+        
+        from PySide6.QtWidgets import QPlainTextEdit
+        self.txt_notes = QPlainTextEdit()
+        self.txt_notes.setPlaceholderText("Measurement Notes...")
+        self.txt_notes.setStyleSheet(f"background-color: {bg_hover}; color: {fg}; border: 1px solid {border}; padding: 6px 10px; border-radius: 6px; font-size: 12px;")
+        
+        self.notes_timer = QTimer(self)
+        self.notes_timer.setSingleShot(True)
+        self.notes_timer.setInterval(1000)
+        self.notes_timer.timeout.connect(self.save_notes)
+        
+        self.txt_notes.textChanged.connect(self.notes_timer.start)
+        self.edit_meas_name.textChanged.connect(self.notes_timer.start)
+        self.edit_meas_date.textChanged.connect(self.notes_timer.start)
+        
+        left_edit_layout.addLayout(meta_layout)
+        left_edit_layout.addWidget(self.txt_notes, stretch=1)"""
 
+content = re.sub(r"# Left Edit Pane.*?left_edit_layout\.addWidget\(self\.txt_notes\)", ui_replacement, content, flags=re.DOTALL)
+
+# 6. Update on_selection_changed
+on_sel_rep = """    def on_selection_changed(self):
+        items = self.list_widget.selectedItems()
+        if not items:
+            self.set_edit_controls_enabled(False)
+            self.txt_notes.clear()
+            self.edit_meas_name.clear()
+            self.edit_meas_date.clear()
+            return
+            
+        self.set_edit_controls_enabled(True)
+        data = items[0].data(Qt.UserRole)
+        
+        self.txt_notes.blockSignals(True)
+        self.edit_meas_name.blockSignals(True)
+        self.edit_meas_date.blockSignals(True)
+        
+        self.txt_notes.setPlainText(data.get('notes', ''))
+        self.edit_meas_name.setText(data.get('meas_name', ''))
+        self.edit_meas_date.setText(data.get('timestamp', ''))
+        
+        self.txt_notes.blockSignals(False)
+        self.edit_meas_name.blockSignals(False)
+        self.edit_meas_date.blockSignals(False)"""
+content = re.sub(r"    def on_selection_changed\(self\):.*?self\.txt_notes\.blockSignals\(False\)", on_sel_rep, content, flags=re.DOTALL)
+
+# 7. Update set_edit_controls_enabled
+set_edit_rep = """    def set_edit_controls_enabled(self, enabled):
+        self.txt_notes.setEnabled(enabled)
+        self.edit_meas_name.setEnabled(enabled)
+        self.edit_meas_date.setEnabled(enabled)
+        self.btn_export_history.setEnabled(enabled)
+        self.btn_save_target.setEnabled(enabled)
+        self.btn_delete_history.setEnabled(enabled)"""
+content = re.sub(r"    def set_edit_controls_enabled\(self, enabled\):.*?self\.btn_delete_history\.setEnabled\(enabled\)", set_edit_rep, content, flags=re.DOTALL)
+
+# 8. Update save_notes
+save_notes_rep = """    def save_notes(self):
+        items = self.list_widget.selectedItems()
+        if not items: return
+        
+        data = items[0].data(Qt.UserRole)
+        old_ts = data['timestamp']
+        
+        new_notes = self.txt_notes.toPlainText()
+        new_name = self.edit_meas_name.text().strip()
+        new_ts = self.edit_meas_date.text().strip()
+        
+        # fallback if empty
+        if not new_ts: new_ts = old_ts
+        
+        try:
+            import sqlite3
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # If timestamp changed, check if new one exists to prevent collision
+            if new_ts != old_ts:
+                cursor.execute("SELECT 1 FROM Measurements WHERE timestamp = ?", (new_ts,))
+                if cursor.fetchone():
+                    # Collision! Revert UI to old timestamp
+                    self.edit_meas_date.blockSignals(True)
+                    self.edit_meas_date.setText(old_ts)
+                    self.edit_meas_date.blockSignals(False)
+                    new_ts = old_ts
+            
+            cursor.execute('UPDATE Measurements SET notes = ?, meas_name = ?, timestamp = ? WHERE timestamp = ?', 
+                           (new_notes, new_name, new_ts, old_ts))
+            conn.commit()
+            conn.close()
+            
+            # Update item data
+            data['notes'] = new_notes
+            data['meas_name'] = new_name
+            data['timestamp'] = new_ts
+            data['iem_name'] = new_name if new_name else data.get('base_name', '')
+            items[0].setData(Qt.UserRole, data)
+            
+            # Update Card UI
+            card = self.list_widget.itemWidget(items[0])
+            if card:
+                card.findChild(QLabel, "lbl_iem").setText(data['iem_name'])
+                card.findChild(QLabel, "lbl_date").setText(data['timestamp'])
+                
+            # If timestamp changed, reload entirely so sort order is correct?
+            if new_ts != old_ts:
+                # We could reload entirely, but let's just let it be until next refresh
+                pass
+                
+        except Exception as e:
+            print(f"Error autosaving: {e}")"""
+content = re.sub(r"    def save_notes\(self\):.*?conn\.close\(\)\n            data\['notes'\] = new_notes\n        except Exception as e:\n            print\(e\)", save_notes_rep, content, flags=re.DOTALL)
 
 with open("history_ui.py", "w") as f:
-    f.write(code)
-
-print("History edit patched.")
+    f.write(content)

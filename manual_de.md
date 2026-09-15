@@ -61,12 +61,12 @@ Die Messkette beschreibt den Weg des Audiosignals von der Software bis zum IEM u
   - Behringer UM2 (ca. 35€) oder Behringer UMC22 (ca. 45€)
   - Hat eigenen Kopfhörerausgang (Output) + Klinke/XLR-Eingang (Input).
 
-**ODER noch günstiger auf macOS:**
-- **Output:** Der eingebaute 3.5mm Kopfhörerausgang am MacBook/iMac reicht als Output für den IEM! Einfach IEM einstecken.
-- **Input:** Ein günstiges USB-Mic-Interface (ab ca. 15€, Suche: "USB audio adapter microphone input").
+**ODER noch günstiger:**
+- **Der 3€ Geheimtipp:** Winzige USB-C Soundkarten (z.B. auf AliExpress) funktionieren wunderbar! 
+  - **WICHTIG:** Der Dongle **MUSS ZWEI getrennte Buchsen** haben (eine für Kopfhörer, eine für das Mikrofon).
 - **IEC711 Kuppler:** AliExpress Typ 4 (ca. 30€).
-- **In InEar Snitch:** Settings → Routing → Input = USB-Interface, Output = "Built-in Output".
-- **Gesamtkosten: ab ca. 45€!**
+- **In InEar Snitch:** Settings → Routing → Input = USB-Soundkarte, Output = USB-Soundkarte (oder "Built-in Output" am Mac).
+- **Gesamtkosten: ab ca. 35€!**
 
 #### 💰💰 Empfohlenes Setup (~100-200€)
 
@@ -100,7 +100,7 @@ Die Messkette beschreibt den Weg des Audiosignals von der Software bis zum IEM u
 
 | Setup | Problem |
 |-------|---------|
-| **Billige 3€ USB-auf-Klinke-Dongles** (Amazon/AliExpress) | Sind meist NUR Output ODER NUR Input, nicht beides gleichzeitig. |
+| **Apple USB-C auf 3.5mm Dongle** (und andere mit nur EINER Buchse) | Haben eine kombinierte TRRS-Buchse. Sie erkennen reine Messmikrofone nicht. Auch TRRS-Splitter-Kabel (Y-Kabel) funktionieren hier **nicht**! |
 | **Bluetooth-Kopfhörer / AirPods** | Viel zu hohe Latenz, kein Sweep möglich. |
 | **TWS Earbuds (kabellos)** | Können nicht in den Kuppler gesteckt werden. |
 | **Handy-Kopfhörerausgang** | Zu schwach, meist kein Full-Duplex möglich. |

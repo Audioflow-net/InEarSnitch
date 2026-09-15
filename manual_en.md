@@ -60,12 +60,12 @@ The measurement chain describes the path of the audio signal from the software t
   - Behringer UM2 (approx. 35€) or Behringer UMC22 (approx. 45€)
   - Has its own headphone output (Output) + Jack/XLR input (Input).
 
-**OR even cheaper on macOS:**
-- **Output:** The built-in 3.5mm headphone jack on the MacBook/iMac is perfectly fine as an output for the IEM! Just plug the IEM in.
-- **Input:** A cheap USB mic interface (starting at approx. 15€, Search: "USB audio adapter microphone input").
+**OR even cheaper:**
+- **The 3€ Secret:** Tiny USB-C sound cards (e.g., on AliExpress) work wonderfully!
+  - **IMPORTANT:** The dongle **MUST HAVE TWO separate jacks** (one for headphones, one for the mic).
 - **IEC711 Coupler:** AliExpress Type 4 (approx. 30€).
-- **In InEar Snitch:** Settings → Routing → Input = USB Interface, Output = "Built-in Output".
-- **Total cost: starting around 45€!**
+- **In InEar Snitch:** Settings → Routing → Input = USB Sound Card, Output = USB Sound Card (or "Built-in Output" on Mac).
+- **Total cost: starting around 35€!**
 
 #### 💰💰 Recommended Setup (~100-200€)
 
@@ -99,7 +99,7 @@ The measurement chain describes the path of the audio signal from the software t
 
 | Setup | Problem |
 |-------|---------|
-| **Cheap 3€ USB-to-Jack dongles** (Amazon/AliExpress) | Are usually ONLY Output OR ONLY Input, not both at the same time. |
+| **Apple USB-C to 3.5mm Dongle** (and similar with only ONE jack) | They have a combined TRRS jack. They do not recognize pure measurement mics. TRRS splitter cables (Y-cables) do **not** work either! |
 | **Bluetooth Headphones / AirPods** | Latency is way too high, no sweep possible. |
 | **TWS Earbuds (wireless)** | Cannot be inserted into the coupler. |
 | **Phone headphone jack** | Too weak, usually no full-duplex possible. |

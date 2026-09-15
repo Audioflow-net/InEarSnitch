@@ -1426,10 +1426,14 @@ class MainWindow(QMainWindow):
         import os
         from PySide6.QtWidgets import QTextBrowser
         from PySide6.QtCore import QUrl
-        from PySide6.QtGui import QTextCursor
+        from PySide6.QtGui import QTextCursor, QTextOption
         
         self.manual_browser = QTextBrowser()
         self.manual_browser.setStyleSheet(f"background-color: {theme.get_color('bg_main')}; color: {theme.get_color('text_primary')}; border: 1px solid {theme.get_color('border')}; border-radius: 4px; padding: 10px;")
+        
+        # --- Force wrap to prevent horizontal scroll ---
+        self.manual_browser.setLineWrapMode(QTextBrowser.WidgetWidth)
+        self.manual_browser.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
         
         # --- Fix for missing anchor jumps in Qt Markdown ---
         self.manual_browser.setOpenLinks(False)

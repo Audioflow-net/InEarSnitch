@@ -60,12 +60,12 @@ La cadena de medición describe el camino de la señal de audio desde el softwar
   - Behringer UM2 (aprox. 35€) o Behringer UMC22 (aprox. 45€)
   - Tiene su propia salida de auriculares (Output) + entrada Jack/XLR (Input).
 
-**O incluso MÁS BARATO en macOS:**
-- **Salida (Output):** ¡El conector de auriculares de 3.5mm incorporado en el MacBook/iMac es suficiente como salida para el IEM! Simplemente enchufa el IEM.
-- **Entrada (Input):** Una interfaz de micrófono USB económica (desde aprox. 15€, busca: "USB audio adapter microphone input").
+**O incluso MÁS BARATO:**
+- **El secreto de 3€:** ¡Las diminutas tarjetas de sonido USB-C (p. ej., en AliExpress) funcionan de maravilla!
+  - **IMPORTANTE:** El dongle **DEBE TENER DOS conectores separados** (uno para auriculares, uno para el micrófono).
 - **Acoplador IEC711:** AliExpress Tipo 4 (aprox. 30€).
-- **En InEar Snitch:** Settings → Routing → Input = Interfaz USB, Output = "Built-in Output".
-- **Costo total: ¡desde aprox. 45€!**
+- **En InEar Snitch:** Settings → Routing → Input = Tarjeta de sonido USB, Output = Tarjeta de sonido USB (o "Built-in Output" en Mac).
+- **Costo total: ¡desde aprox. 35€!**
 
 #### 💰💰 Configuración Recomendada (~100-200€)
 
@@ -99,7 +99,7 @@ La cadena de medición describe el camino de la señal de audio desde el softwar
 
 | Configuración | Problema |
 |-------|---------|
-| **Dongles baratos USB a Jack de 3€** (Amazon/AliExpress) | Suelen ser SOLO Salida O SOLO Entrada, no ambas al mismo tiempo. |
+| **Dongle Apple USB-C a 3.5mm** (y otros con UN SOLO conector) | Tienen un conector TRRS combinado. No reconocen micrófonos de medición puros. ¡Los cables divisores TRRS (cables en Y) tampoco funcionan! |
 | **Auriculares Bluetooth / AirPods** | La latencia es demasiado alta, no es posible el barrido. |
 | **Auriculares TWS (inalámbricos)** | No se pueden insertar en el acoplador. |
 | **Salida de auriculares de teléfono móvil** | Demasiado débil, normalmente no es posible el Full-Duplex. |
@@ -108,8 +108,13 @@ La cadena de medición describe el camino de la señal de audio desde el softwar
 ### 6. Cables y adaptadores recomendados
 
 - **Adaptador Jack de 3.5mm a 6.3mm (1/4")** (para la salida de auriculares de la interfaz → IEM, si es necesario)
-- **Adaptador XLR a Jack** (si la interfaz solo tiene entradas XLR y el micrófono del acoplador usa un conector jack)
 - **Adaptador TRS a TRRS** (solo si deseas usar el conector del MacBook como entrada al mismo tiempo – no recomendado)
+- ⚠️ **CRÍTICO: Adaptador XLR a Jack para micrófonos de medición**
+  Si tu interfaz de audio solo tiene entradas XLR y tu acoplador IEC711 tiene un conector jack de 3.5mm, ¡no cometas el error de comprar un adaptador simple y barato!
+  - **El problema:** Las interfaces de audio proporcionan **Alimentación Phantom de 48V** a través de XLR. Sin embargo, el pequeño micrófono dentro del acoplador solo soporta **3 a 5 Voltios (Plug-in Power)**. Si envías 48V directamente al micrófono, se quemará al instante.
+  - **La solución:** Necesitas obligatoriamente un adaptador con un reductor de voltaje integrado ("Power Converter").
+  - **Cómo leer las especificaciones del adaptador:** Busca frases exactas en la descripción del producto como *"Converts 12-48V Phantom Power to 3-5V Plug-in Power"*. ¡Si esto no se indica explícitamente, el adaptador dejará pasar los 48V y destruirá tu micrófono!
+  - **Recomendación:** Compra el **Rode VXLR+** (¡el "Plus" es crucial!) o el **Antlion Audio XLR Power Converter**.
 
 ### 7. 🔗 Recursos útiles y comunidad
 
