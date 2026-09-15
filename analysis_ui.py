@@ -110,6 +110,17 @@ class FloatKnob(QWidget):
 
 from analysis import Analyzer
 
+class AutoWrapLabel(QLabel):
+    def __init__(self, text=""):
+        super().__init__(text)
+        self.setWordWrap(True)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # Ensure layout recalculates height properly in QScrollArea
+        self.setMinimumHeight(self.heightForWidth(self.width()))
+
 class AnalysisWidget(QWidget):
     request_measurement = Signal()
     request_stress_test = Signal()
@@ -329,7 +340,6 @@ class AnalysisWidget(QWidget):
         self.report_scroll.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
         self.report_container = QWidget()
         self.report_layout = QVBoxLayout(self.report_container)
-        self.report_layout.setAlignment(Qt.AlignTop)
         self.report_scroll.setWidget(self.report_container)
         diag_layout.addWidget(self.report_scroll)
         self.tools_tabs.addTab(self.diag_container, "Diagnostics")
@@ -625,8 +635,7 @@ class AnalysisWidget(QWidget):
             hdr.setStyleSheet(f"color: {accent}; font-size: 11px; background: transparent; border: none;")
             cl.addWidget(hdr)
 
-            desc = QLabel(item.get('desc', ''))
-            desc.setWordWrap(True)
+            desc = AutoWrapLabel(item.get('desc', ''))
             desc.setStyleSheet(f"color: {'#3f3f47' if is_light else '#999'}; font-size: 10px; background: transparent; border: none; padding-left: 16px;")
             cl.addWidget(desc)
 
@@ -649,6 +658,7 @@ class AnalysisWidget(QWidget):
                 card.mousePressEvent = make_zoom(band, cat)
 
             self.report_layout.addWidget(card)
+        self.report_layout.addStretch()
 
     def refresh_view(self):
         if not hasattr(self, '_last_data'): return
