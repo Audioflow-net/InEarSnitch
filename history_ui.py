@@ -69,9 +69,11 @@ class HistoryCardWidget(QWidget):
         info_layout.setSpacing(2)
         
         lbl_iem = QLabel(iem_name)
+        lbl_iem.setMinimumWidth(1)
         lbl_iem.setStyleSheet(f"font-weight: bold; font-size: 13px; color: {fg};")
         
         lbl_date = QLabel(timestamp)
+        lbl_date.setMinimumWidth(1)
         lbl_date.setStyleSheet(f"font-size: 10px; color: {text_sec};")
         
         info_layout.addWidget(lbl_iem)
@@ -293,10 +295,11 @@ class HistoryWidget(QWidget):
         self.search_bar.setStyleSheet(f"background-color: {bg_hover}; color: {fg}; border: 1px solid {border}; padding: 6px; border-radius: 4px;")
         self.search_bar.textChanged.connect(self.filter_history)
         
-        self.btn_import_history = QPushButton("+")
+        self.btn_import_history = QPushButton("+ Import")
+        self.btn_import_history.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.btn_import_history.setToolTip("Import CSV")
-        self.btn_import_history.setFixedSize(28, 28)
-        self.btn_import_history.setStyleSheet("QPushButton { background-color: transparent; color: #888; font-weight: bold; font-size: 24px; border: none; padding-bottom: 4px; } QPushButton:hover { color: white; }")
+        self.btn_import_history.setStyleSheet(f"QPushButton {{ background-color: {bg_hover}; color: {fg}; border: 1px solid {border}; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; }} QPushButton:hover {{ background-color: {active}; color: white; }}")
+        self.btn_import_history.setCursor(Qt.PointingHandCursor)
         self.btn_import_history.clicked.connect(self.show_import_menu)
         
         search_layout.addWidget(self.search_bar, stretch=1)
