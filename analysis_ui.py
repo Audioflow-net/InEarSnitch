@@ -114,14 +114,19 @@ class AutoWrapLabel(QLabel):
     def __init__(self, text=""):
         super().__init__(text)
         self.setWordWrap(True)
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        w = self.width()
-        h = self.heightForWidth(w)
-        if h > self.minimumHeight():
-            self.setMinimumHeight(h)
+        self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Minimum)
+        
+    def minimumSizeHint(self):
+        from PySide6.QtCore import QSize
+        # Force a small minimum width so it can be squished, but calculate height based on 320px
+        # 320 is roughly the width of the right pane minus scrollbar and margins.
+        h = self.heightForWidth(320)
+        return QSize(10, h)
+        
+    def sizeHint(self):
+        from PySide6.QtCore import QSize
+        h = self.heightForWidth(320)
+        return QSize(320, h)
 
 class StableTabWidget(QTabWidget):
     def sizeHint(self):
@@ -329,6 +334,8 @@ class AnalysisWidget(QWidget):
         
         # --- Right Pane: Tools (QTabWidget) ---
         self.right_pane_wrapper = QWidget()
+        self.right_pane_wrapper.setFixedWidth(345)
+        self.right_pane_wrapper.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         self.right_pane_layout = QHBoxLayout(self.right_pane_wrapper)
         self.right_pane_layout.setContentsMargins(0,0,0,0)
         self.right_pane_layout.setSpacing(0)
@@ -890,11 +897,12 @@ class AnalysisWidget(QWidget):
                 
                 # 4. Fill-Opacity reduzieren
                 # Draw from back (t=0) to front (t>0) to allow proper occlusion
+                self.csd_widget.setUpdatesEnabled(False)
                 for i in range(num_slices):
                     slice_mag = csd_slices[i]
                     
                     # 3 & 2: Freq-Shift 0.99, Y-Offset 1.5 dB
-                    shift_freqs = csd_freqs * (0.99 ** i)
+                    shift_freqs = csd_freqs * (1.015 ** i)
                     shift_mag = slice_mag - (i * 1.5) 
                 
                     # 6. Farb-Gradient: Vorne (i=0) = voll Cyan, Hinten (i=max) = dunkel transparent
