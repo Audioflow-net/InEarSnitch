@@ -14,28 +14,28 @@ if getattr(sys, 'frozen', False):
     # so all relative paths (inearsnitch.db, reference_targets, etc) are saved there.
     os.chdir(app_dir)
     
-    # Sync bundled files to Documents folder
+    # Sync bundled files from the PyInstaller payload to the Documents folder
     import shutil
-    meipass = sys._MEIPASS
-    
-    # 1. Sync manual files (always overwrite with latest)
-    import glob
-    for manual in glob.glob(os.path.join(meipass, "manual_*.md")):
-        shutil.copy2(manual, app_dir)
-        
-    # 2. Sync reference targets (copy missing/updated files)
-    src_targets = os.path.join(meipass, "reference_targets")
-    dst_targets = os.path.join(app_dir, "reference_targets")
-    if os.path.exists(src_targets):
-        os.makedirs(dst_targets, exist_ok=True)
-        shutil.copytree(src_targets, dst_targets, dirs_exist_ok=True)
-        
-    # 3. Sync calibrations (copy missing/updated files)
-    src_cals = os.path.join(meipass, "calibrations")
-    dst_cals = os.path.join(app_dir, "calibrations")
-    if os.path.exists(src_cals):
-        os.makedirs(dst_cals, exist_ok=True)
-        shutil.copytree(src_cals, dst_cals, dirs_exist_ok=True)
+    meipass = getattr(sys, '_MEIPASS', None)
+    if meipass:
+        # 1. Sync manual files (always overwrite with latest)
+        import glob
+        for manual in glob.glob(os.path.join(meipass, "manual_*.md")):
+            shutil.copy2(manual, app_dir)
+            
+        # 2. Sync reference targets (copy missing/updated files)
+        src_targets = os.path.join(meipass, "reference_targets")
+        dst_targets = os.path.join(app_dir, "reference_targets")
+        if os.path.exists(src_targets):
+            os.makedirs(dst_targets, exist_ok=True)
+            shutil.copytree(src_targets, dst_targets, dirs_exist_ok=True)
+            
+        # 3. Sync calibrations (copy missing/updated files)
+        src_cals = os.path.join(meipass, "calibrations")
+        dst_cals = os.path.join(app_dir, "calibrations")
+        if os.path.exists(src_cals):
+            os.makedirs(dst_cals, exist_ok=True)
+            shutil.copytree(src_cals, dst_cals, dirs_exist_ok=True)
 # ------------------------------------------
 
 import theme
@@ -770,7 +770,7 @@ class MainWindow(QMainWindow):
         
         # SIDEBAR 2 (Profiles)
         profile_bar = QWidget()
-        profile_bar.setMinimumWidth(150)
+        profile_bar.setMinimumWidth(170)
         profile_bar.setMaximumWidth(280)
         profile_bar.setObjectName("ProfileBar")
         profile_bar.setStyleSheet("#ProfileBar { background-color: #18181b; border-right: 1px solid #222; }")
@@ -1746,6 +1746,12 @@ class MainWindow(QMainWindow):
                 if self.mic_cal_combo.itemData(i) == select_path:
                     self.mic_cal_combo.setCurrentIndex(i)
                     break
+        else:
+            # Auto-select the 711 calibration if it exists and no setting was previously saved
+            for i in range(self.mic_cal_combo.count()):
+                if "IEC711" in self.mic_cal_combo.itemText(i):
+                    self.mic_cal_combo.setCurrentIndex(i)
+                    break
 
     def redraw_graph(self, *args):
         self.plot_widget.clear()
@@ -2510,7 +2516,7 @@ class MainWindow(QMainWindow):
         saved_out = s.value("audio/output_device_name", "")
         saved_norm = s.value("audio/auto_normalize", True, type=bool)
         self.chk_normalize.setChecked(saved_norm)
-        saved_cal = s.value("audio/coupler_cal_path",   "")
+        saved_cal = s.value("audio/coupler_cal_path", None)
         saved_spl = float(s.value("audio/spl_offset_db", 0.0))
 
         # Restore input device
@@ -2528,7 +2534,7 @@ class MainWindow(QMainWindow):
                 self.selected_out_idx = self.out_combo.itemData(idx)
 
         # Restore coupler calibration
-        if saved_cal:
+        if saved_cal is not None:
             self.reload_calibrations(select_path=saved_cal)
             self.update_cal_preview()
 
