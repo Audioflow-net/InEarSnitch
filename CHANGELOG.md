@@ -1459,3 +1459,11 @@
 - **Das betroffene Bauteil:** PETG Elevator & TPU Führungsschacht
 - **Formen-Änderung:** Der Pull-Tab des Elevators wurde von `X=118` (Kollision mit dem Mic-Tip) auf die Vorderseite des Mikrofons verschoben. Der T-Bar sitzt nun bei `X=98..112` und `Y=50..54`. Die Bodenplatte und die Mic-Wiege wurden entsprechend zentriert (`X=95..115`).
 - **Die Idee / Der Grund:** Der Griff war versehentlich exakt an dem Ende, an dem die sensible Messspitze des Mikrofons herausragt. Durch die Platzierung VOR dem Mikrofon (`Y=50`) gibt es keinerlei Konflikte mehr, und der Griff ist zentral und noch leichter erreichbar.
+
+### V31 (Advanced Mechanics) - 2026-09-15
+- **Das betroffene Bauteil:** PETG Elevator & TPU Führungsschacht
+- **Maße (Alt vs. Neu):** TPU-Öffnung unten von 27x34 auf 25x32mm verkleinert. Zwei Blattfedern (10x5mm, schräg) am PETG-Teil hinzugefügt.
+- **Formen-Änderung:** 
+  1. **Snap-Fit Verankerung:** Im TPU (Z=0 bis Z=1) gibt es nun eine enge Lippe (25x32). Die PETG Bodenplatte (26x33) ist größer als dieses Loch. Beim Einsetzen dehnt sich das TPU, das PETG springt hinein und ist fortan unlösbar im TPU verankert (fällt nicht heraus, wenn man das TPU-Insert entnimmt).
+  2. **Auto-Return Blattfedern:** Auf der PETG Bodenplatte sitzen nun links und rechts zwei im 30-Grad-Winkel gedruckte, freischwebende Blattfedern (V-Wings). Sie reichen bis Z=11.5. Zieht man den Fahrstuhl hoch, werden sie gegen die TPU-Decke gepresst und flachen ab. Lässt man los, drücken sie den Fahrstuhl automatisch wieder auf den Boden.
+- **Die Idee / Der Grund:** User-Feedback: Ohne Verankerung würde das Teil herausfallen, und ohne Feder bliebe der leere Fahrstuhl nach Entnahme des Mikrofons oben stehen. Die Blattfedern nutzen die Biege-Elastizität von PETG perfekt aus.
