@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import theme
 from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QFrame, QSplitter, QTabWidget, QComboBox, QDial, QLineEdit, QSizePolicy
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QTimer
 import pyqtgraph as pg
 
 class FreqAxisItem(pg.AxisItem):
@@ -156,7 +156,7 @@ class AnalysisWidget(QWidget):
         self.split_layout = QSplitter(Qt.Horizontal)
         self.split_layout.setContentsMargins(0, 0, 0, 0)
         self.split_layout.setHandleWidth(1)
-        self.split_layout.setChildrenCollapsible(False)
+        self.split_layout.setChildrenCollapsible(True)
         self.layout.addWidget(self.split_layout)
         
         # --- Left Pane ---
@@ -354,6 +354,9 @@ class AnalysisWidget(QWidget):
         self.tools_tabs.setMinimumWidth(220)
         self.tools_tabs.setMaximumWidth(400)
         self.right_pane_layout.addWidget(self.tools_tabs)
+        # Initial: Sidebar collapsed so graph fills full width on startup
+        self.tools_tabs.setVisible(False)
+        self.btn_toggle_tools.setText("◀")
         
         # 1. Diagnostics Tool
         self.diag_container = QWidget()
@@ -522,6 +525,8 @@ class AnalysisWidget(QWidget):
         self.load_eq_presets()
         self.btn_save_eq.clicked.connect(self.save_eq_preset)
         self.update_theme()
+        # After first layout pass: collapse right pane so graph gets 100% width
+        QTimer.singleShot(0, self._collapse_right_pane_initial)
 
 
     def reset_zoom(self):
@@ -1120,6 +1125,12 @@ class AnalysisWidget(QWidget):
                         
         # Redraw diagnostics cards to refresh their light/dark color palette
         self.render_diagnostics()
+
+    def _collapse_right_pane_initial(self):
+        """Called once after first layout pass. Collapses right pane so graph fills 100% width."""
+        total = self.split_layout.width()
+        if total > 0:
+            self.split_layout.setSizes([total, 0])
 
     def toggle_tools_pane(self):
         is_visible = self.tools_tabs.isVisible()
