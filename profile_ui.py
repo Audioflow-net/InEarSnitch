@@ -106,7 +106,7 @@ class ProfilePicWidget(QWidget):
         self.img_label.setPixmap(circ_pix)
         self.img_label.setStyleSheet("background-color: transparent; border: none;")
         self.has_image = True
-        self.overlay.setText("Change\n\n🗑️")
+        self.overlay.setText("Change<br><br>🗑️")
 
     def set_empty_style(self):
         font_size = max(9, int(self.size_val * 0.12))
@@ -447,7 +447,7 @@ class IEMCardWidget(QFrame):
             self.data_changed.emit()
             
     def apply_color(self):
-        if not self.pic_path:
+        if not self.pic_widget.current_pic_path:
             # Contrast text color calculation
             hex_color = self.iem_color.lstrip('#')
             if len(hex_color) == 6:
@@ -480,7 +480,7 @@ class IEMCardWidget(QFrame):
             "model_name": self.model_input.currentText(),
             "contact_person": self.contact_input.text(),
             "service_notes": self.service_input.text(),
-            "iem_pic": self.pic_path,
+            "iem_pic": self.pic_widget.current_pic_path,
             "abbr": self.abbr_input.text().upper(),
             "custom_name": self.custom_name_input.text(),
             "color": self.iem_color
