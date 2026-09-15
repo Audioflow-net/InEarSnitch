@@ -1437,3 +1437,14 @@
 ### V199 - 2026-09-14
 - **Desktop Tray Upgrade (Gegendruck & Snap-Fit)**: Kammern moderat geschrumpft, Kabel-Auslaesse zu Omega-Klemmen umgebaut.
 - **Die Idee / Der Grund**: Da das Tray als Desktop-Ablage gedacht ist, aus der die IEMs nicht herausfallen duerfen, reicht loses Schwimmen nicht. Ich habe das Volumen der Kammern leicht reduziert (d=34 -> d=31), damit die CIEMs die Aussenwand beruehren und die Blattfeder echten Gegendruck aufbauen kann. Um die dicken Custom-Kabel sicher zu klemmen, wurden die unbrauchbaren 14mm Auslaesse durch echte Snap-Fit Omega-Kanaele ersetzt (2.4mm Klick-Spalt, der in eine 4.5mm Kammer fuehrt).
+
+### V200 - 2026-09-15
+- **Das betroffene Bauteil:** Silikon-Gussform Stempel (Wanne für Hexagon-Vakuum-Bett)
+- **Maße (Alt vs. Neu):** Neues Bauteil: Wanne 80x82x10 mm, Wand 1.6 mm. Hexagon-Stempel r=3.7 (Basis r=4.0), Spalt=0.6 mm.
+- **Formen-Änderung:** Neues OpenSCAD Skript `Hexagon_Vacuum_Mold.scad` mit Wanne und in einer for-Schleife berechnetem Hexagon-Muster (Stempel r=3.7, dx=6.0, dy=6.93, um 30° rotiert). Nur Stempel im Innenraum werden gerendert.
+- **Die Idee / Der Grund:** Erschaffung einer Form zum Gießen einer Silikon-Matte (Vakuum-Bett). Durch hunderte hohle Sechsecke wirken diese wie winzige Saugnäpfe für glatte In-Ear Monitore.
+### V31 / V203 - 2026-09-15
+- **Das betroffene Bauteil:** TPU Insert (Mic Storage Fach)
+- **Maße (Alt vs. Neu):** Push-to-Eject Rampe (Hebel = 39mm/64mm) entfernt. Neue Ejector-Zunge (Länge = 35mm, Breite = 12mm) mit 1.5mm breitem Freischnitt.
+- **Formen-Änderung:** Die hohle Schmiege-Rampe unter dem linken Schaft wurde restlos gelöscht (Modul `cutouts()`). Stattdessen wurde unter dem dicken Mikrofonkopf (X=85 bis 120) ein U-förmiger 1.5mm Schlitz in den TPU-Boden geschnitten. Das erzeugt eine freischwebende Lasche (Zunge). Am rechten, freien Ende (X=117) wurde ein massiver 3x12x25 mm großer TPU-Griff (Pull-Tab) in `peli_body()` ergänzt, der senkrecht aus der Oberfläche ragt.
+- **Die Idee / Der Grund:** Das alte Wippen-Konzept erforderte ständigen Druck auf den extrem sensiblen Mess-Tip des Couplers. Das Ejector-Ribbon (Print-In-Place) erlaubt es, den schweren Kopf wie mit einem Fahrstuhl anzuheben, indem man lediglich an dem hochstehenden TPU-Griff zieht, ohne die Messspitze jemals berühren zu müssen.
