@@ -209,43 +209,63 @@ class AudioEngine:
             except Exception:
                 pass
 
-        # 2. CoreAudio/WASAPI full-duplex I/O
-        try:
-            recording = sd.playrec(sweep_stereo,  
-                                   samplerate=self.sample_rate, 
-                                   channels=1, 
-                                   device=(input_device_idx, output_device_idx),
-                                   blocking=False)
-        except sd.PortAudioError as e:
-            # Fallback: Windows WASAPI and some macOS interfaces strictly require matching input channels.
-            # Catching ANY PortAudioError here because Windows throws different error strings that otherwise cause a hard crash.
-            try:
-                in_info = sd.query_devices(input_device_idx)
-                in_chans = in_info['max_input_channels']
-                recording = sd.playrec(sweep_stereo, 
-                                       samplerate=self.sample_rate, 
-                                       channels=in_chans, # Use exact max input channels
-                                       device=(input_device_idx, output_device_idx),
-                                       blocking=False)
-            except Exception as e2:
-                raise RuntimeError(f"Audio device error (WASAPI/PortAudio). Ensure input and output sample rates match in Windows Sound Settings! Original Error: {str(e)} | Fallback Error: {str(e2)}")
-                               
-        start_t = time.time()
-        timeout = duration + 5.0
-        # Wait for the stream to finish or timeout
-        while sd.get_stream() is not None and sd.get_stream().active:
-            if progress_callback:
-                progress_callback(time.time() - start_t)
-            time.sleep(0.015) # 60fps UI update rate
-            if time.time() - start_t > timeout:
-                sd.stop()
-                raise RuntimeError("Audio Engine Timeout: The audio interface did not respond. Check macOS Microphone permissions.")
+        # 2. Full-duplex I/O via sd.Stream (works with separate macOS devices + Windows WASAPI)
+        import threading
+        n_total = len(sweep_stereo)
+        
+        def run_measure_stream(in_channels):
+            out_pos = [0]
+            in_pos = [0]
+            rec_buf = np.zeros((n_total, in_channels))
+            done_event = threading.Event()
 
-        
-        # Ensure it finishes gracefully
-        sd.wait()
-        
-        rec_signal = recording[:, 0]
+            def callback(indata, outdata, frames, time_info, status):
+                # Write sweep to output
+                chunk = min(frames, n_total - out_pos[0])
+                if chunk > 0:
+                    outdata[:chunk] = sweep_stereo[out_pos[0]:out_pos[0]+chunk]
+                    out_pos[0] += chunk
+                if chunk < frames:
+                    outdata[chunk:] = 0.0
+                    
+                # Read from input
+                r_chunk = min(frames, n_total - in_pos[0])
+                if r_chunk > 0:
+                    rec_buf[in_pos[0]:in_pos[0]+r_chunk] = indata[:r_chunk, :]
+                    in_pos[0] += r_chunk
+                    
+                if out_pos[0] >= n_total and in_pos[0] >= n_total:
+                    done_event.set()
+                    raise sd.CallbackStop
+
+            with sd.Stream(device=(input_device_idx, output_device_idx),
+                           samplerate=self.sample_rate, channels=(in_channels, 2),
+                           callback=callback):
+                # Wait with progress updates
+                start_t = time.time()
+                timeout = duration + 5.0
+                while not done_event.is_set():
+                    if progress_callback:
+                        progress_callback(time.time() - start_t)
+                    if time.time() - start_t > timeout:
+                        raise RuntimeError("Audio Engine Timeout: The audio interface did not respond. Check macOS Microphone permissions.")
+                    done_event.wait(timeout=0.015)  # ~60fps UI update
+            
+            return rec_buf[:, 0]
+
+        try:
+            try:
+                rec_signal = run_measure_stream(1)
+            except sd.PortAudioError:
+                in_chans = sd.query_devices(input_device_idx)['max_input_channels']
+                rec_signal = run_measure_stream(in_chans)
+        except RuntimeError:
+            raise
+        except Exception as e:
+            raise RuntimeError(f"Audio device error: {str(e)}")
+
+        rec_signal = rec_signal
+
         peak_amp = np.max(np.abs(rec_signal))
         peak_dbfs = 20 * np.log10(peak_amp + 1e-12)
         if peak_dbfs < -60.0:
