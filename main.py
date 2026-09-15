@@ -185,6 +185,10 @@ class AvatarButton(QLabel):
 class MusicianCard(QWidget):
     iem_changed = Signal()
     
+    def minimumSizeHint(self):
+        from PySide6.QtCore import QSize
+        return QSize(80, 80)
+    
     def select_iem(self, iem_id, iem_name, btn):
         self.current_iem_id = iem_id
         self.current_iem_name = iem_name
