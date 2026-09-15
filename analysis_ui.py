@@ -321,6 +321,7 @@ class AnalysisWidget(QWidget):
         self.csd_widget.getAxis('left').setWidth(45)
         self.csd_widget.setXRange(np.log10(200), np.log10(20000))
         self.csd_widget.setYRange(-60, 20)
+        self.csd_widget.getViewBox().disableAutoRange()
         self.graph_tabs.addTab(self.csd_widget, "Waterfall (CSD)")
         
         left_pane_layout.addWidget(self.graph_tabs)
@@ -610,6 +611,17 @@ class AnalysisWidget(QWidget):
         self.refresh_view()
         
     def render_diagnostics(self):
+        import numpy as np
+        # Prevent any auto-range drift by explicitly re-asserting bounds
+        tab_idx = self.graph_tabs.currentIndex()
+        if tab_idx == 2:
+            if hasattr(self, '_csd_max_peak'):
+                p = self._csd_max_peak
+                self.csd_widget.setXRange(np.log10(200), np.log10(20000), padding=0)
+                self.csd_widget.setYRange(p - 45, p + 5, padding=0)
+            else:
+                self.csd_widget.setXRange(np.log10(200), np.log10(20000), padding=0)
+                self.csd_widget.setYRange(-60, 20, padding=0)
         """Render compact diagnostics report cards, filtered by active graph tab."""
         if not hasattr(self, 'report_layout'):
             return
