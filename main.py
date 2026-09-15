@@ -292,7 +292,7 @@ class MusicianCard(QWidget):
         self.setFocusPolicy(Qt.NoFocus)
         self.setCursor(Qt.PointingHandCursor)
         
-        for child in [self.avatar, self.name_lbl, self.role_lbl, self.status_lbl]:
+        for child in [self.avatar, self.name_lbl, self.role_lbl]:
             child.setAttribute(Qt.WA_TransparentForMouseEvents, True)
             
         self._update_layout(self.width())
