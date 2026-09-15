@@ -1,34 +1,84 @@
-import sys
+import re
 
-with open('analysis_ui.py', 'r') as f:
+with open("analysis_ui.py", "r") as f:
     content = f.read()
 
-# 1. Connect currentChanged to render_diagnostics in __init__
-init_hook_old = """        # Default state
-        self.btn_chan_l.setChecked(True)"""
-init_hook_new = """        # Default state
-        self.btn_chan_l.setChecked(True)
-        
-        self.graph_tabs.currentChanged.connect(self.render_diagnostics)
-        self._last_report = []"""
-content = content.replace(init_hook_old, init_hook_new)
+# We need to replace the `for item in self._last_report:` loop.
+loop_start = "        for item in self._last_report:"
+loop_end = "        self.report_layout.addStretch()"
 
-# 2. Extract the loop into render_diagnostics and replace it in update_analysis
-# The loop starts with `for item in report:`
-# Wait, I also need to clear self.diag_layout!
-# Let's see what is immediately before `for item in report:`
-before_loop = """            if ref_mag_r is not None and show_r:
-                f_ref_r, m_ref_r, _ = AudioEngine.smooth_spectrum(freqs, ref_mag_r, points=240)
-                self.plot_widget.plot(f_ref_r, m_ref_r, pen=hist_pen, name='History R')
+old_loop_code = content[content.find(loop_start) : content.find(loop_end)]
+
+new_loop_code = """        left_items = []
+        right_items = []
+        gen_items = []
+        
+        for item in self._last_report:
+            cat = item.get('category', 'FR')
+            if active_cat is not None and cat != active_cat:
+                continue
                 
-        for item in report:"""
+            title = item.get('title', '')
+            if title.startswith('Left '):
+                left_items.append(item)
+            elif title.startswith('Right '):
+                right_items.append(item)
+            else:
+                gen_items.append(item)
+                
+        def create_header(text, color="#06b6d4"):
+            lbl = QLabel(text)
+            lbl.setStyleSheet(f"color: {color}; font-weight: 900; font-size: 10px; letter-spacing: 2px; padding-top: 8px; padding-bottom: 2px;")
+            return lbl
 
-after_loop = """                card.mousePressEvent = make_zoom(item['band'])
-            
-            self.diag_layout.addWidget(card)
-            
-        self.diag_layout.addStretch()
-        
-    def show_eq_overlay(self):"""
+        def render_group(items, header_text, header_color):
+            if not items: return
+            self.report_layout.addWidget(create_header(header_text, header_color))
+            for item in items:
+                status = item.get('status', 'OK')
+                bg, accent, icon = status_style.get(status, status_style['OK'])
+                band = item.get('band')
+                cat = item.get('category', 'FR')
 
-# Let's capture the exact text from line 494 to 552
+                card = QFrame()
+                card.setCursor(Qt.PointingHandCursor if band else Qt.ArrowCursor)
+                card.setStyleSheet(f"QFrame {{ background: {bg}; border-left: 3px solid {accent}; border-radius: 3px; padding: 3px 6px; margin: 1px 0; }}")
+                cl = QVL(card)
+                cl.setContentsMargins(4, 2, 4, 2)
+                cl.setSpacing(0)
+
+                hdr = QLabel(f"<span style='color:{accent};font-weight:bold;'>{icon}</span>  <b>{item.get('title','')}</b>  <span style='color:{'#52525b' if is_light else '#666'};font-size:9px;'>[{cat}]</span>")
+                hdr.setStyleSheet(f"color: {accent}; font-size: 11px; background: transparent; border: none;")
+                cl.addWidget(hdr)
+
+                desc = AutoWrapLabel(item.get('desc', ''))
+                desc.setStyleSheet(f"color: {'#3f3f47' if is_light else '#999'}; font-size: 10px; background: transparent; border: none; padding-left: 16px;")
+                cl.addWidget(desc)
+
+                if band:
+                    def make_zoom(b=band, c=cat):
+                        def zoom_handler(event):
+                            f_min, f_max = b
+                            if c == 'THD':
+                                self.graph_tabs.setCurrentIndex(1)
+                                self.thd_widget.setXRange(np.log10(f_min), np.log10(f_max), padding=0.1)
+                            elif c == 'CSD':
+                                self.graph_tabs.setCurrentIndex(2)
+                                self.csd_widget.setXRange(np.log10(f_min), np.log10(f_max), padding=0.1)
+                            else:
+                                self.graph_tabs.setCurrentIndex(0)
+                                self.plot_widget.setXRange(np.log10(f_min), np.log10(f_max), padding=0.1)
+                        return zoom_handler
+                    card.mousePressEvent = make_zoom(band, cat)
+
+                self.report_layout.addWidget(card)
+                
+        render_group(left_items, "LEFT EAR", "#3b82f6")
+        render_group(right_items, "RIGHT EAR", "#ef4444")
+        render_group(gen_items, "STEREO / GENERAL", "#10b981")
+"""
+
+content = content.replace(old_loop_code, new_loop_code)
+
+with open("analysis_ui.py", "w") as f:
+    f.write(content)

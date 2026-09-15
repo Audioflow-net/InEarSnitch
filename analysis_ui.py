@@ -130,7 +130,7 @@ class StableTabWidget(QTabWidget):
     def minimumSizeHint(self):
         from PySide6.QtCore import QSize
         hint = super().minimumSizeHint()
-        return QSize(345, hint.height())
+        return QSize(220, hint.height())
 
 class AnalysisWidget(QWidget):
     request_measurement = Signal()
