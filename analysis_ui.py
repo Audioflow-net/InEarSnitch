@@ -39,6 +39,7 @@ class FloatKnob(QWidget):
         layout.addWidget(self.lbl_title)
         
         self.dial = QDial()
+        self.dial.wheelEvent = lambda event: event.ignore()
         self.dial.setMinimum(0)
         self.dial.setMaximum(self.steps)
         self.dial.setWrapping(False)
