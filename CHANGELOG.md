@@ -1472,3 +1472,18 @@
 **Das betroffene Bauteil:** Silikon-Spitze (Gussformen & Tamper)
 **Maße (Alt vs. Neu):** Inneres Einsteckloch wächst von 4.0 mm (V30) auf satte 6.0 mm (V31-XL). Die torus-förmige Außenlippe wächst von 7.0 mm (V30) auf massive 10.0 mm (V31-XL).
 **Der Grund:** Für besonders dicke Custom IEMs (CIEMs), bei denen das 4 mm Loch der V30 zu eng war. Durch das Aufblasen der Lippe auf 10 mm bleibt eine gewaltige Wandstärke von 2.0 mm erhalten, was der Spitze trotz des riesigen Lochs extreme mechanische Stabilität und Reißfestigkeit verleiht.
+
+### V32 (Longitudinal Hammock & Tower Clearance) - 2026-09-15
+- **Das betroffene Bauteil:** TPU Gurt-Mechanismus, PETG Chassis (Base Plate & Tower), TPU Tower Sleeve.
+- **Maße (Alt vs. Neu):** 
+  - TPU-Gurt: Verwandelt von kurzem Viertelkreis in eine 35mm lange Längs-Hängematte (X=69 bis X=92).
+  - PETG Tower Shelf: Von Z=24 auf Z=26 angehoben (2mm höher).
+  - TPU Tower Sleeve: Von 17.5mm auf 15.5mm gekürzt.
+  - PETG Cable Slit: Nach unten bis Z=-0.05 verlängert (durchstößt Base Plate).
+- **Formen-Änderung:**
+  1. **Longitudinal Hammock:** Der Auswurf-Mechanismus für das Mikrofon ist nun kein kurzer Quer-Gurt mehr, sondern ein langes, in X-Richtung liegendes Zugband (Print-in-Place).
+  2. **Tower Zwischenebene:** Die innere Auflagekante für das TPU-Inlay im Tower wurde um 2mm nach oben geschoben.
+  3. **Cable Slit Durchbruch:** Der vertikale 5mm Schlitz für das Kabel geht nun ohne Stufe komplett durch den 2mm dicken PETG-Boden durch.
+- **Die Idee / Der Grund:** 
+  - *Hammock:* Ein kurzer Viertelkreis-Gurt hat geometrisch keinen Hubweg (Kollision mit dickem Mic). Die lange Längs-Brücke vervielfacht den Hubweg durch das Scharnier-Prinzip.
+  - *Tower & Slit:* Das Mikrofon-Kabel (im Tower) knickte an der 5mm hohen Stufe zu stark ab. Durch die Erhöhung der Decke (2mm mehr Luft) und das komplette Durchsägen des Bodens erhält das dicke Kabel deutlich mehr Volumen für einen sauberen Biegeradius.
