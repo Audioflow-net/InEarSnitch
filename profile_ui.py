@@ -500,8 +500,9 @@ class ProfileWidget(QWidget):
         
         self.empty_widget = QWidget()
         empty_layout = QVBoxLayout(self.empty_widget)
-        empty_lbl = QLabel("Select a musician from the left sidebar to view their profile.\\n\\nOr click the '+' button to create a new one.")
+        empty_lbl = QLabel("Select a musician from the left sidebar to view their profile.\n\nOr click the '+' button to create a new one.")
         empty_lbl.setAlignment(Qt.AlignCenter)
+        empty_lbl.setWordWrap(True)
         empty_lbl.setStyleSheet("color: #666; font-size: 16px;")
         empty_layout.addWidget(empty_lbl)
         main_layout.addWidget(self.empty_widget)
