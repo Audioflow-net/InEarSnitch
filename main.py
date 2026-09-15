@@ -2723,7 +2723,11 @@ class MainWindow(QMainWindow):
     def get_current_channel(self):
         if hasattr(self, 'btn_grp_chan'):
             btn = self.btn_grp_chan.checkedButton()
-            return btn.text() if btn else "Left"
+            if btn:
+                txt = btn.text().strip()
+                if txt in ("L", "Left"): return "Left"
+                if txt in ("R", "Right"): return "Right"
+                return txt
         return "Left"
         
     def get_current_sweeps(self):
