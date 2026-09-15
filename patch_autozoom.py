@@ -1,23 +1,25 @@
-import sys
+import re
 
-with open('main.py', 'r') as f:
+with open("analysis_ui.py", "r") as f:
     content = f.read()
 
-old_btn = """        self.btn_reset_view = QPushButton("Reset Zoom")
-        self.btn_reset_view.setToolTip("Reset graph zoom level")
-        self.btn_reset_view.setMinimumWidth(100)
-        self.btn_reset_view.setStyleSheet("background-color: transparent; color: #888; border: 1px solid #444; padding: 4px 12px; border-radius: 4px;")"""
-        
-new_btn = """        self.btn_reset_view = QPushButton("🔍 Autozoom")
-        self.btn_reset_view.setToolTip("Autozoom graph to fit curves")
-        self.btn_reset_view.setMinimumWidth(110)
-        self.btn_reset_view.setStyleSheet("QPushButton { background-color: #3b82f6; color: white; border: none; padding: 6px 14px; border-radius: 4px; font-weight: bold; } QPushButton:hover { background-color: #2563eb; }")"""
+# Disable AutoRange completely on CSD widget
+content = content.replace("self.csd_widget.setYRange(-60, 20)", "self.csd_widget.setYRange(-60, 20)\n        self.csd_widget.getViewBox().disableAutoRange()")
 
-content = content.replace(old_btn, new_btn)
+# Also, when switching tabs, let's trigger an explicit bounds lock for CSD
+def_render = "def render_diagnostics(self):"
+new_def = """def render_diagnostics(self):
+        # Prevent any auto-range drift by explicitly re-asserting bounds
+        tab_idx = self.graph_tabs.currentIndex()
+        if tab_idx == 2:
+            if hasattr(self, '_csd_max_peak'):
+                p = self._csd_max_peak
+                self.csd_widget.setXRange(np.log10(200), np.log10(20000), padding=0)
+                self.csd_widget.setYRange(p - 45, p + 5, padding=0)
+            else:
+                self.csd_widget.setXRange(np.log10(200), np.log10(20000), padding=0)
+                self.csd_widget.setYRange(-60, 20, padding=0)"""
+content = content.replace(def_render, new_def)
 
-# Also disable native pyqtgraph button
-if "self.plot_widget.setLimits(yMin=20, yMax=140)" in content:
-    content = content.replace("self.plot_widget.setLimits(yMin=20, yMax=140)", "self.plot_widget.setLimits(yMin=20, yMax=140)\n        self.plot_widget.hideButtons()")
-
-with open('main.py', 'w') as f:
+with open("analysis_ui.py", "w") as f:
     f.write(content)

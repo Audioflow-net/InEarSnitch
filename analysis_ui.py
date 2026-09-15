@@ -334,8 +334,7 @@ class AnalysisWidget(QWidget):
         
         # --- Right Pane: Tools (QTabWidget) ---
         self.right_pane_wrapper = QWidget()
-        self.right_pane_wrapper.setFixedWidth(345)
-        self.right_pane_wrapper.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        self.right_pane_wrapper.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.right_pane_layout = QHBoxLayout(self.right_pane_wrapper)
         self.right_pane_layout.setContentsMargins(0,0,0,0)
         self.right_pane_layout.setSpacing(0)
@@ -897,7 +896,6 @@ class AnalysisWidget(QWidget):
                 
                 # 4. Fill-Opacity reduzieren
                 # Draw from back (t=0) to front (t>0) to allow proper occlusion
-                self.csd_widget.setUpdatesEnabled(False)
                 for i in range(num_slices):
                     slice_mag = csd_slices[i]
                     

@@ -783,7 +783,9 @@ class MainWindow(QMainWindow):
         
         # SIDEBAR 2 (Profiles)
         profile_bar = QWidget()
-        profile_bar.setFixedWidth(240)
+        profile_bar.setMinimumWidth(170)
+        profile_bar.setMaximumWidth(280)
+        profile_bar.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         
         profile_bar.setObjectName("ProfileBar")
         profile_bar.setStyleSheet("#ProfileBar { background-color: #18181b; border-right: 1px solid #222; }")
