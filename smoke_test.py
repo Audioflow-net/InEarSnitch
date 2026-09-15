@@ -79,3 +79,10 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+    # ---- 5. CHANNEL MAPPING ----
+    print("\n5️⃣  Channel Mapping Guard")
+    check("get_current_channel maps L->Left", 
+          'if txt in ("L", "Left"): return "Left"' in main_src or 
+          'return "Left"' in main_src.split("get_current_channel")[1].split("def ")[0],
+          "get_current_channel might return 'L' instead of 'Left'!")
