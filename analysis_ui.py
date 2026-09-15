@@ -518,8 +518,11 @@ class AnalysisWidget(QWidget):
             self.thd_widget.setXRange(np.log10(20), np.log10(20000), padding=0.0)
             self.thd_widget.setYRange(0, 5, padding=0.0)
         if hasattr(self, 'csd_widget'):
-            self.csd_widget.setXRange(np.log10(2000), np.log10(20000), padding=0.0)
-            self.csd_widget.setYRange(-60, 20, padding=0.0)
+            self.csd_widget.setXRange(np.log10(200), np.log10(20000), padding=0.0)
+            if hasattr(self, '_csd_max_peak'):
+                self.csd_widget.setYRange(self._csd_max_peak - 45, self._csd_max_peak + 5, padding=0.0)
+            else:
+                self.csd_widget.setYRange(-30, 20, padding=0.0)
 
     def zoom_graph(self, min_f, max_f):
         import numpy as np
@@ -861,6 +864,7 @@ class AnalysisWidget(QWidget):
                 # 4. Y-Range dynamisch basierend auf dem höchsten Peak
                 if num_slices > 0:
                     max_peak = float(np.max(csd_slices[0]))
+                    self._csd_max_peak = max_peak
                     self.csd_widget.setYRange(max_peak - 45, max_peak + 5)
                 
                 # 4. Fill-Opacity reduzieren
