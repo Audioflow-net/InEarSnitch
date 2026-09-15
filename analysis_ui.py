@@ -118,8 +118,10 @@ class AutoWrapLabel(QLabel):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        # Ensure layout recalculates height properly in QScrollArea
-        self.setMinimumHeight(self.heightForWidth(self.width()))
+        w = event.size().width()
+        h = self.heightForWidth(w)
+        if self.minimumHeight() != h:
+            self.setMinimumHeight(h)
 
 class StableTabWidget(QTabWidget):
     def sizeHint(self):
