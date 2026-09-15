@@ -255,12 +255,18 @@ class MusicianCard(QWidget):
         from PySide6.QtGui import QImageReader, QIcon, QPixmap
         from PySide6.QtCore import QSize
         from profile_ui import create_circular_pixmap
+        from flow_layout import FlowLayout
+        
+        self.avatars_container = QWidget()
+        self.avatars_layout = FlowLayout(self.avatars_container, margin=0, hSpacing=4, vSpacing=4)
         
         for iem_id, iem_name, pic_path, abbr, custom_name in iems:
             display_name = custom_name if custom_name else iem_name
             btn = AvatarButton(iem_id, display_name, pic_path, abbr, self)
             self.avatar_btns.append((iem_id, btn))
-            self.bottom_info.addWidget(btn)
+            self.avatars_layout.addWidget(btn)
+            
+        self.bottom_info.addWidget(self.avatars_container)
             
         self.bottom_info.addStretch()
         
@@ -301,16 +307,12 @@ class MusicianCard(QWidget):
             self.avatar.hide()
             self.role_lbl.hide()
             self.layout.setDirection(QBoxLayout.TopToBottom)
-            self.bottom_info.setDirection(QBoxLayout.TopToBottom)
             self.name_lbl.setAlignment(Qt.AlignCenter)
-            self.bottom_info.setAlignment(Qt.AlignCenter)
         else:
             self.avatar.show()
             self.role_lbl.show()
             self.layout.setDirection(QBoxLayout.LeftToRight)
-            self.bottom_info.setDirection(QBoxLayout.LeftToRight)
             self.name_lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            self.bottom_info.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         
         import theme
         if theme.CURRENT_MODE == "light":
