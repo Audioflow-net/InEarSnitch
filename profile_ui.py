@@ -186,11 +186,23 @@ class IEMCardWidget(QFrame):
         self.lbl_title.setWordWrap(True)
         self.avatar_layout.addWidget(self.lbl_title)
         
-        self.btn_pick_color = QPushButton("Set Color")
-        self.btn_pick_color.setStyleSheet("QPushButton { background-color: #333; color: white; border-radius: 4px; padding: 4px 8px; font-size: 10px; margin-top: 5px; } QPushButton:hover { background-color: #444; }")
+        btn_layout = QHBoxLayout()
+        btn_layout.setContentsMargins(0, 5, 0, 0)
+        btn_layout.setSpacing(5)
+        
+        self.btn_pick_color = QPushButton("Color")
+        self.btn_pick_color.setStyleSheet("QPushButton { background-color: #333; color: white; border-radius: 4px; padding: 4px 8px; font-size: 10px; } QPushButton:hover { background-color: #444; }")
         self.btn_pick_color.setCursor(Qt.PointingHandCursor)
         self.btn_pick_color.clicked.connect(self.choose_color)
-        self.avatar_layout.addWidget(self.btn_pick_color)
+        btn_layout.addWidget(self.btn_pick_color)
+        
+        self.btn_remove_pic = QPushButton("Remove")
+        self.btn_remove_pic.setStyleSheet("QPushButton { background-color: #500; color: white; border-radius: 4px; padding: 4px 8px; font-size: 10px; } QPushButton:hover { background-color: #700; }")
+        self.btn_remove_pic.setCursor(Qt.PointingHandCursor)
+        self.btn_remove_pic.clicked.connect(self.remove_pic)
+        btn_layout.addWidget(self.btn_remove_pic)
+        
+        self.avatar_layout.addLayout(btn_layout)
         
         # Initial color application
         self.apply_color()
@@ -440,8 +452,9 @@ class IEMCardWidget(QFrame):
             self.data_changed.emit()
             
     def apply_color(self):
-        # We only apply color to the avatar circle if there's no picture
         if not self.pic_path:
+            self.btn_pick_color.show()
+            self.btn_remove_pic.hide()
             # Contrast text color calculation
             hex_color = self.iem_color.lstrip('#')
             if len(hex_color) == 6:
@@ -452,6 +465,15 @@ class IEMCardWidget(QFrame):
                 text_color = "#ffffff"
                 
             self.pic_widget.img_label.setStyleSheet(f"background-color: {self.iem_color}; border-radius: {self.pic_widget.size_val//2}px; border: 1px solid #555; color: {text_color}; font-size: {max(9, int(self.pic_widget.size_val * 0.12))}px; font-weight: bold;")
+        else:
+            self.btn_pick_color.hide()
+            self.btn_remove_pic.show()
+
+    def remove_pic(self):
+        self.pic_path = ""
+        self.pic_widget.set_image("")
+        self.apply_color()
+        self.data_changed.emit()
 
     def choose_pic(self):
         from PySide6.QtWidgets import QFileDialog
@@ -558,9 +580,20 @@ class ProfileWidget(QWidget):
         header_layout.setSpacing(30)
 
         # Avatar
+        pic_layout = QVBoxLayout()
+        pic_layout.setAlignment(Qt.AlignCenter)
+        
         self.pic_widget = ProfilePicWidget(size=160, placeholder="Add Photo")
         self.pic_widget.clicked.connect(self.choose_pic)
-        header_layout.addWidget(self.pic_widget)
+        pic_layout.addWidget(self.pic_widget)
+        
+        self.btn_remove_profile_pic = QPushButton("Remove Photo")
+        self.btn_remove_profile_pic.setStyleSheet("QPushButton { background-color: #500; color: white; border-radius: 4px; padding: 4px 8px; font-size: 10px; margin-top: 5px; } QPushButton:hover { background-color: #700; }")
+        self.btn_remove_profile_pic.setCursor(Qt.PointingHandCursor)
+        self.btn_remove_profile_pic.clicked.connect(self.remove_pic)
+        pic_layout.addWidget(self.btn_remove_profile_pic, alignment=Qt.AlignCenter)
+        
+        header_layout.addLayout(pic_layout)
         
         # Data Block
         info_layout = QVBoxLayout()

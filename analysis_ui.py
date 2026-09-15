@@ -948,7 +948,7 @@ class AnalysisWidget(QWidget):
         import sqlite3, json
         name = self.le_preset_name.text().strip()
         if not name:
-            QMessageBox.warning(self, "Error", "Please enter a preset name!")
+            QMessageBox.warning(self, "Name Required", "Please give your EQ preset a name before saving.")
             return
             
         data = []
@@ -968,13 +968,13 @@ class AnalysisWidget(QWidget):
             self.le_preset_name.clear()
             self.load_eq_presets()
         except Exception as e:
-            QMessageBox.warning(self, "Error", str(e))
+            QMessageBox.warning(self, "Couldn't Save Preset", f"We couldn't save the EQ preset. Please try again.\n\nTechnical detail: {str(e)}")
 
 
     def delete_eq_preset(self, name):
         from PySide6.QtWidgets import QMessageBox
         import sqlite3
-        if QMessageBox.question(self, "Delete Preset", f"Delete '{name}'?") == QMessageBox.Yes:
+        if QMessageBox.question(self, "Delete EQ Preset", f"Are you sure you want to delete the preset '{name}'? This cannot be undone.") == QMessageBox.Yes:
             try:
                 conn = sqlite3.connect("inearsnitch.db")
                 c = conn.cursor()
