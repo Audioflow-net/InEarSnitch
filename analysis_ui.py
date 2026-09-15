@@ -590,10 +590,10 @@ class AnalysisWidget(QWidget):
         """Render compact diagnostics report cards, filtered by active graph tab."""
         if not hasattr(self, 'report_layout'):
             return
-        for i in reversed(range(self.report_layout.count())):
-            w = self.report_layout.itemAt(i).widget()
-            if w:
-                w.deleteLater()
+        while self.report_layout.count():
+            item = self.report_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
 
         if not hasattr(self, '_last_report') or not self._last_report:
             return
