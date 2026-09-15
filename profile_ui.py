@@ -79,13 +79,6 @@ class ProfilePicWidget(QWidget):
         self.overlay.setAlignment(Qt.AlignCenter)
         self.overlay.hide()
         
-        self.btn_delete = QPushButton("✖", self)
-        self.btn_delete.setFixedSize(28, 28)
-        self.btn_delete.setStyleSheet("QPushButton { background-color: rgba(220, 38, 38, 220); color: white; border-radius: 14px; font-weight: bold; font-size: 14px; } QPushButton:hover { background-color: rgba(255, 0, 0, 255); }")
-        self.btn_delete.setCursor(Qt.PointingHandCursor)
-        self.btn_delete.hide()
-        self.btn_delete.clicked.connect(self.delete_clicked.emit)
-        
         self.set_size(size)
         
     def set_size(self, size):
@@ -93,9 +86,6 @@ class ProfilePicWidget(QWidget):
         self.setFixedSize(size, size)
         self.img_label.setFixedSize(size, size)
         self.overlay.setFixedSize(size, size)
-        
-        # Position the delete button in the top right corner
-        self.btn_delete.move(size - 28, 0)
         
         self.font_size = max(9, int(size * 0.12))
         self.overlay.setStyleSheet(f"background-color: rgba(0, 0, 0, 160); border-radius: {size//2}px; color: white; font-weight: bold; font-size: {self.font_size}px;")
@@ -116,7 +106,7 @@ class ProfilePicWidget(QWidget):
         self.img_label.setPixmap(circ_pix)
         self.img_label.setStyleSheet("background-color: transparent; border: none;")
         self.has_image = True
-        self.overlay.setText("Change")
+        self.overlay.setText("Change\n\n🗑️")
 
     def set_empty_style(self):
         font_size = max(9, int(self.size_val * 0.12))
@@ -137,18 +127,18 @@ class ProfilePicWidget(QWidget):
             
     def enterEvent(self, event):
         self.overlay.show()
-        if self.has_image:
-            self.btn_delete.show()
         super().enterEvent(event)
         
     def leaveEvent(self, event):
         self.overlay.hide()
-        self.btn_delete.hide()
         super().leaveEvent(event)
         
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.clicked.emit()
+            if self.has_image and event.position().y() > self.size_val * 0.6:
+                self.delete_clicked.emit()
+            else:
+                self.clicked.emit()
 
 
 class IEMCardWidget(QFrame):
