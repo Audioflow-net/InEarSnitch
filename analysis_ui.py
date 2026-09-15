@@ -334,6 +334,7 @@ class AnalysisWidget(QWidget):
         
         # --- Right Pane: Tools (QTabWidget) ---
         self.right_pane_wrapper = QWidget()
+        self.right_pane_wrapper.setMinimumWidth(0)  # Allow splitter to collapse to just button
         self.right_pane_wrapper.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.right_pane_layout = QHBoxLayout(self.right_pane_wrapper)
         self.right_pane_layout.setContentsMargins(0,0,0,0)
@@ -351,7 +352,7 @@ class AnalysisWidget(QWidget):
         # self.tools_tabs.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
         self.tools_tabs.setElideMode(Qt.ElideNone)
         self.tools_tabs.setUsesScrollButtons(True)
-        self.tools_tabs.setMinimumWidth(220)
+        self.tools_tabs.setMinimumWidth(0)   # Let splitter control width, not minimumWidth
         self.tools_tabs.setMaximumWidth(400)
         self.right_pane_layout.addWidget(self.tools_tabs)
         

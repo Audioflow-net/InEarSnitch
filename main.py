@@ -854,8 +854,8 @@ class MainWindow(QMainWindow):
         prof_layout.addWidget(self.profile_scroll)
         self.profile_cards = []
         
-        workspace_layout.addWidget(profile_bar)
-        
+        workspace_layout.addWidget(profile_bar, stretch=0)
+
         # RIGHT CONTENT (Tabs + Active Profile Workspace)
         right_content = QWidget()
         right_content.setStyleSheet("background-color: #1f1f23;")
@@ -894,7 +894,7 @@ class MainWindow(QMainWindow):
         self.workspace_stacked = QStackedWidget()
         right_layout.addWidget(self.workspace_stacked)
         
-        workspace_layout.addWidget(right_content)
+        workspace_layout.addWidget(right_content, stretch=1)
         content_layout.addWidget(workspace_widget, stretch=1)
         
         # =========================================================
