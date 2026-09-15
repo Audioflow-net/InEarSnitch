@@ -255,16 +255,23 @@ class MusicianCard(QWidget):
         from PySide6.QtGui import QImageReader, QIcon, QPixmap
         from PySide6.QtCore import QSize
         from profile_ui import create_circular_pixmap
-        from flow_layout import FlowLayout
-        
+        from PySide6.QtWidgets import QGridLayout
         self.avatars_container = QWidget()
-        self.avatars_layout = FlowLayout(self.avatars_container, margin=0, hSpacing=4, vSpacing=4)
+        self.avatars_container.setStyleSheet("background-color: transparent; border: none;")
+        self.avatars_layout = QGridLayout(self.avatars_container)
+        self.avatars_layout.setContentsMargins(0, 0, 0, 0)
+        self.avatars_layout.setSpacing(4)
         
+        row, col = 0, 0
         for iem_id, iem_name, pic_path, abbr, custom_name in iems:
             display_name = custom_name if custom_name else iem_name
             btn = AvatarButton(iem_id, display_name, pic_path, abbr, self)
             self.avatar_btns.append((iem_id, btn))
-            self.avatars_layout.addWidget(btn)
+            self.avatars_layout.addWidget(btn, row, col)
+            col += 1
+            if col >= 3:
+                col = 0
+                row += 1
             
         self.bottom_info.addWidget(self.avatars_container)
             
