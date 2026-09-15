@@ -63,6 +63,7 @@ def create_circular_pixmap(image_reader, size):
 
 class ProfilePicWidget(QWidget):
     clicked = Signal()
+    delete_clicked = Signal()
     
     def __init__(self, size=120, placeholder="Upload", parent=None):
         super().__init__(parent)
@@ -76,7 +77,6 @@ class ProfilePicWidget(QWidget):
         
         self.overlay = QLabel(self)
         self.overlay.setAlignment(Qt.AlignCenter)
-        self.overlay.setText("Change")
         self.overlay.hide()
         
         self.set_size(size)
@@ -87,8 +87,8 @@ class ProfilePicWidget(QWidget):
         self.img_label.setFixedSize(size, size)
         self.overlay.setFixedSize(size, size)
         
-        font_size = max(9, int(size * 0.12))
-        self.overlay.setStyleSheet(f"background-color: rgba(0, 0, 0, 160); border-radius: {size//2}px; color: white; font-weight: bold; font-size: {font_size}px;")
+        self.font_size = max(9, int(size * 0.12))
+        self.overlay.setStyleSheet(f"background-color: rgba(0, 0, 0, 160); border-radius: {size//2}px; color: white; font-weight: bold; font-size: {self.font_size}px;")
         
         if self.has_image and self.current_pic_path:
             self.refresh_image()
@@ -106,6 +106,7 @@ class ProfilePicWidget(QWidget):
         self.img_label.setPixmap(circ_pix)
         self.img_label.setStyleSheet("background-color: transparent; border: none;")
         self.has_image = True
+        self.overlay.setText("Change\n\n🗑️")
 
     def set_empty_style(self):
         font_size = max(9, int(self.size_val * 0.12))
@@ -113,6 +114,7 @@ class ProfilePicWidget(QWidget):
         self.img_label.setText(self.placeholder)
         self.img_label.setStyleSheet(f"background-color: transparent; border-radius: {self.size_val//2}px; border: 1px dashed #555; color: #888; font-size: {font_size}px;")
         self.has_image = False
+        self.overlay.setText("Change")
 
     def set_image(self, pic_path):
         self.current_pic_path = pic_path
@@ -133,7 +135,10 @@ class ProfilePicWidget(QWidget):
         
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.clicked.emit()
+            if self.has_image and event.position().y() > self.size_val * 0.6:
+                self.delete_clicked.emit()
+            else:
+                self.clicked.emit()
 
 
 class IEMCardWidget(QFrame):
@@ -186,23 +191,13 @@ class IEMCardWidget(QFrame):
         self.lbl_title.setWordWrap(True)
         self.avatar_layout.addWidget(self.lbl_title)
         
-        btn_layout = QHBoxLayout()
-        btn_layout.setContentsMargins(0, 5, 0, 0)
-        btn_layout.setSpacing(5)
-        
-        self.btn_pick_color = QPushButton("Color")
-        self.btn_pick_color.setStyleSheet("QPushButton { background-color: #333; color: white; border-radius: 4px; padding: 4px 8px; font-size: 10px; } QPushButton:hover { background-color: #444; }")
+        self.btn_pick_color = QPushButton("Set Color")
+        self.btn_pick_color.setStyleSheet("QPushButton { background-color: #333; color: white; border-radius: 4px; padding: 4px 8px; font-size: 10px; margin-top: 5px; } QPushButton:hover { background-color: #444; }")
         self.btn_pick_color.setCursor(Qt.PointingHandCursor)
         self.btn_pick_color.clicked.connect(self.choose_color)
-        btn_layout.addWidget(self.btn_pick_color)
+        self.avatar_layout.addWidget(self.btn_pick_color)
         
-        self.btn_remove_pic = QPushButton("Remove")
-        self.btn_remove_pic.setStyleSheet("QPushButton { background-color: #500; color: white; border-radius: 4px; padding: 4px 8px; font-size: 10px; } QPushButton:hover { background-color: #700; }")
-        self.btn_remove_pic.setCursor(Qt.PointingHandCursor)
-        self.btn_remove_pic.clicked.connect(self.remove_pic)
-        btn_layout.addWidget(self.btn_remove_pic)
-        
-        self.avatar_layout.addLayout(btn_layout)
+        self.pic_widget.delete_clicked.connect(self.remove_pic)
         
         # Initial color application
         self.apply_color()
@@ -453,8 +448,6 @@ class IEMCardWidget(QFrame):
             
     def apply_color(self):
         if not self.pic_path:
-            self.btn_pick_color.show()
-            self.btn_remove_pic.hide()
             # Contrast text color calculation
             hex_color = self.iem_color.lstrip('#')
             if len(hex_color) == 6:
@@ -465,9 +458,6 @@ class IEMCardWidget(QFrame):
                 text_color = "#ffffff"
                 
             self.pic_widget.img_label.setStyleSheet(f"background-color: {self.iem_color}; border-radius: {self.pic_widget.size_val//2}px; border: 1px solid #555; color: {text_color}; font-size: {max(9, int(self.pic_widget.size_val * 0.12))}px; font-weight: bold;")
-        else:
-            self.btn_pick_color.hide()
-            self.btn_remove_pic.show()
 
     def remove_pic(self):
         self.pic_path = ""
@@ -587,11 +577,7 @@ class ProfileWidget(QWidget):
         self.pic_widget.clicked.connect(self.choose_pic)
         pic_layout.addWidget(self.pic_widget)
         
-        self.btn_remove_profile_pic = QPushButton("Remove Photo")
-        self.btn_remove_profile_pic.setStyleSheet("QPushButton { background-color: #500; color: white; border-radius: 4px; padding: 4px 8px; font-size: 10px; margin-top: 5px; } QPushButton:hover { background-color: #700; }")
-        self.btn_remove_profile_pic.setCursor(Qt.PointingHandCursor)
-        self.btn_remove_profile_pic.clicked.connect(self.remove_pic)
-        pic_layout.addWidget(self.btn_remove_profile_pic, alignment=Qt.AlignCenter)
+        self.pic_widget.delete_clicked.connect(self.remove_pic)
         
         header_layout.addLayout(pic_layout)
         
@@ -746,7 +732,6 @@ class ProfileWidget(QWidget):
             self.band_input.setText(m_res[1] or "")
             self.notes_input.setText(m_res[2] or "")
             self.pic_widget.set_image(m_res[3])
-            self.btn_remove_profile_pic.setVisible(bool(m_res[3]))
             
         # Clear old cards
         for i in reversed(range(self.iem_layout.count())):
@@ -776,12 +761,10 @@ class ProfileWidget(QWidget):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select Musician Photo", "", "Images (*.png *.jpg *.jpeg);;All Files (*)", options=options)
         if file_path:
             self.pic_widget.set_image(file_path)
-            self.btn_remove_profile_pic.show()
             self.save_all()
 
     def remove_pic(self):
         self.pic_widget.set_image("")
-        self.btn_remove_profile_pic.hide()
         self.save_all()
             
     def add_another_iem(self):
