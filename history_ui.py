@@ -72,13 +72,13 @@ class HistoryCardWidget(QWidget):
         lbl_iem.setObjectName("lbl_iem")
         lbl_iem.setMinimumWidth(1)
         lbl_iem.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
-        lbl_iem.setStyleSheet(f"font-weight: bold; font-size: 13px; color: {fg};")
+        lbl_iem.setStyleSheet(f"background-color: transparent; font-weight: bold; font-size: 13px; color: {fg};")
         
         lbl_date = QLabel(timestamp)
         lbl_date.setObjectName("lbl_date")
         lbl_date.setMinimumWidth(1)
         lbl_date.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
-        lbl_date.setStyleSheet(f"font-size: 10px; color: {text_sec};")
+        lbl_date.setStyleSheet(f"background-color: transparent; font-size: 10px; color: {text_sec};")
         
         info_layout.addWidget(lbl_iem)
         info_layout.addWidget(lbl_date)
@@ -96,7 +96,7 @@ class HistoryCardWidget(QWidget):
         layout.addStretch()
         
         self.cb_graph = QCheckBox("Graph")
-        self.cb_graph.setStyleSheet(f"QCheckBox {{ color: {text_sec}; font-size: 11px; font-weight: bold; }}")
+        self.cb_graph.setStyleSheet(f"QCheckBox {{ background-color: transparent; color: {text_sec}; font-size: 11px; font-weight: bold; }}")
         layout.addWidget(self.cb_graph)
 
 class HistoryWidget(QWidget):
