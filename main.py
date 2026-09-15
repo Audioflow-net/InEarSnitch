@@ -277,12 +277,6 @@ class MusicianCard(QWidget):
             
         self.bottom_info.addStretch()
         
-        self.status_lbl = QLabel(status)
-        self.status_lbl.setStyleSheet("background-color: transparent; color: #00FF99; font-size: 11px; border: none; outline: none;")
-        self.status_lbl.setFocusPolicy(Qt.NoFocus)
-        self.status_lbl.setMinimumWidth(1)
-        self.bottom_info.addWidget(self.status_lbl)
-        
         if self.avatar_btns:
             self.select_iem(self.current_iem_id, self.current_iem_name, self.avatar_btns[0][1])
 
