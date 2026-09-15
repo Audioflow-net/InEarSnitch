@@ -142,12 +142,13 @@ class IEMCardWidget(QFrame):
     data_changed = Signal()
     load_requested = Signal(int)
     
-    def __init__(self, iem_id, model_name, contact, notes, pic_path, abbr="", custom_name="", parent=None):
+    def __init__(self, iem_id, model_name, contact, notes, pic_path, abbr="", custom_name="", color="#2a2a2a", parent=None):
         super().__init__(parent)
         self.iem_id = iem_id
         self.pic_path = pic_path or ""
         self.abbr = abbr or ""
         self.custom_name = custom_name or ""
+        self.iem_color = color or "#2a2a2a"
         self.setProperty("class", "iem-card")
         self.expanded = False
         self.setObjectName("IemCardObj")
@@ -184,6 +185,15 @@ class IEMCardWidget(QFrame):
         self.lbl_title.setStyleSheet("background-color: transparent; color: white; font-weight: bold; font-size: 14px; margin-top: 5px; border: none; outline: none;")
         self.lbl_title.setWordWrap(True)
         self.avatar_layout.addWidget(self.lbl_title)
+        
+        self.btn_pick_color = QPushButton("Set Color")
+        self.btn_pick_color.setStyleSheet("QPushButton { background-color: #333; color: white; border-radius: 4px; padding: 4px 8px; font-size: 10px; margin-top: 5px; } QPushButton:hover { background-color: #444; }")
+        self.btn_pick_color.setCursor(Qt.PointingHandCursor)
+        self.btn_pick_color.clicked.connect(self.choose_color)
+        self.avatar_layout.addWidget(self.btn_pick_color)
+        
+        # Initial color application
+        self.apply_color()
         
         self.main_layout.addWidget(self.avatar_container)
         
@@ -368,7 +378,7 @@ class IEMCardWidget(QFrame):
         if not self.expanded:
             self.toggle_expand()
         else:
-            self.upload_pic()
+            self.choose_pic()
             
     def enterEvent(self, event):
         if not self.expanded:
@@ -419,12 +429,37 @@ class IEMCardWidget(QFrame):
         if not self.expanded:
             self.form_container.hide()
 
-    def upload_pic(self):
-        options = QFileDialog.Options()
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select IEM Photo", "", "Images (*.png *.jpg *.jpeg);;All Files (*)", options=options)
+    def choose_color(self):
+        from PySide6.QtWidgets import QColorDialog
+        from PySide6.QtGui import QColor
+        dlg = QColorDialog(QColor(self.iem_color), self)
+        if dlg.exec():
+            color = dlg.currentColor().name()
+            self.iem_color = color
+            self.apply_color()
+            self.data_changed.emit()
+            
+    def apply_color(self):
+        # We only apply color to the avatar circle if there's no picture
+        if not self.pic_path:
+            # Contrast text color calculation
+            hex_color = self.iem_color.lstrip('#')
+            if len(hex_color) == 6:
+                r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+                luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+                text_color = "#000000" if luminance > 0.5 else "#ffffff"
+            else:
+                text_color = "#ffffff"
+                
+            self.pic_widget.img_label.setStyleSheet(f"background-color: {self.iem_color}; border-radius: {self.pic_widget.size_val//2}px; border: 1px solid #555; color: {text_color}; font-size: {max(9, int(self.pic_widget.size_val * 0.12))}px; font-weight: bold;")
+
+    def choose_pic(self):
+        from PySide6.QtWidgets import QFileDialog
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select IEM Photo", "", "Images (*.png *.jpg *.jpeg)")
         if file_path:
             self.pic_path = file_path
             self.pic_widget.set_image(self.pic_path)
+            self.apply_color() # Re-evaluate
             self.data_changed.emit()
             
     def get_data(self):
@@ -434,7 +469,9 @@ class IEMCardWidget(QFrame):
             "contact_person": self.contact_input.text(),
             "service_notes": self.service_input.text(),
             "iem_pic": self.pic_path,
-            "abbr": self.abbr_input.text().upper()
+            "abbr": self.abbr_input.text().upper(),
+            "custom_name": self.custom_name_input.text(),
+            "color": self.iem_color
         }
 
 
@@ -684,11 +721,12 @@ class ProfileWidget(QWidget):
                 widget.deleteLater()
         self.iem_cards.clear()
         
-        cursor.execute("SELECT id, model_name, contact_person, service_notes, iem_pic, abbreviation, custom_name FROM IEM_Models WHERE musician_id = ?", (self.current_musician_id,))
+        cursor.execute("SELECT id, model_name, contact_person, service_notes, iem_pic, abbreviation, custom_name, color FROM IEM_Models WHERE musician_id = ?", (self.current_musician_id,))
         iems = cursor.fetchall()
         
         for iem in iems:
-            card = IEMCardWidget(iem[0], iem[1], iem[2], iem[3], iem[4], iem[5])
+            color = iem[7] if len(iem) > 7 and iem[7] else "#2a2a2a"
+            card = IEMCardWidget(iem[0], iem[1], iem[2], iem[3], iem[4], iem[5], iem[6], color)
             card.delete_requested.connect(self.delete_iem)
             card.expanded_state_changed.connect(self.recalc_avatar_sizes)
             card.data_changed.connect(self.trigger_save)
@@ -733,7 +771,7 @@ class ProfileWidget(QWidget):
 
     def delete_musician(self):
         if not self.current_musician_id: return
-        reply = QMessageBox.question(self, 'Delete Musician', 'Are you sure you want to completely delete this musician, all their IEMs, and all measurements?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(self, 'Remove Musician Profile', 'Are you sure? This will permanently delete this musician, all their IEMs, and all measurements.\n\nThis cannot be undone.', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             conn = sqlite3.connect("inearsnitch.db")
             c = conn.cursor()
@@ -748,7 +786,7 @@ class ProfileWidget(QWidget):
             self.profile_deleted.emit()
 
     def delete_iem(self, iem_id):
-        reply = QMessageBox.question(self, 'Delete IEM', 'Are you sure you want to delete this IEM and all its measurements?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(self, 'Remove IEM', 'Are you sure? This will permanently delete this IEM and all its measurements.\n\nThis cannot be undone.', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             conn = sqlite3.connect("inearsnitch.db")
             c = conn.cursor()
@@ -776,9 +814,9 @@ class ProfileWidget(QWidget):
                 data = card.get_data()
                 c.execute('''
                     UPDATE IEM_Models 
-                    SET model_name = ?, contact_person = ?, service_notes = ?, iem_pic = ?, abbreviation = ?, custom_name = ? 
+                    SET model_name = ?, contact_person = ?, service_notes = ?, iem_pic = ?, abbreviation = ?, custom_name = ?, color = ?
                     WHERE id = ?
-                ''', (data['model_name'], data['contact_person'], data['service_notes'], data['iem_pic'], data.get('abbr', ''), data.get('custom_name', ''), data['id']))
+                ''', (data['model_name'], data['contact_person'], data['service_notes'], data['iem_pic'], data.get('abbr', ''), data.get('custom_name', ''), data.get('color', '#2a2a2a'), data['id']))
                   
             conn.commit()
         finally:

@@ -42,9 +42,15 @@ class DatabaseManager:
                 iem_pic TEXT,
                 abbreviation TEXT,
                 custom_name TEXT DEFAULT '',
+                color TEXT DEFAULT '#2a2a2a',
                 FOREIGN KEY (musician_id) REFERENCES Musicians (id)
             )
         """)
+        
+        try:
+            cursor.execute("ALTER TABLE IEM_Models ADD COLUMN color TEXT DEFAULT '#2a2a2a'")
+        except sqlite3.OperationalError:
+            pass
         
         # Historical measurements for reference overlays
         # cursor.execute("DROP TABLE IF EXISTS Measurements")

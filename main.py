@@ -141,12 +141,13 @@ from dialogs import AddProfileDialog
 
 from PySide6.QtCore import Signal
 class AvatarButton(QLabel):
-    def __init__(self, iem_id, iem_name, pic_path, abbr, parent_card):
+    def __init__(self, iem_id, iem_name, pic_path, abbr, color, parent_card):
         super().__init__()
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.iem_id = iem_id
         self.iem_name = iem_name
         self.abbr = abbr
+        self.color = color if color else "#2a2a2a"
         self.parent_card = parent_card
         self.has_pic = False
         self.update_style(False)
@@ -176,29 +177,35 @@ class AvatarButton(QLabel):
         if self.abbr:
             text = self.abbr[:2].upper()
         else:
-            # Auto-generate 2-letter abbreviation
-            words = self.iem_name.split()
-            if len(words) >= 2:
-                text = (words[0][0] + words[1][0]).upper()
+            parts = self.iem_name.split()
+            if len(parts) >= 2:
+                text = (parts[0][0] + parts[1][0]).upper()
             else:
                 text = self.iem_name[:2].upper()
         self.setText(text)
             
         self.update_style(False)
         
+    def _get_text_color_for_bg(self, hex_color):
+        hex_color = hex_color.lstrip('#')
+        if len(hex_color) == 6:
+            r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+            luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+            return "#000000" if luminance > 0.5 else "#ffffff"
+        return "#ffffff"
+        
     def update_style(self, selected):
         import theme
         
-        # If it has a picture, the background must be transparent so it doesn't draw a square behind the circular pixmap
         if selected:
             bg = "transparent" if self.has_pic else ("#0284c7" if theme.CURRENT_MODE == "light" else "#00FFFF")
             text_col = "#ffffff" if theme.CURRENT_MODE == "light" else "#000000"
             border_col = "#0284c7" if theme.CURRENT_MODE == "light" else "#00FFFF"
             self.setStyleSheet(f"QLabel {{ background-color: {bg}; color: {text_col}; border: 2px solid {border_col}; border-radius: 18px; font-weight: bold; font-size: 14px; outline: none; }}")
         else:
-            bg = "transparent" if self.has_pic else ("#ffffff" if theme.CURRENT_MODE == "light" else "#1f1f23")
+            bg = "transparent" if self.has_pic else self.color
+            text_col = "#ffffff" if self.has_pic else self._get_text_color_for_bg(self.color)
             border_col = "#e4e4e7" if theme.CURRENT_MODE == "light" else "#2d2d34"
-            text_col = "#52525b" if theme.CURRENT_MODE == "light" else "#888888"
             self.setStyleSheet(f"QLabel {{ background-color: {bg}; border: 2px solid {border_col}; border-radius: 18px; color: {text_col}; font-weight: bold; font-size: 14px; outline: none; }}")
 
     def mousePressEvent(self, event):
@@ -287,9 +294,14 @@ class MusicianCard(QWidget):
         self.avatars_layout.setSpacing(4)
         
         row, col = 0, 0
-        for iem_id, iem_name, pic_path, abbr, custom_name in iems:
+        for item in iems:
+            if len(item) == 6:
+                iem_id, iem_name, pic_path, abbr, custom_name, color = item
+            else:
+                iem_id, iem_name, pic_path, abbr, custom_name = item
+                color = "#2a2a2a"
             display_name = custom_name if custom_name else iem_name
-            btn = AvatarButton(iem_id, display_name, pic_path, abbr, self)
+            btn = AvatarButton(iem_id, display_name, pic_path, abbr, color, self)
             self.avatar_btns.append((iem_id, btn))
             self.avatars_layout.addWidget(btn, row, col)
             col += 1
@@ -1615,7 +1627,7 @@ class MainWindow(QMainWindow):
         if is_error and not text.startswith("Warning"):
             if hasattr(self, 'sub_lbl'):
                 short_text = text.strip().split('\n')[-1][:60]
-                self.sub_lbl.setText(f"ERROR: {short_text} (See Settings Console)")
+                self.sub_lbl.setText(f"Error: {short_text} — see Settings → Console for the full log.")
                 self.sub_lbl.setStyleSheet("color: #ff4444; font-size: 12px; font-weight: bold;")
 
     def _align_target(self, tgt_f, tgt_m, meas_freqs, meas_mag, anchor_hz=1000):
@@ -2018,11 +2030,11 @@ class MainWindow(QMainWindow):
                 filename = os.path.basename(path)
                 shutil.copy2(path, os.path.join(target_dir, filename))
                 imported += 1
-            QMessageBox.information(self, "Success", f"Imported {imported} target(s).")
+            QMessageBox.information(self, "Import Successful", f"Imported {imported} target curve(s) successfully.\nThey now appear in the Target dropdown.")
             self.reload_target_list()
             self.load_targets()
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to import: {e}")
+            QMessageBox.critical(self, "Import Failed", f"We couldn't import the file(s). Please check the file format (CSV with Frequency and Magnitude columns) and try again.\n\nTechnical detail: {e}")
 
     def export_target_template(self):
         from PySide6.QtWidgets import QFileDialog, QMessageBox
@@ -2030,7 +2042,7 @@ class MainWindow(QMainWindow):
         import os
         item = self.list_targets.currentItem()
         if not item:
-            QMessageBox.warning(self, "Export", "Select a target to export.")
+            QMessageBox.warning(self, "Nothing Selected", "Please select a target curve from the list first.")
             return
         src_path = item.data(100)
         filename = os.path.basename(src_path)
@@ -2038,16 +2050,16 @@ class MainWindow(QMainWindow):
         if not dst_path: return
         try:
             shutil.copy2(src_path, dst_path)
-            QMessageBox.information(self, "Success", "Target exported successfully.")
+            QMessageBox.information(self, "Export Successful", "Target curve exported successfully.")
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to export: {e}")
+            QMessageBox.critical(self, "Export Failed", f"We couldn't save the file. Please check the destination path and try again.\n\nTechnical detail: {e}")
 
     def delete_target_template(self):
         from PySide6.QtWidgets import QMessageBox
         import os
         item = self.list_targets.currentItem()
         if not item:
-            QMessageBox.warning(self, "Delete", "Select a target to delete.")
+            QMessageBox.warning(self, "Nothing Selected", "Please select a target curve from the list first.")
             return
         src_path = item.data(100)
         reply = QMessageBox.question(self, "Confirm Delete", f"Are you sure you want to delete '{os.path.basename(src_path)}'?", QMessageBox.Yes | QMessageBox.No)
@@ -2057,7 +2069,7 @@ class MainWindow(QMainWindow):
                 self.reload_target_list()
                 self.load_targets()
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to delete: {e}")
+                QMessageBox.critical(self, "Couldn't Delete", f"We couldn't remove this file. Please check the app has the right permissions.\n\nTechnical detail: {e}")
 
     def backup_database(self):
         from PySide6.QtWidgets import QFileDialog, QMessageBox
@@ -2071,16 +2083,18 @@ class MainWindow(QMainWindow):
         
         try:
             shutil.copy2(self.db.db_path, path)
-            QMessageBox.information(self, "Backup Success", f"Database successfully backed up to:\n{path}")
+            QMessageBox.information(self, "Backup Saved", f"Database backed up to:\n{path}")
         except Exception as e:
-            QMessageBox.critical(self, "Backup Error", f"Failed to backup database:\n{e}")
+            QMessageBox.critical(self, "Backup Failed", f"We couldn't create the backup file. Please check the destination folder and try again.\n\nTechnical detail: {e}")
 
     def restore_database(self):
         from PySide6.QtWidgets import QFileDialog, QMessageBox
         import shutil
         import os
         
-        QMessageBox.warning(self, "Restore Database", "Restoring a database will OVERWRITE all current profiles and measurements!\n\nA temporary backup of your current database will be created just in case.")
+        QMessageBox.warning(self, "Warning: This Will Overwrite Your Data",
+            "Restoring a backup will OVERWRITE all current profiles and measurements.\n\n"
+            "A safety copy of your current database will be created automatically before the restore.")
         
         path, _ = QFileDialog.getOpenFileName(self, "Restore Database", "", "SQLite Database (*.db)")
         if not path: return
@@ -2094,7 +2108,7 @@ class MainWindow(QMainWindow):
             # Overwrite with the selected file
             shutil.copy2(path, self.db.db_path)
             
-            QMessageBox.information(self, "Restore Success", "Database successfully restored!\n\nThe application will now reload your profiles.")
+            QMessageBox.information(self, "Restore Successful", "Database restored successfully.\n\nInEar Snitch will now reload your profiles.")
             
             # Reload application state
             self.current_iem_id = None
@@ -2114,12 +2128,12 @@ class MainWindow(QMainWindow):
             self.switch_workspace_tab(0) # Go to profiles tab
             
         except Exception as e:
-            QMessageBox.critical(self, "Restore Error", f"Failed to restore database:\n{e}")
+            QMessageBox.critical(self, "Restore Failed", f"We couldn't restore the backup. Please make sure the file is a valid InEar Snitch database.\n\nTechnical detail: {e}")
 
     def _run_level_calibration(self):
         """Auto-calibration: plays ascending test tones to find optimal output level."""
         if self.selected_in_idx is None or self.selected_out_idx is None:
-            QMessageBox.warning(self, "Not Configured", "Select Input and Output devices in the Routing tab first.")
+            QMessageBox.warning(self, "Audio Not Set Up", "Please select your Input and Output devices in the Routing tab first before running Calibration.")
             return
 
         self.btn_auto_cal.setEnabled(False)
@@ -2276,10 +2290,10 @@ class MainWindow(QMainWindow):
             log_lines.append("")
             log_lines.append("⚠️ WARNING: Recording level is very low!")
             log_lines.append("   Increase your system output level and re-calibrate.")
-            QMessageBox.warning(self, "Low Level Warning",
-                f"The recording level is very low ({actual_peak:.0f} dBFS).\n\n"
-                "Measurements may have poor signal-to-noise ratio.\n"
-                "Increase your system output level and run calibration again."
+            QMessageBox.warning(self, "Recording Level Too Low",
+                f"The signal coming in from your microphone is very quiet ({actual_peak:.0f} dBFS).\n\n"
+                "Your measurements may be noisy and unreliable.\n"
+                "Please increase your interface's output level, then run Calibration again."
             )
         
         # Warn if stress test can't go louder than normal sweep
@@ -2311,23 +2325,22 @@ class MainWindow(QMainWindow):
         """Run a high-amplitude sweep and extract HOHD for Rub & Buzz detection."""
         stress_amp = getattr(self.audio_engine, 'calibrated_stress_amp', None)
         if stress_amp is None:
-            QMessageBox.warning(self, "Not Calibrated",
-                                "Run Output Level Calibration in Settings first.")
+            QMessageBox.warning(self, "Not Calibrated Yet",
+                                "Please run Output Level Calibration first (in Settings → Calibration) before using the Stress Test.")
             return
         
         if self.is_measuring:
             return
         
         if self.selected_in_idx is None or self.selected_out_idx is None:
-            QMessageBox.warning(self, "Not Configured", "Select audio devices in Settings first.")
+            QMessageBox.warning(self, "Audio Not Set Up", "Please open Settings (top right) and select your Input and Output devices before running the Stress Test.")
             return
         
         # Confirmation
         reply = QMessageBox.question(
-            self, "Stress Test",
-            f"This test plays a louder sweep (amplitude {stress_amp:.3f}) "
-            f"to detect driver defects (Rub & Buzz).\n\n"
-            f"Your IEM should be seated in the coupler.\n"
+            self, "Run Rub & Buzz Test?",
+            f"This plays a louder-than-normal sweep to detect driver defects (Rub & Buzz).\n\n"
+            f"Make sure your IEM is seated in the coupler — do NOT wear it while measuring.\n"
             f"Continue?",
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         )
@@ -2358,11 +2371,10 @@ class MainWindow(QMainWindow):
         cal_sweep = getattr(self.audio_engine, 'calibrated_sweep_amp', 0.1)
         if stress_amp <= cal_sweep:
             QMessageBox.warning(
-                self, "Stress Test Limited",
-                "The Stress Test amplitude is the same as the normal sweep.\n\n"
-                "This means the test cannot drive the IEM harder than a regular measurement, "
-                "so Rub & Buzz detection may be unreliable.\n\n"
-                "To fix this, increase your system output level and re-run the Output Level Calibration."
+                self, "Stress Test May Be Limited",
+                "Your output level isn't high enough to push the IEM harder than a regular measurement.\n\n"
+                "Rub & Buzz detection may be less reliable.\n\n"
+                "To improve this, increase your interface's output level and run the Calibration again."
             )
         # --- END PREFLIGHT ---
 
@@ -2431,7 +2443,7 @@ class MainWindow(QMainWindow):
             self.page_ana.hohd_line.show()
             
             if not np.any(mask):
-                self.sub_lbl.setText("Stress Test completed (No valid data)")
+                self.sub_lbl.setText("Stress Test complete — no usable signal detected. Try reseating the IEM in the coupler.")
                 return
                 
             peak_idx = np.argmax(hohd_smooth[mask])
@@ -2474,16 +2486,16 @@ class MainWindow(QMainWindow):
             self.page_ana.thd_widget.setXRange(np.log10(peak_freq * 0.5), np.log10(peak_freq * 2.0), padding=0.1)
             
         else:
-            self.sub_lbl.setText("Stress Test completed (No valid data)")
+            self.sub_lbl.setText("Stress Test complete — no usable signal detected. Try reseating the IEM in the coupler.")
     
     def _on_stress_error(self, msg):
         from PySide6.QtWidgets import QMessageBox
         self.is_measuring = False
         self.stress_overlay.stop()
         self.page_ana.btn_stress_test.setEnabled(True)
-        self.sub_lbl.setText(f"Stress Test error: {msg}")
+        self.sub_lbl.setText("Stress Test failed — check your audio interface connection and try again.")
         self.sub_lbl.setStyleSheet("color: #ef4444; font-size: 12px;")
-        QMessageBox.critical(self, "Stress Test Failed", f"An error occurred during the test:\n\n{msg}")
+        QMessageBox.critical(self, "Stress Test Couldn't Complete", f"The Rub & Buzz test ran into an audio problem.\n\nPlease check that your IEM is seated in the coupler and your audio interface is connected, then try again.\n\nTechnical detail: {msg}")
 
 
     def save_settings(self):
@@ -2608,10 +2620,10 @@ class MainWindow(QMainWindow):
         musicians = cursor.fetchall()
         
         for m_id, name, band, pic in musicians:
-            cursor.execute("SELECT id, model_name, iem_pic, abbreviation, custom_name FROM IEM_Models WHERE musician_id = ?", (m_id,))
+            cursor.execute("SELECT id, model_name, iem_pic, abbreviation, custom_name, color FROM IEM_Models WHERE musician_id = ?", (m_id,))
             iems = cursor.fetchall()
             if not iems:
-                iems = [(-1, "Unknown IEM", "", "", "")]
+                iems = [(-1, "Unknown IEM", "", "", "", "#2a2a2a")]
                 
             card = MusicianCard(name or "Unknown", band or "", iems, profile_pic=pic)
             card.m_id = m_id
@@ -2668,7 +2680,7 @@ class MainWindow(QMainWindow):
             self.on_profile_selected(card)
         except Exception as e:
             from PySide6.QtWidgets import QMessageBox
-            QMessageBox.critical(self, "Error", f"force_profile_selection failed: {str(e)}")
+            QMessageBox.critical(self, "Couldn't Load Profile", f"We couldn't load this profile properly. Please try clicking it again.\n\nTechnical detail: {str(e)}")
 
 
 
@@ -2805,7 +2817,7 @@ class MainWindow(QMainWindow):
         
         # UI Hardening: silently block profile switches during an active sweep
         if getattr(self, 'is_measuring', False):
-            self.sub_lbl.setText("Sweep running - profile switch blocked.")
+            self.sub_lbl.setText("Measurement in progress — please wait before switching profiles.")
             self.sub_lbl.setStyleSheet("color: #FF8C00; font-size: 12px; font-weight: bold;")
             return
             
@@ -2892,13 +2904,13 @@ class MainWindow(QMainWindow):
 
     def delete_profile(self):
         if not self.current_iem_id:
-            self.sub_lbl.setText("ERROR: Select a profile from the left sidebar first!")
+            self.sub_lbl.setText("No profile selected. Click a profile in the sidebar first.")
             self.sub_lbl.setStyleSheet("color: red; font-size: 13px;")
             return
         # UI Hardening: prevent deletion while sweep is running
         if self.is_measuring:
             from PySide6.QtWidgets import QMessageBox
-            QMessageBox.warning(self, "Sweep Running", "Cannot delete a profile while a sweep is in progress.\nPlease wait for the measurement to complete.")
+            QMessageBox.warning(self, "Measurement Running", "Please wait for the current measurement to finish before deleting a profile.")
             return
         # Simple inline deletion to avoid modal question box
         conn = sqlite3.connect(self.db.db_path)
@@ -3005,7 +3017,7 @@ class MainWindow(QMainWindow):
         conn.close()
         
         if not row:
-            self.sub_lbl.setText("No previous measurements found for this profile.")
+            self.sub_lbl.setText("No previous measurements found for this IEM yet — run a measurement first!")
             self.sub_lbl.setStyleSheet("color: yellow; font-size: 13px;")
             return
             
@@ -3190,7 +3202,7 @@ class MainWindow(QMainWindow):
         import pyqtgraph as pg
         if checked:
             if self.selected_in_idx is None or self.selected_out_idx is None:
-                QMessageBox.critical(self, "Hardware Not Configured", "Audio Interface not configured!")
+                QMessageBox.critical(self, "Audio Not Set Up", "We can't hear anything! Please open Settings (top right) and select your Input and Output devices first.")
                 self.btn_rta_raw.setChecked(False)
                 self.btn_iec_guide.setChecked(False)
                 return
@@ -3423,16 +3435,16 @@ class MainWindow(QMainWindow):
         from PySide6.QtWidgets import QMessageBox
         
         if not self.current_iem_id:
-            QMessageBox.warning(self, "No Profile Selected", "Please select or create a Musician Profile from the left sidebar before measuring.")
+            QMessageBox.warning(self, "No Profile Selected", "Please select or create a Musician Profile from the sidebar on the left before running a measurement.")
             return
         
         # UI Hardening: block concurrent sweep attempts
         if self.is_measuring:
-            QMessageBox.warning(self, "Sweep Running", "A measurement is already in progress.\nPlease wait for it to complete.")
+            QMessageBox.warning(self, "Measurement Running", "A measurement is already in progress. Please wait for it to complete before starting a new one.")
             return
             
         if self.selected_in_idx is None or self.selected_out_idx is None:
-            QMessageBox.critical(self, "Hardware Not Configured", "Audio Interface not configured!\n\nPlease click Settings in the top right corner and select your Input and Output devices.")
+            QMessageBox.critical(self, "Audio Not Set Up", "We can't hear anything!\n\nPlease open Settings (top right corner) and select your Input and Output devices first.")
             return
             
         target_ch = "L" if self.get_current_channel() == "Left" else "R"
@@ -3602,7 +3614,7 @@ class MainWindow(QMainWindow):
             txt = f"{channel} channel captured. Measure the {other} side, or Save to DB."
             
         if getattr(self, 'low_vol_warning', False):
-            txt += " (WARN: Raw volume was very low. Turn up Interface Gain!)"
+            txt += " (⚠️ Signal was very quiet — please increase your interface's input gain.)"
             self.sub_lbl.setStyleSheet("color: #FFB300; font-size: 13px; font-weight: bold;")
         else:
             self.sub_lbl.setStyleSheet("color: #00FF00; font-size: 13px; font-weight: bold;")
@@ -3707,7 +3719,7 @@ class MainWindow(QMainWindow):
             self.sub_lbl.setText(f"Saved as Reference: {name}")
             self.sub_lbl.setStyleSheet("color: #8b5cf6; font-weight: bold;")
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to save target: {e}")
+            QMessageBox.critical(self, "Couldn't Save Reference", f"We couldn't save this as a reference target. Please check that the app has write permissions.\n\nTechnical detail: {e}")
 
     def export_csv(self):
         if self.temp_freqs is None or self.temp_mag_l is None:
@@ -3731,13 +3743,13 @@ class MainWindow(QMainWindow):
                 self.sub_lbl.setText(f"Exported to {path}")
                 self.sub_lbl.setStyleSheet("color: #00FF99;")
             except Exception as e:
-                self.sub_lbl.setText(f"Export Failed: {e}")
+                self.sub_lbl.setText(f"Export failed — {e}")
                 self.sub_lbl.setStyleSheet("color: red;")
 
     def save_trace_to_db(self):
         if not self.current_iem_id: return
         if self.temp_freqs is None:
-            self.sub_lbl.setText("ERROR: No trace to save!")
+            self.sub_lbl.setText("Nothing to save yet — run a measurement first, then hit Save.")
             self.sub_lbl.setStyleSheet("color: red; font-size: 13px;")
             return
             
@@ -3777,7 +3789,7 @@ class MainWindow(QMainWindow):
             self.load_targets()
             
         except Exception as e:
-            self.sub_lbl.setText(f"Status: ERROR saving - {e}")
+            self.sub_lbl.setText(f"Could not save to database — {e}")
             self.sub_lbl.setStyleSheet("color: red; font-size: 12px; font-weight: bold;")
             print(f"DB Save Error: {e}")
         
@@ -3789,7 +3801,7 @@ class MainWindow(QMainWindow):
         self.meas_overlay.stop()
         self.btn_capture.setEnabled(True)
         if hasattr(self, 'btn_save_tgt'): self.btn_save_tgt.setEnabled(True)
-        self.sub_lbl.setText("Status: ERROR (See Popup)")
+        self.sub_lbl.setText("Measurement failed — see the popup for details.")
         self.sub_lbl.setStyleSheet("color: red; font-size: 12px; font-weight: bold;")
         
         from PySide6.QtWidgets import QMessageBox
@@ -3800,8 +3812,8 @@ class MainWindow(QMainWindow):
         msg = QMessageBox(self)
         msg.setIcon(QMessageBox.Critical)
         msg.setWindowTitle("Measurement Failed")
-        msg.setText("The audio engine encountered an error.")
-        msg.setInformativeText(str(err_msg))
+        msg.setText("The measurement didn't complete successfully.")
+        msg.setInformativeText(f"Please check that your IEM is seated correctly in the coupler and that your audio interface is connected.\n\nTechnical detail: {str(err_msg)}")
         msg.exec()
 
     def start_guided_tour(self):
