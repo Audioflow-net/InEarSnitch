@@ -121,6 +121,13 @@ class AutoWrapLabel(QLabel):
         # Ensure layout recalculates height properly in QScrollArea
         self.setMinimumHeight(self.heightForWidth(self.width()))
 
+class StableTabWidget(QTabWidget):
+    def sizeHint(self):
+        from PySide6.QtCore import QSize
+        # Provide a stable width hint so QSplitter doesn't auto-collapse when empty
+        hint = super().sizeHint()
+        return QSize(345, hint.height())
+
 class AnalysisWidget(QWidget):
     request_measurement = Signal()
     request_stress_test = Signal()
@@ -321,8 +328,8 @@ class AnalysisWidget(QWidget):
         self.btn_toggle_tools.clicked.connect(self.toggle_tools_pane)
         self.right_pane_layout.addWidget(self.btn_toggle_tools)
         
-        self.tools_tabs = QTabWidget()
-        self.tools_tabs.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
+        self.tools_tabs = StableTabWidget()
+        # self.tools_tabs.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
         self.tools_tabs.setElideMode(Qt.ElideNone)
         self.tools_tabs.setUsesScrollButtons(True)
         self.tools_tabs.setMinimumWidth(220)
