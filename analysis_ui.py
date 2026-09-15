@@ -322,6 +322,7 @@ class AnalysisWidget(QWidget):
         self.right_pane_layout.addWidget(self.btn_toggle_tools)
         
         self.tools_tabs = QTabWidget()
+        self.tools_tabs.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
         self.tools_tabs.setElideMode(Qt.ElideNone)
         self.tools_tabs.setUsesScrollButtons(True)
         self.tools_tabs.setMinimumWidth(220)
