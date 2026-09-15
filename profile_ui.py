@@ -1,4 +1,5 @@
 import os
+import sqlite3
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                              QLineEdit, QPushButton, QFrame, QFormLayout, 
                              QTextEdit, QFileDialog, QInputDialog, QGridLayout, 
