@@ -1251,18 +1251,8 @@ class MainWindow(QMainWindow):
         self.page_set.hide()
         self.settings_panel = self.page_set
         
-        set_scroll = QScrollArea(self.page_set)
-        set_scroll.setWidgetResizable(True)
-        set_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
-        
-        set_container = QWidget()
-        set_layout = QVBoxLayout(set_container)
+        set_layout = QVBoxLayout(self.page_set)
         set_layout.setContentsMargins(20, 20, 20, 20)
-        set_scroll.setWidget(set_container)
-        
-        page_set_layout = QVBoxLayout(self.page_set)
-        page_set_layout.setContentsMargins(0, 0, 0, 0)
-        page_set_layout.addWidget(set_scroll)
         
         # Header
         header_layout = QHBoxLayout()
@@ -1360,7 +1350,7 @@ class MainWindow(QMainWindow):
         self.cal_widget = CalibrationWidget()
         self.cal_widget.calibration_applied.connect(self.reload_calibrations)
         self.mic_cal_combo.currentIndexChanged.connect(self.update_cal_preview)
-        cal_layout.addWidget(self.cal_widget)
+        cal_layout.addWidget(self.cal_widget, stretch=1)
 
         # ── OUTPUT LEVEL CALIBRATION ──
         divider = QFrame()
@@ -1396,7 +1386,6 @@ class MainWindow(QMainWindow):
         self.btn_auto_cal.clicked.connect(self._run_level_calibration)
         cal_layout.addWidget(self.btn_auto_cal)
 
-        cal_layout.addStretch()
         self.settings_tabs.addTab(tab_cal, " Calibration ")
 
         # ── TAB 3: Manual / Help ──────────────────────────────────────────────
