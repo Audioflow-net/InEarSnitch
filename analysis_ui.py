@@ -323,6 +323,8 @@ class AnalysisWidget(QWidget):
         
         self.report_scroll = QScrollArea()
         self.report_scroll.setWidgetResizable(True)
+        self.report_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.report_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.report_scroll.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
         self.report_container = QWidget()
         self.report_layout = QVBoxLayout(self.report_container)
@@ -341,6 +343,8 @@ class AnalysisWidget(QWidget):
         
         self.dsp_container = QScrollArea()
         self.dsp_container.setWidgetResizable(True)
+        self.dsp_container.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.dsp_container.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.dsp_container.setStyleSheet("QScrollArea { border: none; background: transparent; }")
         self.dsp_container.setWidget(self.dsp_container_widget)
         
@@ -460,6 +464,8 @@ class AnalysisWidget(QWidget):
         
         self.preset_cards_scroll = QScrollArea()
         self.preset_cards_scroll.setWidgetResizable(True)
+        self.preset_cards_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.preset_cards_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.preset_cards_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
         self.preset_cards_container = QWidget()
         self.preset_cards_layout = QVBoxLayout(self.preset_cards_container)
