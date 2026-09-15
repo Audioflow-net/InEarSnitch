@@ -689,7 +689,8 @@ class MainWindow(QMainWindow):
                 "if listened to directly, or <b>hardware damage</b> (blown drivers) if the output level is incorrectly staged.<br><br>"
                 "• NEVER wear the In-Ear Monitors (IEMs) while running a measurement.<br>"
                 "• ALWAYS double-check your audio interface output volume before clicking RUN.<br><br>"
-                "By clicking 'Accept', you confirm you understand these risks and release the developers of InEar SNITCH from any liability regarding hearing loss or equipment damage."
+                "By clicking 'Accept', you confirm you understand these risks and release the developers of InEar SNITCH from any liability regarding hearing loss or equipment damage.<br><br>"
+                "This software does not provide medical or audiological advice. Measurement results are for informational purposes only and must not be used for medical diagnosis or treatment decisions."
             )
             msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Abort)
             msg.button(QMessageBox.Ok).setText("Accept")
@@ -1573,6 +1574,11 @@ class MainWindow(QMainWindow):
         
 
         set_layout.addWidget(self.settings_tabs)
+
+        privacy_lbl = QLabel("Privacy: All data (musician profiles, measurements, photos) is stored exclusively on this device. No data is transmitted to the internet. No telemetry, no tracking, no analytics.")
+        privacy_lbl.setWordWrap(True)
+        privacy_lbl.setStyleSheet("font-size: 11px; color: #888888;")
+        set_layout.addWidget(privacy_lbl)
 
         self.reload_calibrations()
         self.update_cal_preview()

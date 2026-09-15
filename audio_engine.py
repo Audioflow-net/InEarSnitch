@@ -597,7 +597,8 @@ class AudioEngine:
         if win_samples % 2 == 1:
             win_samples += 1
             
-        window = hann(win_samples)
+        full_hann = hann(win_samples * 2 - 1)
+        window = full_hann[win_samples - 1:]
         t_max_samples = int(t_max * self.sample_rate)
         step_samples = max(1, t_max_samples // slices)
         
