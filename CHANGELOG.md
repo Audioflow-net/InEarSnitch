@@ -1,6 +1,33 @@
 # InEar Snitch Hardware & CAD Changelog
 *Lückenlose Dokumentation aller physikalischen Änderungen an den 3D-Modellen, um wissenschaftliche Reproduzierbarkeit sicherzustellen.*
 
+## [V35 TPU Insert - Finger-Krater] - 2026-09-16
+**Fokus:** Realness Check & Vereinfachung (Entfernung von beweglichen Mechanikteilen)
+
+### Geändert (Peli1020 TPU Insert)
+1. **Das betroffene Bauteil:** PETG Auswurf-Mechanismus (petg_seesaw) und TPU Cutouts.
+2. **Maße (Alt vs. Neu):** Die komplette `petg_seesaw` Wippe und ihre 15-Grad-Rotations-Freischnitte wurden entfernt. Stattdessen gibt es nun einen "Finger-Krater" (Cutout) von X=22.65 bis X=72.65 (Länge 50 mm), Y=55.0 bis Y=76.0 (Breite 21 mm) und Z=5.0 bis oben. Dieser hinterlässt einen 3 mm TPU-Boden über der Z=2.0 Grundplatte.
+3. **Formen-Änderung:** Alle Aussparungen für Pivot, Balken und Pull-Tab wurden durch eine einzige simple 50x21 mm Mulde (`cube()`) am Mikrofonschaft ersetzt.
+4. **Die Idee / Der Grund:** Eine simple offene Aussparung, in die man den Finger steckt, um das Mikrofon manuell herauszuhebeln, ist im echten Leben deutlich robuster und fehlerfreier als komplexe gedruckte Hebelmechanismen. Keep it simple and stupid (KISS-Prinzip).
+
+## [V34 TPU Insert & PETG Pull-Up Lever] - 2026-09-16
+**Fokus:** Realness Check & Redesign zu Class-2 Pull-Up Lever (Wheelbarrow Style)
+
+### Geändert (Peli1020 TPU Insert)
+1. **Das betroffene Bauteil:** PETG Auswurf-Mechanismus (petg_seesaw) und TPU Cutouts.
+2. **Maße (Alt vs. Neu):** Pivot von X=55 auf X=25 verschoben. Push-Button (X=75..85, Y=62.65..72.65, Z=18.0) komplett entfernt und durch vertikalen Pull-Tab bei X=82..92, Y=79..82 (bis Z=35.0) ersetzt. TPU-Cutouts angepasst: Hauptkanal jetzt X=24..93, inkl. 15 Grad Wedge-Rotationsfreischnitt.
+3. **Formen-Änderung:** Die `petg_seesaw()` ist nun ein Class-2 Hebel (Schubkarren-Prinzip). Ein starrer Balken verläuft unter dem Mikrofon (Z=8.0 bis 12.0) von X=25 bis X=92. Am Ende (X=92) geht eine Extension nach hinten (Y=82) mit einem vertikalen Zug-Tab. `cutouts()` wurde überarbeitet (Realness Check Bugfix): Die 15-Grad Rotation erfolgt nun über ein echtes `hull()`-Sweep, um den gesamten Schwingweg freizuschneiden. Zusätzlich wurde die Aussparung für den Pull-Tab massiv nach links (bis X=72) erweitert, da der 35mm hohe Tab beim 15-Grad Hochziehen kinematisch weit nach hinten kippt.
+4. **Die Idee / Der Grund:** Der vorherige Class-1 Push-Lever hatte einen fatalen Designfehler: Der Push-Button lag bei Y=62.65..72.65 direkt unter dem Mikrofonschaft (Y=66.0) und ragte mit Z=18.0 um 4.88mm in das Mikrofon (Boden bei Z=13.12) hinein. Das Einlegen des Mikros war unmöglich, ebenso das Drücken des Buttons! Der neue Class-2 Pull-Up Hebel löst dies: Der Drehpunkt liegt sicher ganz links (X=25), man zieht den Tab rechts (X=92, Y=82) hoch. Der kinematischer Bug der vorherigen Cutout-Version (Tab prallte beim Schwingen gegen die TPU-Wand) ist nun ebenfalls durch den Sweep und die Verbreiterung (X=72..94) gelöst.
+
+## [V33 TPU Insert & PETG Seesaw] - 2026-09-16
+**Fokus:** Realness Check & Mechanische Überarbeitung des Mic-Auswurfs
+
+### Geändert (Peli1020 TPU Insert)
+1. **Das betroffene Bauteil:** TPU Insert Gap & PETG Auswurf-Mechanismus.
+2. **Maße (Alt vs. Neu):** Der `tpu_strap` (Längs-Hängematte, Z=3.92 Boden) wurde komplett entfernt. Neu ist ein Cutout für die PETG-Wippe (X=34..86) mit Pivot-Pockets bei X=55, Z=10.0 (d=4.5).
+3. **Formen-Änderung:** Implementierung einer `petg_seesaw()` (Class-1 Hebel) am dünnen Mikrofon-Schaft. Drehpunkt bei X=55 und Z=10.0 hochgesetzt (vorher blockierte der Hebel auf der Z=2.0 Basisplatte). Push-Tab bei X=80, Lifting Cradle bei X=40.
+4. **Die Idee / Der Grund:** Realness Check ergab: Der vorherige Entwurf kollidierte direkt mit dem Boden. Durch das Höhersetzen des Drehpunkts auf Z=10.0 gibt es nun genug Raum (8mm nach unten) zum Drücken. Der Hebel hat nun eine Mechanical Advantage (MA) von ca. 1.66 (Push Distanz 25mm, Lift Distanz 15mm). Dadurch muss man ca. 6mm tief drücken, um das Mikrofon 3.6mm hochzuhebeln - was optimal ist, um das festsitzende Mikrofon aus der TPU-Umklammerung zu befreien!
+
 ## [V27 Master Collection] - 2026-09-10
 **Fokus:** Metrology-Standardisierung & Druck-Optimierung
 

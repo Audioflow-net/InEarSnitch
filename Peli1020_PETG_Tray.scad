@@ -336,6 +336,9 @@ module petg_dropin_plate() {
         // Mic Coupler aushöhlen (damit das Mikrofon perfekt hineinpasst!)
         coupler_tube(is_inner=true);
         
+        // TOWER CUTOUT (Das Loch hat gefehlt!)
+        translate([109.65, 41.65, -eps]) cylinder(h=100, d=23.0);
+        
         // Unterseite radikal abschneiden, damit die Platte zu 100% plan bei Z=29.5 beginnt
         translate([-50, -50, 0]) cube([300, 300, 29.5]);
     }
