@@ -16,26 +16,47 @@ if getattr(sys, 'frozen', False):
     
     # Sync bundled files from the PyInstaller payload to the Documents folder
     import shutil
+    import glob
     meipass = getattr(sys, '_MEIPASS', None)
     if meipass:
         # 1. Sync manual files (always overwrite with latest)
-        import glob
+        #    Also create MANUAL.md (= English version) which the browser looks for.
         for manual in glob.glob(os.path.join(meipass, "manual_*.md")):
             shutil.copy2(manual, app_dir)
-            
-        # 2. Sync reference targets (copy missing/updated files)
+        # Create MANUAL.md as the English version so the in-app browser finds it
+        manual_en_src = os.path.join(meipass, "manual_en.md")
+        manual_en_dst = os.path.join(app_dir, "manual_en.md")
+        if os.path.exists(manual_en_dst):
+            shutil.copy2(manual_en_dst, os.path.join(app_dir, "MANUAL.md"))
+        elif os.path.exists(manual_en_src):
+            shutil.copy2(manual_en_src, os.path.join(app_dir, "MANUAL.md"))
+
+        def _sync_dir(src, dst):
+            """Copy files from src to dst recursively, file-by-file.
+            More robust than shutil.copytree on Windows with special chars in filenames."""
+            os.makedirs(dst, exist_ok=True)
+            for item in os.listdir(src):
+                s = os.path.join(src, item)
+                d = os.path.join(dst, item)
+                try:
+                    if os.path.isdir(s):
+                        _sync_dir(s, d)
+                    else:
+                        shutil.copy2(s, d)
+                except Exception:
+                    pass  # Skip files that fail (permissions, long paths, etc.)
+
+        # 2. Sync reference targets
         src_targets = os.path.join(meipass, "reference_targets")
         dst_targets = os.path.join(app_dir, "reference_targets")
         if os.path.exists(src_targets):
-            os.makedirs(dst_targets, exist_ok=True)
-            shutil.copytree(src_targets, dst_targets, dirs_exist_ok=True)
-            
-        # 3. Sync calibrations (copy missing/updated files)
+            _sync_dir(src_targets, dst_targets)
+
+        # 3. Sync calibrations
         src_cals = os.path.join(meipass, "calibrations")
         dst_cals = os.path.join(app_dir, "calibrations")
         if os.path.exists(src_cals):
-            os.makedirs(dst_cals, exist_ok=True)
-            shutil.copytree(src_cals, dst_cals, dirs_exist_ok=True)
+            _sync_dir(src_cals, dst_cals)
 # ------------------------------------------
 
 import theme
