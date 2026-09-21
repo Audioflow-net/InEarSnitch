@@ -92,3 +92,5 @@ threads.scad
 thread_M22x05.scad
 slider_tpu_mod.scad
 tpu_*.scad
+PROKIT_CODES_SECRET.csv
+prokit_code_generator.py
