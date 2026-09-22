@@ -2,6 +2,7 @@ import os
 import sqlite3
 import numpy as np
 import theme
+import config
 from PySide6.QtWidgets import (
     QPushButton, QLineEdit, QListWidget, QListWidgetItem, QWidget, QFrame, QTabWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem, 
     QHeaderView, QLabel, QCheckBox, QAbstractItemView, QSplitter, QSizePolicy
@@ -48,56 +49,288 @@ except ImportError:
 
 
 class HistoryCardWidget(QWidget):
-    def __init__(self, timestamp, iem_name, side, parent=None):
+    SEAL_THRESHOLD_DB = -11.8
+
+    @staticmethod
+    def compute_seal_for_channel(freq, mag):
+        """
+        Computes acoustic seal status and delta from frequency and magnitude vectors.
+        val_40: mean in 35-45 Hz band
+        val_500: mean in 450-550 Hz band
+        delta_db = val_40 - val_500
+        Threshold: delta_db >= -11.8 dB -> 'OK', else 'LEAK'.
+        Returns (status: str, delta_db: float) or (None, None).
+        """
+        if freq is None or mag is None:
+            return None, None
+        try:
+            if len(freq) < 10 or len(mag) != len(freq):
+                return None, None
+            mask_40 = (freq >= 35.0) & (freq <= 45.0)
+            mask_500 = (freq >= 450.0) & (freq <= 550.0)
+            if not np.any(mask_40) or not np.any(mask_500):
+                return None, None
+            val_40 = float(np.mean(mag[mask_40]))
+            val_500 = float(np.mean(mag[mask_500]))
+            delta = val_40 - val_500
+            delta_db = float(round(delta, 1))
+            status = "OK" if delta_db >= HistoryCardWidget.SEAL_THRESHOLD_DB else "LEAK"
+            return status, delta_db
+        except Exception:
+            return None, None
+
+    def __init__(
+        self,
+        timestamp,
+        iem_name,
+        side,
+        parent=None,
+        tip_id=1,
+        tip_name="Unbekannt",
+        tip_color="#6b7280",
+        tip_icon="?",
+        tip_material="Standard",
+        seal_l=None,
+        seal_r=None,
+        seal_text="",
+        freq=None,
+        mag_l=None,
+        mag_r=None,
+        **kwargs
+    ):
         super().__init__(parent)
         self.timestamp = timestamp
         self.iem_name = iem_name
         self.side = side
-        
-        # from theme import theme
+        self.tip_id = int(tip_id) if tip_id is not None else 1
+        self.tip_name = tip_name if tip_name else "Unbekannt"
+        self.tip_color = tip_color if tip_color else "#6b7280"
+        self.tip_icon = tip_icon if tip_icon else "?"
+        self.tip_material = tip_material if tip_material else "Standard"
+
+        # Compute seal metrics if not explicitly passed
+        # (LOCKED DESIGN DECISION 2: L and R channels ALWAYS SEPARATE)
+        if seal_l is not None:
+            self.seal_l_delta = float(round(seal_l, 1))
+            self.seal_l_status = "OK" if self.seal_l_delta >= self.SEAL_THRESHOLD_DB else "LEAK"
+        elif freq is not None and mag_l is not None:
+            self.seal_l_status, self.seal_l_delta = self.compute_seal_for_channel(freq, mag_l)
+        else:
+            self.seal_l_status, self.seal_l_delta = None, None
+
+        if seal_r is not None:
+            self.seal_r_delta = float(round(seal_r, 1))
+            self.seal_r_status = "OK" if self.seal_r_delta >= self.SEAL_THRESHOLD_DB else "LEAK"
+        elif freq is not None and mag_r is not None:
+            self.seal_r_status, self.seal_r_delta = self.compute_seal_for_channel(freq, mag_r)
+        else:
+            self.seal_r_status, self.seal_r_delta = None, None
+
+        # Determine formatted seal text
+        if seal_text:
+            self.seal_text = seal_text
+        else:
+            if self.seal_l_delta is not None and self.seal_r_delta is not None:
+                self.seal_text = f"Seal: L {self.seal_l_delta:+.1f}dB | R {self.seal_r_delta:+.1f}dB"
+            elif self.seal_l_delta is not None:
+                self.seal_text = f"Seal L: {self.seal_l_delta:+.1f}dB"
+            elif self.seal_r_delta is not None:
+                self.seal_text = f"Seal R: {self.seal_r_delta:+.1f}dB"
+            else:
+                self.seal_text = ""
+
         fg = "white"
         text_sec = "#888"
-        bg_hover = "#2a2a2a"
-        accent = "#00FFFF"
-        bg_input = "#1f1f23"
-        
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(10, 8, 10, 8)
-        layout.setSpacing(10)
-        
-        info_layout = QVBoxLayout()
-        info_layout.setSpacing(2)
-        
-        lbl_iem = QLabel(iem_name)
-        lbl_iem.setObjectName("lbl_iem")
-        lbl_iem.setMinimumWidth(1)
-        lbl_iem.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
-        lbl_iem.setStyleSheet(f"background-color: transparent; font-weight: bold; font-size: 13px; color: {fg};")
-        
-        lbl_date = QLabel(timestamp)
-        lbl_date.setObjectName("lbl_date")
-        lbl_date.setMinimumWidth(1)
-        lbl_date.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
-        lbl_date.setStyleSheet(f"background-color: transparent; font-size: 10px; color: {text_sec};")
-        
-        info_layout.addWidget(lbl_iem)
-        info_layout.addWidget(lbl_date)
-        
-        lbl_side = QLabel(side)
-        if side.lower() == "left":
-            lbl_side.setStyleSheet("background-color: #3b82f6; color: {fg}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
-        elif side.lower() == "right":
-            lbl_side.setStyleSheet("background-color: #ef4444; color: {fg}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
+
+        card_layout = QVBoxLayout(self)
+        card_layout.setContentsMargins(10, 6, 10, 6)
+        card_layout.setSpacing(3)
+
+        # Row 1: IEM Name, Channel Badge, Graph Checkbox
+        row1 = QHBoxLayout()
+        row1.setSpacing(6)
+
+        self.lbl_iem = QLabel(iem_name)
+        self.lbl_iem.setObjectName("lbl_iem")
+        self.lbl_iem.setMinimumWidth(1)
+        self.lbl_iem.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+        self.lbl_iem.setStyleSheet(f"background-color: transparent; font-weight: bold; font-size: 13px; color: {fg};")
+        row1.addWidget(self.lbl_iem, stretch=1)
+
+        # Channel Badge
+        self.lbl_side = QLabel(side)
+        self.lbl_side.setObjectName("lbl_side")
+        side_lower = side.lower() if side else ""
+        if side_lower == "left":
+            self.lbl_side.setStyleSheet(f"background-color: #3b82f6; color: {fg}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
+        elif side_lower == "right":
+            self.lbl_side.setStyleSheet(f"background-color: #ef4444; color: {fg}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
         else:
-            lbl_side.setStyleSheet("background-color: #10b981; color: {fg}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
-            
-        layout.addLayout(info_layout, stretch=1)
-        layout.addWidget(lbl_side)
-        layout.addStretch()
-        
+            self.lbl_side.setStyleSheet(f"background-color: #10b981; color: {fg}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
+        row1.addWidget(self.lbl_side)
+
+        # Graph Checkbox
         self.cb_graph = QCheckBox("Graph")
+        self.cb_graph.setObjectName("cb_graph")
         self.cb_graph.setStyleSheet(f"QCheckBox {{ background-color: transparent; color: {text_sec}; font-size: 11px; font-weight: bold; }}")
-        layout.addWidget(self.cb_graph)
+        row1.addWidget(self.cb_graph)
+        card_layout.addLayout(row1)
+
+        # Row 2: Date & Seal Text on Left, Tip Badge & L/R Seal Badges on Right
+        row2 = QHBoxLayout()
+        row2.setSpacing(5)
+
+        date_seal_layout = QVBoxLayout()
+        date_seal_layout.setSpacing(1)
+
+        self.lbl_date = QLabel(timestamp)
+        self.lbl_date.setObjectName("lbl_date")
+        self.lbl_date.setMinimumWidth(1)
+        self.lbl_date.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+        self.lbl_date.setStyleSheet(f"background-color: transparent; font-size: 10px; color: {text_sec};")
+        date_seal_layout.addWidget(self.lbl_date)
+
+        self.lbl_seal = QLabel(self.seal_text)
+        self.lbl_seal.setObjectName("lbl_seal")
+        self.lbl_seal.setStyleSheet("background-color: transparent; font-size: 10px; color: #a1a1aa;")
+        self.seal_badge = self.lbl_seal
+        date_seal_layout.addWidget(self.lbl_seal)
+        row2.addLayout(date_seal_layout)
+
+        row2.addStretch(1)
+
+        # Tip Badge
+        self.lbl_tip_badge = QLabel()
+        self.lbl_tip_badge.setObjectName("lbl_tip_badge")
+        self.tip_badge = self.lbl_tip_badge
+        self.lbl_badge = self.lbl_tip_badge
+        self.lbl_tip = self.lbl_tip_badge
+        self._configure_tip_badge()
+        row2.addWidget(self.lbl_tip_badge)
+
+        # Left Seal Indicator (L: OK / LEAK)
+        self.lbl_seal_l = QLabel()
+        self.lbl_seal_l.setObjectName("lbl_seal_l")
+        if self.seal_l_status is not None:
+            self.lbl_seal_l.setText(f"L: {self.seal_l_status}")
+            delta_str = f"{self.seal_l_delta:+.1f} dB" if self.seal_l_delta is not None else ""
+            self.lbl_seal_l.setToolTip(f"Left Seal Delta (40Hz vs 500Hz): {delta_str} ({self.seal_l_status})")
+            if self.seal_l_status == "OK":
+                self.lbl_seal_l.setStyleSheet("background-color: #065f46; color: #34d399; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #10b981;")
+            else:
+                self.lbl_seal_l.setStyleSheet("background-color: #7f1d1d; color: #f87171; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #ef4444;")
+        row2.addWidget(self.lbl_seal_l)
+
+        # Right Seal Indicator (R: OK / LEAK)
+        self.lbl_seal_r = QLabel()
+        self.lbl_seal_r.setObjectName("lbl_seal_r")
+        if self.seal_r_status is not None:
+            self.lbl_seal_r.setText(f"R: {self.seal_r_status}")
+            delta_str = f"{self.seal_r_delta:+.1f} dB" if self.seal_r_delta is not None else ""
+            self.lbl_seal_r.setToolTip(f"Right Seal Delta (40Hz vs 500Hz): {delta_str} ({self.seal_r_status})")
+            if self.seal_r_status == "OK":
+                self.lbl_seal_r.setStyleSheet("background-color: #065f46; color: #34d399; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #10b981;")
+            else:
+                self.lbl_seal_r.setStyleSheet("background-color: #7f1d1d; color: #f87171; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #ef4444;")
+        row2.addWidget(self.lbl_seal_r)
+
+        card_layout.addLayout(row2)
+
+        # ProKit Gating
+        try:
+            is_unlocked = config.is_prokit_unlocked()
+        except Exception:
+            is_unlocked = False
+
+        self.lbl_tip_badge.setVisible(is_unlocked)
+        self.lbl_seal.setVisible(is_unlocked and bool(self.seal_text))
+        self.lbl_seal_l.setVisible(is_unlocked and self.seal_l_status is not None)
+        self.lbl_seal_r.setVisible(is_unlocked and self.seal_r_status is not None)
+
+    def _configure_tip_badge(self):
+        """Format badge text, tooltip, and stylesheet based on tip identity."""
+        if self.tip_id == 1 or self.tip_name == "Unbekannt":
+            self.lbl_tip_badge.setText("?")
+            self.lbl_tip_badge.setStyleSheet(
+                "background-color: #6b7280; color: #a1a1aa; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;"
+            )
+            self.lbl_tip_badge.setToolTip("Ear Tip: Unbekannt")
+        else:
+            icon = self.tip_icon if self.tip_icon else "?"
+            self.lbl_tip_badge.setText(f"{icon} {self.tip_name}")
+            self.lbl_tip_badge.setStyleSheet(
+                f"background-color: {self.tip_color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;"
+            )
+            self.lbl_tip_badge.setToolTip(f"Ear Tip: {self.tip_name} ({self.tip_material})")
+
+    def set_tip(self, tip_id, tip_name="Unbekannt", tip_color="#6b7280", tip_icon="?", tip_material="Standard"):
+        """Dynamically update tip information."""
+        self.tip_id = int(tip_id) if tip_id is not None else 1
+        self.tip_name = tip_name if tip_name else "Unbekannt"
+        self.tip_color = tip_color if tip_color else "#6b7280"
+        self.tip_icon = tip_icon if tip_icon else "?"
+        self.tip_material = tip_material if tip_material else "Standard"
+        self._configure_tip_badge()
+
+    def set_seal(self, seal_l, seal_r):
+        """Dynamically update acoustic seal status."""
+        if seal_l is not None:
+            self.seal_l_delta = float(round(seal_l, 1))
+            self.seal_l_status = "OK" if self.seal_l_delta >= self.SEAL_THRESHOLD_DB else "LEAK"
+        else:
+            self.seal_l_delta, self.seal_l_status = None, None
+
+        if seal_r is not None:
+            self.seal_r_delta = float(round(seal_r, 1))
+            self.seal_r_status = "OK" if self.seal_r_delta >= self.SEAL_THRESHOLD_DB else "LEAK"
+        else:
+            self.seal_r_delta, self.seal_r_status = None, None
+
+        if self.seal_l_delta is not None and self.seal_r_delta is not None:
+            self.seal_text = f"Seal: L {self.seal_l_delta:+.1f}dB | R {self.seal_r_delta:+.1f}dB"
+        elif self.seal_l_delta is not None:
+            self.seal_text = f"Seal L: {self.seal_l_delta:+.1f}dB"
+        elif self.seal_r_delta is not None:
+            self.seal_text = f"Seal R: {self.seal_r_delta:+.1f}dB"
+        else:
+            self.seal_text = ""
+
+        self.lbl_seal.setText(self.seal_text)
+        if self.seal_l_status is not None:
+            self.lbl_seal_l.setText(f"L: {self.seal_l_status}")
+            delta_str = f"{self.seal_l_delta:+.1f} dB" if self.seal_l_delta is not None else ""
+            self.lbl_seal_l.setToolTip(f"Left Seal Delta (40Hz vs 500Hz): {delta_str} ({self.seal_l_status})")
+            if self.seal_l_status == "OK":
+                self.lbl_seal_l.setStyleSheet("background-color: #065f46; color: #34d399; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #10b981;")
+            else:
+                self.lbl_seal_l.setStyleSheet("background-color: #7f1d1d; color: #f87171; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #ef4444;")
+        if self.seal_r_status is not None:
+            self.lbl_seal_r.setText(f"R: {self.seal_r_status}")
+            delta_str = f"{self.seal_r_delta:+.1f} dB" if self.seal_r_delta is not None else ""
+            self.lbl_seal_r.setToolTip(f"Right Seal Delta (40Hz vs 500Hz): {delta_str} ({self.seal_r_status})")
+            if self.seal_r_status == "OK":
+                self.lbl_seal_r.setStyleSheet("background-color: #065f46; color: #34d399; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #10b981;")
+            else:
+                self.lbl_seal_r.setStyleSheet("background-color: #7f1d1d; color: #f87171; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #ef4444;")
+        self.update_prokit_visibility()
+
+    def update_prokit_visibility(self, unlocked=None):
+        """Update visibility of tip badge and seal indicators according to ProKit gate."""
+        if unlocked is None:
+            try:
+                import config
+                unlocked = config.is_prokit_unlocked()
+            except Exception:
+                unlocked = False
+
+        if hasattr(self, "lbl_tip_badge") and self.lbl_tip_badge:
+            self.lbl_tip_badge.setVisible(unlocked)
+        if hasattr(self, "lbl_seal") and self.lbl_seal:
+            self.lbl_seal.setVisible(unlocked and bool(self.seal_text))
+        if hasattr(self, "lbl_seal_l") and self.lbl_seal_l:
+            self.lbl_seal_l.setVisible(unlocked and self.seal_l_status is not None)
+        if hasattr(self, "lbl_seal_r") and self.lbl_seal_r:
+            self.lbl_seal_r.setVisible(unlocked and self.seal_r_status is not None)
 
 class HistoryWidget(QWidget):
     def __init__(self, parent=None):
@@ -474,23 +707,32 @@ class HistoryWidget(QWidget):
             if 'meas_name' not in columns:
                 cursor.execute("ALTER TABLE Measurements ADD COLUMN meas_name TEXT")
                 conn.commit()
+            if 'tip_id' not in columns:
+                try:
+                    cursor.execute("ALTER TABLE Measurements ADD COLUMN tip_id INTEGER DEFAULT 1")
+                    cursor.execute("UPDATE Measurements SET tip_id = 1 WHERE tip_id IS NULL")
+                    conn.commit()
+                except Exception:
+                    pass
 
-            
             cursor.execute('''
-                SELECT m.timestamp, m.notes, m.photo_path, m.frequencies, m.magnitude_l, m.magnitude_r, iem.model_name, iem.custom_name, m.meas_name
-                FROM Measurements m
-                JOIN IEM_Models iem ON m.iem_id = iem.id
-                WHERE iem.musician_id = ?
-                ORDER BY m.timestamp DESC LIMIT 100
+                SELECT m.timestamp, m.notes, m.photo_path, m.frequencies, m.magnitude_l, m.magnitude_r, iem.model_name, iem.custom_name, m.meas_name, COALESCE(m.tip_id, 1) AS tip_id, COALESCE(t.name, 'Unbekannt') AS tip_name, COALESCE(t.icon_char, '?') AS tip_icon, COALESCE(t.color_hex, '#6b7280') AS tip_color FROM Measurements m JOIN IEM_Models iem ON m.iem_id = iem.id LEFT JOIN TipProfiles t ON m.tip_id = t.id WHERE iem.musician_id = ? ORDER BY m.timestamp DESC LIMIT 100
             ''', (m_id,))
             
             rows = cursor.fetchall()
             
             for row in rows:
-                timestamp, notes, photo_path, freq_blob, mag_l_blob, mag_r_blob, iem_name, custom_name, meas_name = row
+                (timestamp, notes, photo_path, freq_blob, mag_l_blob, mag_r_blob,
+                 iem_name, custom_name, meas_name,
+                 raw_tip_id, raw_tip_name, raw_tip_icon, raw_tip_color) = row
                 base_name = custom_name if custom_name else iem_name
                 display_name = meas_name if meas_name else base_name
                 
+                tip_id = int(raw_tip_id) if raw_tip_id is not None else 1
+                tip_name = raw_tip_name if raw_tip_name else "Unbekannt"
+                tip_icon = raw_tip_icon if raw_tip_icon else "?"
+                tip_color = raw_tip_color if raw_tip_color else "#6b7280"
+
                 # Parse blobs
                 freq = None
                 mag_l = None
@@ -501,13 +743,26 @@ class HistoryWidget(QWidget):
                     if mag_l_blob: mag_l = np.frombuffer(mag_l_blob, dtype=np.float64)
                     if mag_r_blob: mag_r = np.frombuffer(mag_r_blob, dtype=np.float64)
                 except Exception as e:
-                    print(e)
                     print(f"Error parsing BLOBs: {e}")
+
                 # Determine side text
                 side_text = "Stereo"
                 if mag_l is not None and mag_r is None: side_text = "Left"
                 if mag_r is not None and mag_l is None: side_text = "Right"
                 
+                # Compute acoustic seal metrics
+                seal_l_status, seal_l_delta = HistoryCardWidget.compute_seal_for_channel(freq, mag_l)
+                seal_r_status, seal_r_delta = HistoryCardWidget.compute_seal_for_channel(freq, mag_r)
+
+                if seal_l_delta is not None and seal_r_delta is not None:
+                    seal_text = f"Seal: L {seal_l_delta:+.1f}dB | R {seal_r_delta:+.1f}dB"
+                elif seal_l_delta is not None:
+                    seal_text = f"Seal L: {seal_l_delta:+.1f}dB"
+                elif seal_r_delta is not None:
+                    seal_text = f"Seal R: {seal_r_delta:+.1f}dB"
+                else:
+                    seal_text = ""
+
                 data_dict = {
                     'timestamp': timestamp,
                     'notes': notes,
@@ -518,13 +773,37 @@ class HistoryWidget(QWidget):
                     'iem_name': display_name,
                     'meas_name': meas_name if meas_name else '',
                     'base_name': base_name,
-                    'side': side_text
+                    'side': side_text,
+                    'tip_id': tip_id,
+                    'tip_name': tip_name,
+                    'tip_icon': tip_icon,
+                    'tip_color': tip_color,
+                    'seal_l': seal_l_delta,
+                    'seal_r': seal_r_delta,
+                    'seal_l_status': seal_l_status,
+                    'seal_r_status': seal_r_status,
+                    'seal_text': seal_text,
                 }
                 
                 item = QListWidgetItem(self.list_widget)
                 item.setData(Qt.UserRole, data_dict)
                 
-                card = HistoryCardWidget(timestamp, display_name, side_text)
+                card = HistoryCardWidget(
+                    timestamp=timestamp,
+                    iem_name=display_name,
+                    side=side_text,
+                    parent=None,
+                    tip_id=tip_id,
+                    tip_name=tip_name,
+                    tip_color=tip_color,
+                    tip_icon=tip_icon,
+                    seal_l=seal_l_delta,
+                    seal_r=seal_r_delta,
+                    seal_text=seal_text,
+                    freq=freq,
+                    mag_l=mag_l,
+                    mag_r=mag_r,
+                )
                 card.cb_graph.stateChanged.connect(self.refresh_view)
                 
                 # Ensure the item is big enough for the card
@@ -540,6 +819,24 @@ class HistoryWidget(QWidget):
         self.refresh_view()
         self.filter_history()
 
+    def update_prokit_ui_visibility(self, unlocked=None):
+        """Update visibility of tip badges and seal indicators across all active history cards."""
+        if unlocked is None:
+            try:
+                import config
+                unlocked = config.is_prokit_unlocked()
+            except Exception:
+                unlocked = False
+
+        for i in range(self.list_widget.count()):
+            item = self.list_widget.item(i)
+            card = self.list_widget.itemWidget(item)
+            if card and hasattr(card, "update_prokit_visibility"):
+                card.update_prokit_visibility(unlocked)
+                item.setSizeHint(card.sizeHint())
+
+    update_prokit_visibility = update_prokit_ui_visibility
+
     def filter_history(self):
         query = self.search_bar.text().lower()
         for i in range(self.list_widget.count()):
@@ -547,7 +844,8 @@ class HistoryWidget(QWidget):
             data = item.data(Qt.UserRole)
             if not data: continue
             
-            match = query in data['iem_name'].lower() or query in data['timestamp'].lower()
+            tip_match = query in data.get('tip_name', '').lower()
+            match = query in data['iem_name'].lower() or query in data['timestamp'].lower() or tip_match
             item.setHidden(not match)
 
     def set_edit_controls_enabled(self, enabled):
