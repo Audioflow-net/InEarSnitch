@@ -11,11 +11,11 @@ eps = 0.05;
 // ==========================================
 // Stelle auf "true", um die einzelnen Teile zu rendern
 show_tpu_main = false;
-show_petg_chassis = false;
-show_tpu_sleeve = false;
+show_petg_chassis = true;
+show_tpu_sleeve = true;
 show_dummy_mic = false;
 show_cross_section = false;
-show_test_print = true; // TEST-DRUCK FÜR DIE LASCHE
+show_test_print = false; // TEST-DRUCK FÜR DIE LASCHE
 
 // --- 1. Design Parameters ---
 // Peli 1020 Internal Dimensions (Drafted)
@@ -357,12 +357,18 @@ module cutouts() {
         union() {
             // A) Vertikaler Kanal (Breite X=17.0)
             retaining_lip_x(9.65, 38.0, depth + flange_t + eps, true, 12.0, 6.0, 1.2);
+            
+            // NEU: Kabelhalter exakt hinten am Ende des Schafts (wie gewünscht gekrikelt)
+            // Die Lippe ist bei Y=64, also greift sie exakt das Kabel, wenn es aus dem Mic-Schaft kommt!
+            retaining_lip_x(9.65, 64.0, depth + flange_t + eps, true, 12.0, 8.0, 1.2);
            
             
             // B) Horizontales Hauptfach (Breite Y=24.0)
             retaining_lip_y(35.0, 28.65, depth + flange_t + eps, true, 12.0, 8.0, 1.2);
-            retaining_lip_y(53.0, 52.65, depth + flange_t + eps, false, 12.0, 8.0, 1.2);
-            retaining_lip_y(71.0, 28.65, depth + flange_t + eps, true, 12.0, 8.0, 1.2);
+            // Diese Klappe war bei X=53, aber da die Zwischenwand dort jetzt gelöscht ist, 
+            // hing sie in der Luft. Ich habe sie auf X=70 verschoben, wo die Wand wieder massiv ist.
+            retaining_lip_y(70.0, 52.65, depth + flange_t + eps, false, 12.0, 8.0, 1.2);
+            retaining_lip_y(85.0, 28.65, depth + flange_t + eps, true, 12.0, 8.0, 1.2);
         }
     }
 
@@ -381,10 +387,31 @@ module cutouts() {
             translate([0, 0, 93.5]) cylinder(h=18, d=14.0 + 1.0);
         }
 
-    // 3. FINGER-KRATER (Open extraction trench)
-    // Einfache Mulde, um das Mikrofon mit dem Finger herauszuhebeln.
-    translate([22.65, 55.0, 5.0])
-        cube([50.0, 21.0, 40.0]);
+    // 3. FINGER-KRATER & KABELGRABEN-MERGE (Unified Basin)
+    // 3. FINGER-KRATER & KABELGRABEN-MERGE (Unified Basin)
+    // 3. FINGER-KRATER & KABELGRABEN-MERGE (Unified Basin)
+    // 3. FINGER-KRATER & KABELGRABEN-MERGE (Unified Basin)
+    // Die Zwischenwand ist komplett entfernt! Das Mikrofonfach fließt stufenlos in den Kabelgraben.
+    translate([0, 0, 5.0]) {
+        linear_extrude(height=40.0) {
+            // Wir nutzen ein exaktes Polygon, weil hull() keine inneren Kurven (konkav für das Solid) kann!
+            polygon(points = concat(
+                // Oben Rechts: Die Rückseite vom Mic bleibt komplett gerade wie vorher (Y=73.5)
+                [ [62.65, 73.5] ],
+                
+                // DIE PERFEKTE RUNDUNG (Gekrikelt):
+                // Wir berechnen hier mit Sinus/Cosinus einen makellosen 8.5mm Radius Bogen.
+                // Er ist oben bei [62.65, 58.5] absolut bündig mit dem 25mm Schaft-Kanal 
+                // und unten bei [54.15, 50.0] absolut bündig mit dem leeren Kabelgraben.
+                [ for(a = [0 : -5 : -90]) [54.15 + 8.5 * cos(a), 58.5 + 8.5 * sin(a)] ],
+                
+                // Unten Links & Rechts: 
+                // Zieht den Krater tief in den Kabelgraben (Y=50.0), um Ghost-Walls zu verhindern,
+                // und hält die rechte Wand zu 100% schnurgerade.
+                [ [22.65, 50.0], [22.65, 73.5] ]
+            ));
+        }
+    }
 
     // 4. BOTTOM BAND: TIP HOLDERS
     for(x = tip_xs) {
@@ -671,10 +698,10 @@ module test_print(part="tpu") {
                 tpu_insert_full();
                 // Bounding Box EXAKT auf die Mulde zugeschnitten:
                 // X=20 bis X=96 -> 76mm
-                // Y=57 (Microfon Rand) bis Y=85 -> 28mm
+                // Y=50 (Kabelkanal-Wand) bis Y=85 -> 35mm
                 // Z=2.0 (Boden) bis Z=30 (über dem Mikrofon) -> 28mm
-                translate([20.0, 57.0, 2.0])
-                    cube([76.0, 28.0, 28.0]);
+                translate([20.0, 50.0, 2.0])
+                    cube([76.0, 35.0, 28.0]);
             }
         }
     }

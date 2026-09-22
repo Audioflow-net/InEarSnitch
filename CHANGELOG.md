@@ -1514,3 +1514,21 @@
 - **Die Idee / Der Grund:** 
   - *Hammock:* Ein kurzer Viertelkreis-Gurt hat geometrisch keinen Hubweg (Kollision mit dickem Mic). Die lange Längs-Brücke vervielfacht den Hubweg durch das Scharnier-Prinzip.
   - *Tower & Slit:* Das Mikrofon-Kabel (im Tower) knickte an der 5mm hohen Stufe zu stark ab. Durch die Erhöhung der Decke (2mm mehr Luft) und das komplette Durchsägen des Bodens erhält das dicke Kabel deutlich mehr Volumen für einen sauberen Biegeradius.
+
+## Pro-Level Keil-Presse - 2026-09-21
+**Das betroffene Bauteil:** Neues externes Universal-Werkzeug (Sleeve + Keil)
+**Der Grund:** Beim Hand-Verpressen von Knetsilikon kippen Stempel schnell weg oder der Druck reicht nicht aus, um Einschlüsse/Blasen zu verhindern. Eine Schraubkappe würde den Stempel mitdrehen und die Entlüftungslöcher blockieren.
+**Die Lösung:** Ein externer, 3D-gedruckter "Schraubstock" (Keil-Presse). Alle existierenden 34x34mm Formen (V27 bis V31) passen exakt in dieses Gehäuse (34.5mm Innenmaß). Ein 10 cm langer Keil wird durch ein Fenster geschoben und drückt den Stempel mit massiver Hebelwirkung absolut senkrecht nach unten. Der Keil ist nur 12 mm breit, lässt die äußeren Entlüftungslöcher also völlig frei. Kein Verdrehen, kein Aufschwimmen, perfekte Kraftverteilung.
+
+## Horizontale Entlüftung - 2026-09-21
+**Das betroffene Bauteil:** Stempel (Tamper) V30 und V31-XL.
+**Das Problem:** Bisherige vertikale Entlüftungslöcher (durch den Stempel) sorgten dafür, dass Silikon im Stempel feststeckte oder lange Silikon-Tentakel (Überreste) auf der Gussform zurückblieben, die man abschneiden musste und die oft im Stempel abrissen.
+**Die Lösung:** Die vertikalen Löcher wurden aus den Modellen entfernt. Stattdessen haben die Flansche der Stempel jetzt auf der Unterseite horizontale Entlüftungsrillen (ein offenes Kreuz, 1mm tief, 2mm breit). Das Silikon drückt sich nun seitlich nach außen weg. Wenn man den Stempel abhebt, bleibt nichts im Stempel stecken! Auf dem fertigen Silikonteil bleibt lediglich ein hauchdünnes, seitliches Kreuz liegen, das man völlig mühelos abziehen oder abschneiden kann.
+
+## Modularisierung - 2026-09-21
+**Das betroffene Bauteil:** Datei-Struktur
+**Die Änderung:** Die Keil-Presse wurde aus der V27_MASTER_COLLECTION ausgelagert. Sie liegt jetzt als sauberes, unabhängiges Werkzeug in der eigenen Datei `Universal_Keil_Presse.scad`. Sie importiert (via `use`) weiterhin die Formen aus der Master-Datei für die Zusammenbau-Ansicht, hält aber die Master-Datei aufgeräumt.
+
+## [2026-09-21] - Silicone Master & Press V3
+- **ADDED**: `MASTER_Silikon_Formen.scad` created as the unified, clean source of truth for V27, V29, V30, and V31.
+- **CHANGED**: `Universal_Keil_Presse.scad` upgraded to V3 Ultimate. Features a 50x50x60mm housing, a 34x34x13mm pressure plate to eliminate lateral shear, and a massive 33.5mm wide wedge. Fixed Z-floor coordinate bug.
