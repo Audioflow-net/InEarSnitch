@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import theme
+import config
 from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QFrame, QSplitter, QTabWidget, QComboBox, QDial, QLineEdit, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QTimer
 import pyqtgraph as pg
@@ -139,6 +140,490 @@ class StableTabWidget(QTabWidget):
         hint = super().minimumSizeHint()
         return QSize(220, 0)
 
+
+class TipAnalysisCardWidget(QFrame):
+    """
+    ProKit Ear Tip Analysis & Acoustic Coupling Card for Diagnostics.
+    Features:
+    1. 8 kHz Helmholtz resonance peak detection within [6 kHz, 10 kHz] (L & R separate).
+       Falls back to historical median peak from db.get_tip_target_peak(iem_id, tip_id).
+    2. Band-limited reproducibility score (20 Hz - 8,000 Hz, L & R separate).
+       Threshold: >= 5 measurements required. If < 5, shows empty state with current count.
+       If 5-9 measurements, shows preliminary warning badge.
+       If >= 10 measurements, shows stable badge.
+    3. Acoustic seal history trend (40 Hz vs 500 Hz delta, L & R separate).
+       Shows summaries and micro-chips.
+    """
+    tip_changed = Signal(int)
+
+    TARGET_HELMHOLTZ_HZ = 8000.0
+
+    @staticmethod
+    def detect_helmholtz_peak(freqs, mag):
+        """Detect local peak frequency in 6,000 Hz - 10,000 Hz window."""
+        if freqs is None or mag is None:
+            return None
+        try:
+            f = np.asarray(freqs, dtype=np.float64)
+            m = np.asarray(mag, dtype=np.float64)
+            if len(f) != len(m) or len(f) < 10:
+                return None
+            mask = (f >= 6000.0) & (f <= 10000.0)
+            if not np.any(mask):
+                return None
+            sub_f = f[mask]
+            sub_m = m[mask]
+            if np.any(np.isnan(sub_m)):
+                idx = int(np.nanargmax(sub_m))
+            else:
+                idx = int(np.argmax(sub_m))
+            return float(sub_f[idx])
+        except Exception:
+            return None
+
+    def __init__(self, parent=None, db=None, iem_id=1, tip_id=1, freqs=None, mag_l=None, mag_r=None):
+        super().__init__(parent)
+        self.setObjectName("tip_analysis_card")
+        self.db = db
+        self.iem_id = iem_id if iem_id is not None else 1
+        self.tip_id = tip_id if tip_id is not None else 1
+        self.freqs = freqs
+        self.mag_l = mag_l
+        self.mag_r = mag_r
+
+        self.setVisible(config.is_prokit_unlocked())
+        self._init_ui()
+        self.populate_tips()
+        self.refresh_metrics()
+
+    def _init_ui(self):
+        is_light = theme.is_light() if hasattr(theme, 'is_light') else False
+        bg_card = "#ffffff" if is_light else "#18181b"
+        border_card = "#e4e4e7" if is_light else "#27272a"
+        bg_sub = "#f4f4f5" if is_light else "#1f1f23"
+        fg_pri = "#18181c" if is_light else "#ffffff"
+        fg_sec = "#52525b" if is_light else "#888888"
+
+        self.setStyleSheet(f"""
+            QFrame#tip_analysis_card {{
+                background-color: {bg_card};
+                border: 1px solid {border_card};
+                border-radius: 8px;
+                margin: 2px 0px 6px 0px;
+            }}
+            QFrame#sec_helmholtz, QFrame#sec_reproducibility, QFrame#sec_seal_history {{
+                background-color: {bg_sub};
+                border: 1px solid {border_card};
+                border-radius: 6px;
+                padding: 4px 6px;
+            }}
+            QComboBox#cb_tip_selector {{
+                background-color: {'#e4e4e7' if is_light else '#27272a'};
+                color: {fg_pri};
+                border: 1px solid {border_card};
+                border-radius: 4px;
+                padding: 2px 8px;
+                font-size: 11px;
+                font-weight: bold;
+                min-width: 130px;
+            }}
+            QComboBox#cb_tip_selector::drop-down {{ border: none; }}
+            QComboBox#cb_tip_selector QAbstractItemView {{
+                background-color: {bg_sub};
+                color: {fg_pri};
+                selection-background-color: #0ea5e9;
+                border: 1px solid {border_card};
+            }}
+        """)
+
+        card_layout = QVBoxLayout(self)
+        card_layout.setContentsMargins(8, 8, 8, 8)
+        card_layout.setSpacing(6)
+
+        # ── Header Row ──────────────────────────────────────────────
+        hdr_layout = QHBoxLayout()
+        hdr_layout.setSpacing(6)
+
+        tag_lbl = QLabel("PROKIT")
+        tag_lbl.setStyleSheet("background: #0ea5e9; color: white; font-size: 9px; font-weight: 900; border-radius: 3px; padding: 2px 5px; letter-spacing: 1px;")
+        hdr_layout.addWidget(tag_lbl)
+
+        title_lbl = QLabel("Ear Tip Analysis & Acoustic Coupling")
+        title_lbl.setStyleSheet(f"color: {fg_pri}; font-weight: bold; font-size: 11px;")
+        hdr_layout.addWidget(title_lbl)
+
+        hdr_layout.addStretch()
+
+        self.cb_tip_selector = QComboBox()
+        self.cb_tip_selector.setObjectName("cb_tip_selector")
+        self.cb_tip_selector.setToolTip("Select Ear Tip Profile for Analysis")
+        self.cb_tip_selector.currentIndexChanged.connect(self._on_tip_combo_changed)
+        hdr_layout.addWidget(self.cb_tip_selector)
+        card_layout.addLayout(hdr_layout)
+
+        # ── Section 1: Helmholtz Resonance Peak (6-10 kHz) ──────────
+        sec1 = QFrame()
+        sec1.setObjectName("sec_helmholtz")
+        s1_layout = QVBoxLayout(sec1)
+        s1_layout.setContentsMargins(6, 4, 6, 4)
+        s1_layout.setSpacing(4)
+
+        s1_title = QLabel("HELMHOLTZ RESONANCE PEAK (IEC-711)")
+        s1_title.setStyleSheet("color: #06b6d4; font-size: 10px; font-weight: 900; letter-spacing: 1px;")
+        s1_layout.addWidget(s1_title)
+
+        grid1 = QHBoxLayout()
+        grid1.setSpacing(8)
+
+        # Left Peak Box
+        self.lbl_peak_l = QLabel("L: — Hz")
+        self.lbl_peak_l.setObjectName("lbl_peak_l")
+        self.lbl_peak_l.setStyleSheet("color: #3b82f6; font-size: 11px; font-weight: bold;")
+        self.badge_peak_delta_l = QLabel("—")
+        self.badge_peak_delta_l.setStyleSheet("background: #27272a; color: #71717a; border-radius: 3px; padding: 1px 4px; font-size: 9px;")
+        box_l = QHBoxLayout()
+        box_l.addWidget(self.lbl_peak_l)
+        box_l.addWidget(self.badge_peak_delta_l)
+        box_l.addStretch()
+        grid1.addLayout(box_l)
+
+        # Right Peak Box
+        self.lbl_peak_r = QLabel("R: — Hz")
+        self.lbl_peak_r.setObjectName("lbl_peak_r")
+        self.lbl_peak_r.setStyleSheet("color: #ef4444; font-size: 11px; font-weight: bold;")
+        self.badge_peak_delta_r = QLabel("—")
+        self.badge_peak_delta_r.setStyleSheet("background: #27272a; color: #71717a; border-radius: 3px; padding: 1px 4px; font-size: 9px;")
+        box_r = QHBoxLayout()
+        box_r.addWidget(self.lbl_peak_r)
+        box_r.addWidget(self.badge_peak_delta_r)
+        box_r.addStretch()
+        grid1.addLayout(box_r)
+
+        s1_layout.addLayout(grid1)
+
+        self.lbl_peak_target = QLabel("Target: 8,000 Hz (Half-Wave Coupler Resonance)")
+        self.lbl_peak_target.setStyleSheet(f"color: {fg_sec}; font-size: 9px;")
+        s1_layout.addWidget(self.lbl_peak_target)
+        card_layout.addWidget(sec1)
+
+        # ── Section 2: Reproducibility Score (20 Hz - 8 kHz) ────────
+        sec2 = QFrame()
+        sec2.setObjectName("sec_reproducibility")
+        s2_layout = QVBoxLayout(sec2)
+        s2_layout.setContentsMargins(6, 4, 6, 4)
+        s2_layout.setSpacing(4)
+
+        s2_hdr = QHBoxLayout()
+        s2_title = QLabel("COUPLING REPRODUCIBILITY (20 Hz – 8 kHz)")
+        s2_title.setStyleSheet("color: #10b981; font-size: 10px; font-weight: 900; letter-spacing: 1px;")
+        s2_hdr.addWidget(s2_title)
+        s2_hdr.addStretch()
+
+        self.badge_repro_status = QLabel("")
+        self.badge_repro_status.setObjectName("badge_repro_preliminary")
+        self.badge_repro_preliminary = self.badge_repro_status
+        self.badge_repro_status.hide()
+        s2_hdr.addWidget(self.badge_repro_status)
+        s2_layout.addLayout(s2_hdr)
+
+        self.lbl_repro_warning = QLabel("")
+        self.lbl_repro_warning.setObjectName("lbl_repro_warning")
+        self.lbl_repro_empty = self.lbl_repro_warning
+        self.lbl_repro_warning.setStyleSheet("background: #27200a; border: 1px dashed #d97706; border-radius: 4px; padding: 4px 8px; color: #fbbf24; font-size: 10px;")
+        self.lbl_repro_warning.hide()
+        s2_layout.addWidget(self.lbl_repro_warning)
+
+        self.repro_scores_widget = QWidget()
+        scores_layout = QHBoxLayout(self.repro_scores_widget)
+        scores_layout.setContentsMargins(0, 0, 0, 0)
+        scores_layout.setSpacing(12)
+
+        self.lbl_score_l = QLabel("L: —")
+        self.lbl_score_l.setObjectName("lbl_score_l")
+        self.lbl_score_l.setStyleSheet("color: #3b82f6; font-size: 11px; font-weight: bold;")
+        self.lbl_score_r = QLabel("R: —")
+        self.lbl_score_r.setObjectName("lbl_score_r")
+        self.lbl_score_r.setStyleSheet("color: #ef4444; font-size: 11px; font-weight: bold;")
+
+        scores_layout.addWidget(self.lbl_score_l)
+        scores_layout.addWidget(self.lbl_score_r)
+        scores_layout.addStretch()
+        s2_layout.addWidget(self.repro_scores_widget)
+        card_layout.addWidget(sec2)
+
+        # ── Section 3: Acoustic Seal History (40 Hz vs 500 Hz) ──────
+        sec3 = QFrame()
+        sec3.setObjectName("sec_seal_history")
+        s3_layout = QVBoxLayout(sec3)
+        s3_layout.setContentsMargins(6, 4, 6, 4)
+        s3_layout.setSpacing(4)
+
+        s3_title = QLabel("ACOUSTIC SEAL HISTORY (40 Hz vs 500 Hz)")
+        s3_title.setStyleSheet("color: #a855f7; font-size: 10px; font-weight: 900; letter-spacing: 1px;")
+        s3_layout.addWidget(s3_title)
+
+        seal_grid = QHBoxLayout()
+        seal_grid.setSpacing(12)
+
+        self.lbl_seal_summary_l = QLabel("L: —")
+        self.lbl_seal_summary_l.setStyleSheet("color: #3b82f6; font-size: 10px;")
+        self.lbl_seal_summary_r = QLabel("R: —")
+        self.lbl_seal_summary_r.setStyleSheet("color: #ef4444; font-size: 10px;")
+
+        seal_grid.addWidget(self.lbl_seal_summary_l)
+        seal_grid.addWidget(self.lbl_seal_summary_r)
+        seal_grid.addStretch()
+        s3_layout.addLayout(seal_grid)
+
+        self.trend_chips_layout = QHBoxLayout()
+        self.trend_chips_layout.setSpacing(3)
+        s3_layout.addLayout(self.trend_chips_layout)
+        card_layout.addWidget(sec3)
+
+    def populate_tips(self):
+        """Populate the tip selector dropdown from DatabaseManager catalog."""
+        self.cb_tip_selector.blockSignals(True)
+        self.cb_tip_selector.clear()
+        if not self.db or not hasattr(self.db, 'get_all_tips'):
+            self.cb_tip_selector.addItem("Unbekannt", userData=1)
+            self.cb_tip_selector.blockSignals(False)
+            return
+        try:
+            tips = self.db.get_all_tips(include_unknown=True)
+            cur_idx = 0
+            for i, tip in enumerate(tips):
+                t_id = tip.get('id')
+                name = tip.get('name', 'Unbekannt')
+                icon = tip.get('icon_char', '?')
+                mat = tip.get('material', '')
+                mat_str = f" ({mat})" if mat else ""
+                display = f"{icon} {name}{mat_str}"
+                self.cb_tip_selector.addItem(display, userData=t_id)
+                if t_id == self.tip_id:
+                    cur_idx = i
+            self.cb_tip_selector.setCurrentIndex(cur_idx)
+        except Exception:
+            self.cb_tip_selector.addItem("Unbekannt", userData=1)
+        finally:
+            self.cb_tip_selector.blockSignals(False)
+
+    def _on_tip_combo_changed(self, idx):
+        selected_tip_id = self.cb_tip_selector.currentData()
+        if selected_tip_id is not None:
+            self.tip_id = int(selected_tip_id)
+            self.tip_changed.emit(self.tip_id)
+            self.refresh_metrics()
+
+    def set_active_iem(self, iem_id):
+        if iem_id is not None:
+            self.iem_id = int(iem_id)
+            self.refresh_metrics()
+
+    def set_active_tip(self, tip_id):
+        if tip_id is not None:
+            self.tip_id = int(tip_id)
+            idx = self.cb_tip_selector.findData(self.tip_id)
+            if idx != -1:
+                self.cb_tip_selector.blockSignals(True)
+                self.cb_tip_selector.setCurrentIndex(idx)
+                self.cb_tip_selector.blockSignals(False)
+            self.refresh_metrics()
+
+    def update_data(self, iem_id=None, tip_id=None, freqs=None, mag_l=None, mag_r=None):
+        if iem_id is not None:
+            self.iem_id = int(iem_id)
+        if tip_id is not None:
+            self.tip_id = int(tip_id)
+            idx = self.cb_tip_selector.findData(self.tip_id)
+            if idx != -1:
+                self.cb_tip_selector.blockSignals(True)
+                self.cb_tip_selector.setCurrentIndex(idx)
+                self.cb_tip_selector.blockSignals(False)
+        if freqs is not None:
+            self.freqs = freqs
+        if mag_l is not None:
+            self.mag_l = mag_l
+        if mag_r is not None:
+            self.mag_r = mag_r
+        self.refresh_metrics()
+
+    def refresh_metrics(self):
+        """Query DB and update all sections: Helmholtz Peak, Reproducibility, and Seal History."""
+        # 1. Helmholtz Resonance Peak
+        peak_l = None
+        peak_r = None
+        if self.freqs is not None:
+            if self.mag_l is not None:
+                peak_l = self.detect_helmholtz_peak(self.freqs, self.mag_l)
+            if self.mag_r is not None:
+                peak_r = self.detect_helmholtz_peak(self.freqs, self.mag_r)
+
+        # Fallback to historical median peak if live data not available
+        if (peak_l is None or peak_r is None) and self.db and hasattr(self.db, 'get_tip_target_peak'):
+            try:
+                hist_peaks = self.db.get_tip_target_peak(self.iem_id, self.tip_id)
+                if hist_peaks:
+                    if peak_l is None and hist_peaks.get('left') is not None:
+                        peak_l = hist_peaks['left']
+                    if peak_r is None and hist_peaks.get('right') is not None:
+                        peak_r = hist_peaks['right']
+            except Exception:
+                pass
+
+        def update_peak_display(lbl_val, badge_delta, peak_val, chan_name):
+            if peak_val is not None:
+                lbl_val.setText(f"{chan_name}: {int(round(peak_val))} Hz")
+                delta_hz = peak_val - self.TARGET_HELMHOLTZ_HZ
+                sign = "+" if delta_hz >= 0 else ""
+                badge_delta.setText(f"Δ {sign}{int(round(delta_hz))} Hz")
+                abs_d = abs(delta_hz)
+                if abs_d <= 200:
+                    badge_delta.setStyleSheet("background: #065f46; color: #34d399; border: 1px solid #10b981; border-radius: 3px; padding: 1px 4px; font-size: 9px; font-weight: bold;")
+                    badge_delta.setToolTip("Peak aligns closely with 8 kHz coupler target (Optimal depth).")
+                elif abs_d <= 500:
+                    badge_delta.setStyleSheet("background: #451a03; color: #fbbf24; border: 1px solid #f59e0b; border-radius: 3px; padding: 1px 4px; font-size: 9px; font-weight: bold;")
+                    badge_delta.setToolTip("Moderate resonance shift (Acceptable coupling).")
+                else:
+                    badge_delta.setStyleSheet("background: #7f1d1d; color: #f87171; border: 1px solid #ef4444; border-radius: 3px; padding: 1px 4px; font-size: 9px; font-weight: bold;")
+                    badge_delta.setToolTip("Resonance peak shifted > 500 Hz (Check insertion depth / seal).")
+            else:
+                lbl_val.setText(f"{chan_name}: — Hz")
+                badge_delta.setText("—")
+                badge_delta.setStyleSheet("background: #27272a; color: #71717a; border-radius: 3px; padding: 1px 4px; font-size: 9px;")
+                badge_delta.setToolTip("No peak detected.")
+
+        update_peak_display(self.lbl_peak_l, self.badge_peak_delta_l, peak_l, "L")
+        update_peak_display(self.lbl_peak_r, self.badge_peak_delta_r, peak_r, "R")
+
+        # 2. Reproducibility Score (Band-limited to 20-8000 Hz)
+        scores = None
+        if self.db and hasattr(self.db, 'get_reproducibility_scores'):
+            try:
+                scores = self.db.get_reproducibility_scores(self.iem_id, self.tip_id)
+            except Exception:
+                scores = None
+
+        if scores is None:
+            # Query measurement count for empty state message
+            count = 0
+            if self.db and hasattr(self.db, 'db_path'):
+                try:
+                    import sqlite3
+                    conn = sqlite3.connect(self.db.db_path)
+                    cur = conn.cursor()
+                    cur.execute("SELECT COUNT(*) FROM Measurements WHERE iem_id = ? AND tip_id = ?", (self.iem_id, self.tip_id))
+                    row = cur.fetchone()
+                    if row:
+                        count = row[0]
+                    conn.close()
+                except Exception:
+                    count = 0
+
+            self.lbl_repro_warning.setText(f"Not enough data (min. 5 measurements required, currently N={count})")
+            self.lbl_repro_warning.show()
+            self.repro_scores_widget.hide()
+            self.badge_repro_status.hide()
+            self.lbl_score_l.setText("L: —")
+            self.lbl_score_r.setText("R: —")
+        else:
+            self.lbl_repro_warning.hide()
+            self.repro_scores_widget.show()
+
+            left_data = scores.get('left')
+            right_data = scores.get('right')
+
+            count = 0
+            if left_data and 'count' in left_data:
+                count = max(count, left_data['count'])
+            if right_data and 'count' in right_data:
+                count = max(count, right_data['count'])
+
+            def format_score_str(sc_dict):
+                if not sc_dict:
+                    return "—"
+                std = sc_dict.get('std_dev', sc_dict.get('score', 0.0))
+                pct = max(0.0, min(100.0, 100.0 - (std * 14.4)))
+                return f"{pct:.1f}% (±{std:.2f} dB)"
+
+            self.lbl_score_l.setText(f"L: {format_score_str(left_data)}")
+            self.lbl_score_r.setText(f"R: {format_score_str(right_data)}")
+
+            if count < 10:
+                self.badge_repro_status.setText(f"⚠ Preliminary (N={count})")
+                self.badge_repro_status.setStyleSheet("background: #451a03; color: #fbbf24; border: 1px solid #f59e0b; border-radius: 4px; padding: 2px 6px; font-size: 9px; font-weight: bold;")
+                self.badge_repro_status.setToolTip("Score is preliminary (5–9 measurements). 10+ recommended for stable statistics.")
+                self.badge_repro_status.show()
+            else:
+                self.badge_repro_status.setText(f"✓ Stable (N={count})")
+                self.badge_repro_status.setStyleSheet("background: #065f46; color: #34d399; border: 1px solid #10b981; border-radius: 4px; padding: 2px 6px; font-size: 9px; font-weight: bold;")
+                self.badge_repro_status.setToolTip("Verified sample size (≥ 10 measurements).")
+                self.badge_repro_status.show()
+
+        # 3. Acoustic Seal History Trend (40 Hz vs 500 Hz)
+        while self.trend_chips_layout.count():
+            item = self.trend_chips_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        seal_data = {"left": [], "right": []}
+        if self.db and hasattr(self.db, 'get_seal_history'):
+            try:
+                seal_data = self.db.get_seal_history(self.iem_id, self.tip_id) or {"left": [], "right": []}
+            except Exception:
+                pass
+
+        hist_l = seal_data.get("left", [])
+        hist_r = seal_data.get("right", [])
+
+        def summarize_seal(hist, chan_name):
+            n = len(hist)
+            if n == 0:
+                return f"{chan_name}: No data"
+            ok_cnt = sum(1 for e in hist if e.get("seal_ok"))
+            pct = (ok_cnt / n) * 100.0
+            mean_delta = float(np.mean([e.get("delta_db", 0.0) for e in hist]))
+            return f"{chan_name}: {ok_cnt}/{n} OK ({pct:.0f}%) | Mean Δ: {mean_delta:+.1f} dB"
+
+        self.lbl_seal_summary_l.setText(summarize_seal(hist_l, "L"))
+        self.lbl_seal_summary_r.setText(summarize_seal(hist_r, "R"))
+
+        if hist_l:
+            tag_l = QLabel("L:")
+            tag_l.setStyleSheet("color: #3b82f6; font-size: 8px; font-weight: bold;")
+            self.trend_chips_layout.addWidget(tag_l)
+            for idx, entry in enumerate(hist_l[-8:]):
+                chip = QLabel(f"#{idx+1}")
+                is_ok = entry.get("seal_ok", True)
+                delta = entry.get("delta_db", 0.0)
+                status = entry.get("status", "OK")
+                ts = entry.get("timestamp", "")
+                if is_ok:
+                    chip.setStyleSheet("background: #065f46; color: #34d399; border-radius: 3px; padding: 1px 4px; font-size: 8px; font-weight: bold;")
+                else:
+                    chip.setStyleSheet("background: #7f1d1d; color: #f87171; border-radius: 3px; padding: 1px 4px; font-size: 8px; font-weight: bold;")
+                chip.setToolTip(f"Left Take #{idx+1} ({ts})\nSeal: {status}\nDelta: {delta:+.1f} dB")
+                self.trend_chips_layout.addWidget(chip)
+
+        if hist_r:
+            tag_r = QLabel("R:")
+            tag_r.setStyleSheet("color: #ef4444; font-size: 8px; font-weight: bold; margin-left: 6px;")
+            self.trend_chips_layout.addWidget(tag_r)
+            for idx, entry in enumerate(hist_r[-8:]):
+                chip = QLabel(f"#{idx+1}")
+                is_ok = entry.get("seal_ok", True)
+                delta = entry.get("delta_db", 0.0)
+                status = entry.get("status", "OK")
+                ts = entry.get("timestamp", "")
+                if is_ok:
+                    chip.setStyleSheet("background: #065f46; color: #34d399; border-radius: 3px; padding: 1px 4px; font-size: 8px; font-weight: bold;")
+                else:
+                    chip.setStyleSheet("background: #7f1d1d; color: #f87171; border-radius: 3px; padding: 1px 4px; font-size: 8px; font-weight: bold;")
+                chip.setToolTip(f"Right Take #{idx+1} ({ts})\nSeal: {status}\nDelta: {delta:+.1f} dB")
+                self.trend_chips_layout.addWidget(chip)
+
+        self.trend_chips_layout.addStretch()
+
+
 class AnalysisWidget(QWidget):
     request_measurement = Signal()
     request_stress_test = Signal()
@@ -147,6 +632,10 @@ class AnalysisWidget(QWidget):
         super().__init__()
         self.setObjectName("AnalysisRoot")
         self.setStyleSheet("#AnalysisRoot { background-color: transparent; color: white; }")
+        
+        self.tip_analysis_card = None
+        self.current_iem_id = None
+        self.current_tip_id = None
         
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -638,8 +1127,10 @@ class AnalysisWidget(QWidget):
             item = self.report_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
+        self.tip_analysis_card = None
 
-        if not hasattr(self, '_last_report') or not self._last_report:
+        is_prokit = config.is_prokit_unlocked()
+        if (not hasattr(self, '_last_report') or not self._last_report) and not is_prokit:
             return
 
         from PySide6.QtWidgets import QFrame, QLabel, QVBoxLayout as QVL
@@ -650,6 +1141,52 @@ class AnalysisWidget(QWidget):
         tab_idx = self.graph_tabs.currentIndex()
         tab_cat_map = {0: 'FR', 1: 'THD', 2: 'CSD'}
         active_cat = tab_cat_map.get(tab_idx, None)  # None = show all
+
+        if is_prokit and (active_cat is None or active_cat == 'FR'):
+            db = getattr(self, 'db', None)
+            if db is None and hasattr(self, 'main_window') and self.main_window and hasattr(self.main_window, 'db'):
+                db = self.main_window.db
+
+            iem_id = getattr(self, 'current_iem_id', None)
+            if iem_id is None and hasattr(self, 'main_window') and self.main_window:
+                if hasattr(self.main_window, 'active_card') and self.main_window.active_card and hasattr(self.main_window.active_card, 'm_id'):
+                    iem_id = self.main_window.active_card.m_id
+                elif hasattr(self.main_window, 'current_iem_id'):
+                    iem_id = self.main_window.current_iem_id
+            if iem_id is None:
+                iem_id = 1
+
+            tip_id = getattr(self, 'current_tip_id', None)
+            if tip_id is None and hasattr(self, 'main_window') and self.main_window:
+                if hasattr(self.main_window, 'combo_tip') and self.main_window.combo_tip:
+                    combo_data = self.main_window.combo_tip.currentData()
+                    if combo_data is not None:
+                        tip_id = combo_data
+            if tip_id is None:
+                tip_id = 1
+
+            self.tip_analysis_card = TipAnalysisCardWidget(
+                parent=self.report_container,
+                db=db,
+                iem_id=iem_id,
+                tip_id=tip_id,
+                freqs=getattr(self, 'current_freqs', None),
+                mag_l=getattr(self, 'current_mag_l', None),
+                mag_r=getattr(self, 'current_mag_r', None),
+            )
+            if hasattr(self, 'main_window') and self.main_window and hasattr(self.main_window, 'combo_tip') and self.main_window.combo_tip:
+                def sync_main_tip(t_id):
+                    self.current_tip_id = t_id
+                    idx = self.main_window.combo_tip.findData(t_id)
+                    if idx != -1:
+                        self.main_window.combo_tip.blockSignals(True)
+                        self.main_window.combo_tip.setCurrentIndex(idx)
+                        self.main_window.combo_tip.blockSignals(False)
+                self.tip_analysis_card.tip_changed.connect(sync_main_tip)
+
+            self.report_layout.addWidget(self.tip_analysis_card)
+        else:
+            self.tip_analysis_card = None
 
         is_light = theme.is_light()
         status_style = {
@@ -662,7 +1199,8 @@ class AnalysisWidget(QWidget):
         right_items = []
         gen_items = []
         
-        for item in self._last_report:
+        report_items = getattr(self, '_last_report', None) or []
+        for item in report_items:
             cat = item.get('category', 'FR')
             if active_cat is not None and cat != active_cat:
                 continue
@@ -726,6 +1264,22 @@ class AnalysisWidget(QWidget):
         render_group(right_items, "RIGHT EAR", "#ef4444")
         render_group(gen_items, "STEREO / GENERAL", "#10b981")
         self.report_layout.addStretch()
+
+    def update_prokit_visibility(self):
+        """Re-evaluates ProKit card visibility upon license state transitions."""
+        if hasattr(self, 'tip_analysis_card') and self.tip_analysis_card:
+            self.tip_analysis_card.setVisible(config.is_prokit_unlocked())
+        self.render_diagnostics()
+
+    def set_active_iem(self, iem_id):
+        self.current_iem_id = iem_id
+        if hasattr(self, 'tip_analysis_card') and self.tip_analysis_card:
+            self.tip_analysis_card.set_active_iem(iem_id)
+
+    def set_active_tip(self, tip_id):
+        self.current_tip_id = tip_id
+        if hasattr(self, 'tip_analysis_card') and self.tip_analysis_card:
+            self.tip_analysis_card.set_active_tip(tip_id)
 
     def refresh_view(self):
         print('[DEBUG] refresh_view called!')
