@@ -22,11 +22,11 @@ Orchestrate the complete, high-integrity implementation and verification of ProK
   - 1. Milestone 1: R1 config.py (Unlock System) [done]
   - 2. Milestone 2: R2 database.py (TipProfiles schema, migration, seed, API) [done]
   - 3. Milestone 3: R3 main.py (Bottom-Bar Tip Selector & Triple-Click Unlock Dialog) [done]
-  - 4. Milestone 4: R4 history_ui.py (Tip Badge & Seal Status in History Cards) [in-progress]
-  - 5. Milestone 5: R5 analysis_ui.py (Tip Analysis Card in Diagnostics) [pending]
+  - 4. Milestone 4: R4 history_ui.py (Tip Badge & Seal Status in History Cards) [done]
+  - 5. Milestone 5: R5 analysis_ui.py (Tip Analysis Card in Diagnostics) [in-progress]
   - 6. Final Milestone: Pass 100% E2E test suite & Adversarial Coverage Hardening [pending]
-- **Current phase**: 4 (Milestone 4 Exploration & Implementation)
-- **Current focus**: Milestone 4 Exploration for history_ui.py (Tip Badges & Seal Status)
+- **Current phase**: 5 (Milestone 5 Exploration & Implementation)
+- **Current focus**: Milestone 5 Exploration for analysis_ui.py (Tip Analysis Card in Diagnostics)
 
 ## 🔒 Key Constraints
 - Start-Protokoll: First response begins with 'eisteepfirsich'.
@@ -95,12 +95,16 @@ Orchestrate the complete, high-integrity implementation and verification of ProK
 | challenger_m4_1 | teamwork_preview_challenger | M4 History Badge & Gate Challenger | completed | a9658000-8ee5-4c98-9f8e-6d1d0a24dc54 |
 | challenger_m4_2 | teamwork_preview_challenger | M4 Acoustic Seal Challenger | completed | bdd24d7b-7aad-4989-be59-12c41378116b |
 | auditor_m4_1 | teamwork_preview_auditor | M4 Forensic Auditor | completed | 638e68cb-64ca-4d72-88f7-3d67929f3695 |
-| worker_catalog_1 | teamwork_preview_worker | Worker Real Catalog | in-progress | c3bb61fa-2fe6-4a34-ab01-3946ece4c028 |
+| worker_catalog_1 | teamwork_preview_worker | Worker Real Catalog | completed | c3bb61fa-2fe6-4a34-ab01-3946ece4c028 |
+| explorer_m5_1 | teamwork_preview_spec_miner | M5 Spec & Diagnostics Layout Miner | completed | 81ebe9ad-6565-4870-84aa-a47c77a06317 |
+| explorer_m5_2 | teamwork_preview_explorer | M5 DSP & Algorithm Explorer | completed | 32d47bfd-c342-4aee-9573-d77474674fbd |
+| explorer_m5_3 | teamwork_preview_explorer | M5 UI Card & Reactivity Explorer | completed | df772790-1dac-4501-92a7-4b2aca6f9ba1 |
+| worker_m5_1 | teamwork_preview_worker | M5 Implementation Worker | in-progress | 1e198eca-f2fd-45b8-9366-97e9e3612268 |
 
 ## Succession Status
 - Succession required: no (single persistent orchestrator session up to 128 subagents)
-- Cumulative Spawns: 47 / 128
-- Pending subagents: c3bb61fa-2fe6-4a34-ab01-3946ece4c028
+- Cumulative Spawns: 51 / 128
+- Pending subagents: 1e198eca-f2fd-45b8-9366-97e9e3612268
 - Predecessor: none
 - Successor: none
 
