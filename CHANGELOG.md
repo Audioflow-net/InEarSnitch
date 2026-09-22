@@ -1532,3 +1532,9 @@
 ## [2026-09-21] - Silicone Master & Press V3
 - **ADDED**: `MASTER_Silikon_Formen.scad` created as the unified, clean source of truth for V27, V29, V30, and V31.
 - **CHANGED**: `Universal_Keil_Presse.scad` upgraded to V3 Ultimate. Features a 50x50x60mm housing, a 34x34x13mm pressure plate to eliminate lateral shear, and a massive 33.5mm wide wedge. Fixed Z-floor coordinate bug.
+
+### V32 (Luft-Einschluss Fix / Blind-Kompressionstasche) - 2026-09-22
+- **Das betroffene Bauteil:** Silikon Tamper (piston_v27, v29, v30, v31)
+- **Maße (Alt vs. Neu):** Geometrie des massiven Tampers bleibt gleich, aber es wurde eine konzentrische, 0.3mm breite und 1.5mm tiefe Ring-Tasche exakt um die Wurzel des 7.5mm Schafts subtrahiert.
+- **Formen-Änderung:** Subtraktion einer winzigen hohlen Röhre (d_innen=7.5mm, d_außen=8.1mm, h=1.5mm) aus dem Flansch von unten (Z=14.09 bis 15.6). Nach oben hin blind (geschlossen), also keine durchgehenden vertikalen Löcher.
+- **Die Idee / Der Grund:** User berichtete von starken Luft-Einschlüssen genau am Messkammer-Schaft. Da Konus-Formen (verfälscht Akustik / Bass-Falle) und vertikale Löcher (Tentakel reißen ab) nicht in Frage kamen, dient dieser Ring-Schlitz als "Kompressionstasche". Die Luft flüchtet beim Pressen senkrecht nach oben in diese Hohlkammer. Für das zähe Shore-25-Silikon ist der schmale 0.3mm Spalt hingegen eine Barriere. Resultat: Eine makellose, 100% plane Dichtfläche ohne Blasen.
