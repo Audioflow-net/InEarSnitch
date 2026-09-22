@@ -145,3 +145,33 @@ Add an optional analysis card in `render_diagnostics()` — only when ProKit is 
 - [ ] `btn_toggle_tools` sidebar toggle still works
 - [ ] Profile sidebar is not squeezed when switching tabs
 - [ ] No new imports break on systems without ProKit data
+
+## 2026-09-22T07:51:39Z
+
+URGENT CORRECTION — Seed data in TipProfiles must use the REAL tip catalog, not generic placeholders.
+
+The user has a visual catalog of actual designed tips at `/Users/ben/.gemini/antigravity/brain/dc2b2fbc-d180-476f-aea9-bae3683b5971/visual_catalog.html`. The current seed data ("ProKit V1", "ProKit V2", "Standard Foam") is WRONG.
+
+Replace the seed data in `database.py` with these REAL tip models:
+
+```python
+default_tips = [
+    # id=1 MUST be "Unbekannt" (legacy fallback) — DO NOT CHANGE
+    ("Unbekannt", "Legacy-Messung ohne Tip-Information", "", "#444444", "?", 0),
+    ("Kein Aufsatz", "Direkt ohne Tip gemessen", "", "#555555", "○", 0),
+    ("V26 Straight", "Bester Allrounder — gerade 90°-Kante", "Silicone", "#22c55e", "▮", 1),
+    ("V27 Rounded", "Komfort-Update — 2mm Abrundung an der Spitze", "Silicone", "#3b82f6", "▮", 0),
+    ("V29-C Cone", "Konisch zulaufend — extremer Seal durch tiefes Einpressen", "Silicone", "#f97316", "◆", 0),
+    ("V30-C Pro", "9mm Torus-Lippe, 4mm Loch — Stabilitäts-Upgrade", "Silicone", "#3b82f6", "◉", 0),
+    ("V31-XL Panzer", "10mm Lippe, 6mm Loch — für fette Custom In-Ears", "Silicone", "#f97316", "◉", 0),
+]
+```
+
+Notes:
+- V28 Universal is EXCLUDED (verworfen/deprecated — "Choke-Tube Akustik" problem)
+- V26 Straight is `is_default=1` (marked as "Bester Allrounder" in the catalog)
+- All tips are Silicone material (these are silicone adapters with matching tamper/stamps)
+- Each tip has a matching "Tamper" (stamp for the silicone mold) — not relevant for the DB but good context
+
+Please update `database.py` seed data and re-run smoke tests. This is a data-only change, no structural modification needed.
+

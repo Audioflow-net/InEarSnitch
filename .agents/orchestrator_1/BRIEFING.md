@@ -89,12 +89,18 @@ Orchestrate the complete, high-integrity implementation and verification of ProK
 | explorer_m4_1 | teamwork_preview_spec_miner | M4 Spec & SQL Query Miner | completed | 63c0a57e-6fd9-4ae7-9ebf-5fb021961349 |
 | explorer_m4_2 | teamwork_preview_explorer | M4 Card UI & Badge Designer | completed | e1e4e343-4c49-4b39-869e-cfe2944d18fe |
 | explorer_m4_3 | teamwork_preview_explorer | M4 BLOB Seal & Gate Explorer | completed | 1c4534f7-9944-46b9-ba9b-668e69ce393e |
-| worker_m4_1 | teamwork_preview_worker | M4 Implementation Worker | in-progress | ecf02d0d-c71e-46c6-9e33-0938af7c2614 |
+| worker_m4_1 | teamwork_preview_worker | M4 Implementation Worker | completed | ecf02d0d-c71e-46c6-9e33-0938af7c2614 |
+| reviewer_m4_1 | teamwork_preview_reviewer | M4 Code Reviewer 1 | completed | 93802fc3-67e5-4b1f-ade9-76dffbe6bbb0 |
+| reviewer_m4_2 | teamwork_preview_reviewer | M4 Code Reviewer 2 | completed | 9b050a79-f894-4bd3-8642-32292198f48f |
+| challenger_m4_1 | teamwork_preview_challenger | M4 History Badge & Gate Challenger | completed | a9658000-8ee5-4c98-9f8e-6d1d0a24dc54 |
+| challenger_m4_2 | teamwork_preview_challenger | M4 Acoustic Seal Challenger | completed | bdd24d7b-7aad-4989-be59-12c41378116b |
+| auditor_m4_1 | teamwork_preview_auditor | M4 Forensic Auditor | completed | 638e68cb-64ca-4d72-88f7-3d67929f3695 |
+| worker_catalog_1 | teamwork_preview_worker | Worker Real Catalog | in-progress | c3bb61fa-2fe6-4a34-ab01-3946ece4c028 |
 
 ## Succession Status
 - Succession required: no (single persistent orchestrator session up to 128 subagents)
-- Cumulative Spawns: 41 / 128
-- Pending subagents: ecf02d0d-c71e-46c6-9e33-0938af7c2614
+- Cumulative Spawns: 47 / 128
+- Pending subagents: c3bb61fa-2fe6-4a34-ab01-3946ece4c028
 - Predecessor: none
 - Successor: none
 

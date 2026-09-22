@@ -45,3 +45,16 @@ Gate Result: **FAIL** (challenger_m3_1 REQUEST_CHANGES: save_trace_to_db gate by
 | auditor_m3_2 | teamwork_preview_auditor | CLEAN (zero facades/bypasses, 10/10 forensic tests pass, 44/44 adversarial tests pass) | handoff.md |
 
 Gate Result: **PASS**
+
+## Gate — Milestone 4 (R4 history_ui.py) — Iteration 1
+| Agent | Role | Verdict | Source |
+|-------|------|---------|--------|
+| worker_m4_1 | teamwork_preview_worker | DONE (15/15 History tests pass, smoke test 19/19 pass, commit 525c0a1) | handoff.md |
+| reviewer_m4_1 | teamwork_preview_reviewer | APPROVE (backwards-compatible constructor, L/R separate, ProKit gate) | handoff.md |
+| reviewer_m4_2 | teamwork_preview_reviewer | APPROVE (UI layout geometry in 220-345px width, SQL robustness, mono/corrupt BLOB resilience) | handoff.md |
+| challenger_m4_1 | teamwork_preview_challenger | APPROVE (27/27 adversarial tests on all tip profiles and gating pass) | handoff.md |
+| challenger_m4_2 | teamwork_preview_challenger | APPROVE (26/26 adversarial tests on acoustic seal threshold & L/R separation pass) | handoff.md |
+| auditor_m4_1 | teamwork_preview_auditor | CLEAN (zero facades, genuine numpy vector DSP, database size invariant) | handoff.md |
+
+Gate Result: **PASS**
+

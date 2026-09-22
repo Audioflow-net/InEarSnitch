@@ -16,7 +16,7 @@ Coordinate implementation of the ProKit Tip-Tracking feature for InEar Snitch vi
 - Never report completion without VICTORY CONFIRMED from teamwork_preview_victory_auditor
 
 ## User Context
-- **Last user request**: Implement ProKit Tip-Tracking feature (offline SHA256 unlock gate, database migration, tip selector UI, history card badges, diagnostics analysis card, smoke test passing).
+- **Last user request**: [2026-09-22T07:51:39Z] URGENT CORRECTION: Update TipProfiles seed data in database.py to real catalog models (V26 Straight, V27 Rounded, V29-C Cone, V30-C Pro, V31-XL Panzer; V28 excluded; V26 is_default=1; id=1 Unbekannt preserved).
 - **Pending clarifications**: none
 - **Delivered results**: none
 
