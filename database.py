@@ -79,11 +79,11 @@ class DatabaseManager:
             # id=1 MUST be "Unknown" (legacy fallback) — DO NOT CHANGE
             (1, "Unknown", "Legacy measurement without tip info", "", "#444444", "?", 0),
             (2, "No Tip", "Measured directly without tip", "", "#555555", "○", 0),
-            (3, "V26 Straight", "Bester Allrounder — gerade 90°-Kante", "Silicone", "#22c55e", "▮", 1),
-            (4, "V27 Rounded", "Komfort-Update — 2mm Abrundung an der Spitze", "Silicone", "#3b82f6", "▮", 0),
-            (5, "V29-C Cone", "Konisch zulaufend — extremer Seal durch tiefes Einpressen", "Silicone", "#f97316", "◆", 0),
-            (6, "V30-C Pro", "9mm Torus-Lippe, 4mm Loch — Stabilitäts-Upgrade", "Silicone", "#3b82f6", "◉", 0),
-            (7, "V31-XL Panzer", "10mm Lippe, 6mm Loch — für fette Custom In-Ears", "Silicone", "#f97316", "◉", 0),
+            (3, "V26 Straight", "Best all-rounder — straight 90° edge", "Silicone", "#22c55e", "▮", 1),
+            (4, "V27 Rounded", "Comfort update — 2mm rounded tip", "Silicone", "#3b82f6", "▮", 0),
+            (5, "V29-C Cone", "Conical shape — extreme seal via deep insertion", "Silicone", "#f97316", "◆", 0),
+            (6, "V30-C Pro", "9mm torus lip, 4mm hole — stability upgrade", "Silicone", "#3b82f6", "◉", 0),
+            (7, "V31-XL Panzer", "10mm lip, 6mm hole — for large Custom In-Ears", "Silicone", "#f97316", "◉", 0),
         ]
         for tip in default_tips:
             cursor.execute("""
