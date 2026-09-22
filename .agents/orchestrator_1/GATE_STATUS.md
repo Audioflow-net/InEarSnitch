@@ -22,3 +22,14 @@ Gate Result: **PASS**
 
 Gate Result: **PASS**
 
+## Gate — Milestone 3 (R3 main.py) — Iteration 1
+| Agent | Role | Verdict | Source |
+|-------|------|---------|--------|
+| worker_m3_1 | teamwork_preview_worker | DONE (36/36 targeted UI tests pass, smoke test 19/19 pass, commit 1087e5d) | handoff.md |
+| reviewer_m3_1 | teamwork_preview_reviewer | APPROVE (non-editable combo_tip, smoke test widgets intact) | handoff.md |
+| reviewer_m3_2 | teamwork_preview_reviewer | APPROVE (triple-click filter, dialog flow, auto-suggest, trace save) | handoff.md |
+| challenger_m3_1 | teamwork_preview_challenger | REQUEST_CHANGES (vulnerability in save_trace_to_db: left operand of OR misses config.is_prokit_unlocked()) | handoff.md |
+| challenger_m3_2 | teamwork_preview_challenger | APPROVE (23/23 adversarial tests on click timings and re-entrancy) | handoff.md |
+| auditor_m3_1 | teamwork_preview_auditor | CLEAN (zero facades, genuine PySide6 events and SQLite persistence) | handoff.md |
+
+Gate Result: **FAIL** (challenger_m3_1 REQUEST_CHANGES: save_trace_to_db gate bypass vulnerability)

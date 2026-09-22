@@ -74,14 +74,20 @@ Orchestrate the complete, high-integrity implementation and verification of ProK
 | explorer_m3_1 | teamwork_preview_spec_miner | M3 Spec & UI Layout | completed | e6c0a650-f53a-4267-ba8d-4b1daf55e09a |
 | explorer_m3_2 | teamwork_preview_explorer | M3 Unlock Event Filter | completed | 3528fdda-9653-4fe6-bd87-2365b7b33d13 |
 | explorer_m3_3 | teamwork_preview_explorer | M3 Data Flow & Safety | completed | 042daf2e-3218-4a18-b396-da7d5b3eef73 |
-| worker_m3_1 | teamwork_preview_worker | M3 UI Implementation | in-progress | 8227937c-0a17-4513-898d-22ee97cd9a09 |
+| worker_m3_1 | teamwork_preview_worker | M3 UI Implementation | completed | 8227937c-0a17-4513-898d-22ee97cd9a09 |
+| reviewer_m3_1 | teamwork_preview_reviewer | M3 Code Review 1 | completed | 8129eb03-63b7-4409-963d-848d688bd945 |
+| reviewer_m3_2 | teamwork_preview_reviewer | M3 Code Review 2 | completed | 1f941263-d1c0-4a73-adfd-671380c41114 |
+| challenger_m3_1 | teamwork_preview_challenger | M3 UI Challenger | completed | 776cb6be-01de-4214-bc65-b566581a5151 |
+| challenger_m3_2 | teamwork_preview_challenger | M3 Unlock Challenger | completed | 2e07aa31-ab44-425e-8ff4-cb82b22a5feb |
+| auditor_m3_1 | teamwork_preview_auditor | M3 Forensic Audit | completed | e17c2d93-fce8-4555-b21d-281af7760634 |
+| worker_m3_2 | teamwork_preview_worker | M3 Gate Remediation | in-progress | e6dd4ac2-83a3-43e2-b380-e01a32d79c16 |
 
 ## Succession Status
-- Succession required: no
+- Succession required: yes (upon worker_m3_2 completion)
 - Generation: 2 (recovered post-truncation)
-- Generation 2 Spawn count: 10 / 16
-- Total session spawns: 26 / 128
-- Pending subagents: 8227937c-0a17-4513-898d-22ee97cd9a09
+- Generation 2 Spawn count: 16 / 16
+- Total session spawns: 32 / 128
+- Pending subagents: e6dd4ac2-83a3-43e2-b380-e01a32d79c16
 - Predecessor: orchestrator_1 (Gen 1)
 - Successor: not yet spawned
 
