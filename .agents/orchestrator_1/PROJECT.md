@@ -38,8 +38,8 @@
 ## Milestones
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
-| M1 | Offline Unlock System | config.py: is_prokit_unlocked, unlock_prokit, revoke_prokit, VALID_CODE_HASHES | none | PLANNED |
-| M2 | Database Schema & API | database.py: TipProfiles, migration, seed, legacy backfill, get_all_tips, get_last_used_tip, save_measurement, get_reproducibility_scores, get_seal_history | none | PLANNED |
+| M1 | Offline Unlock System | config.py: is_prokit_unlocked, unlock_prokit, revoke_prokit, VALID_CODE_HASHES | none | DONE |
+| M2 | Database Schema & API | database.py: TipProfiles, migration, seed, legacy backfill, get_all_tips, get_last_used_tip, save_measurement, get_reproducibility_scores, get_seal_history | none | IN_PROGRESS |
 | M3 | Tip Selector & Unlock UI | main.py: Bottom bar QComboBox, visibility gate, profile switch auto-suggest, save_trace_to_db tip_id passing, triple-click logo unlock dialog | M1, M2 | PLANNED |
 | M4 | History UI Tip Badges | history_ui.py: LEFT JOIN TipProfiles in load_history, HistoryCardWidget tip badge, BLOB seal status | M1, M2 | PLANNED |
 | M5 | Diagnostics Tip Analysis | analysis_ui.py: render_diagnostics Tip Analysis card, 8kHz target peak, reproducibility score display, seal trend display | M1, M2 | PLANNED |
