@@ -1,4 +1,4 @@
-# BRIEFING — 2026-09-22T09:57:00+02:00
+# BRIEFING — 2026-09-22T10:09:00+02:00
 
 ## Mission
 Incorporate the PRIORITY USER DIRECTIVE into the codebase: update TipProfiles seed data to use the REAL tip catalog (V26 Straight, V27 Rounded, V29-C Cone, V30-C Pro, V31-XL Panzer, etc.) and update all dependent code and tests.
@@ -30,7 +30,7 @@ Incorporate the PRIORITY USER DIRECTIVE into the codebase: update TipProfiles se
 
 ## Current Parent
 - Conversation ID: d18b5e78-f17e-4319-bb8e-f9a56ecd2248
-- Updated: 2026-09-22T09:57:00+02:00
+- Updated: 2026-09-22T10:09:00+02:00
 
 ## Task Summary
 - **What to build**: Real physical tip catalog migration in database schema & seed, dynamic selector in main.py, test suite updates.
@@ -39,22 +39,42 @@ Incorporate the PRIORITY USER DIRECTIVE into the codebase: update TipProfiles se
 - **Code layout**: database.py, main.py, tests/.
 
 ## Change Tracker
-- **Files modified**: None yet
-- **Build status**: Not run yet
+- **Files modified**:
+  - `database.py`: Added `description TEXT DEFAULT ''` migration, upserted 7 real tips (id 1-7), updated `get_all_tips` to return `description`.
+  - `main.py`: Dynamic default tip detection (`is_default == 1` or fallback to id=3) in `populate_tips` and `suggest_tip_for_current_iem`; added `update_tip_selector` alias.
+  - `tests/test_prokit_e2e.py`: Updated seed data assertions to 7 real tip models, count assertions, roundtrip and mixed badges, and peak detection tolerance.
+  - `tests/test_prokit_adversarial_db.py`: Updated seed count (7), default tip (3, V26 Straight), and sparse IDs test.
+  - `tests/test_prokit_adversarial_ui.py`: Updated combobox item count (7) and default tip fallback (3).
+  - `tests/test_history_badge_gate_adversarial.py`: Updated seed tip tests 3, 4, 5 and search filter queries.
+  - `tests/test_header_triple_click_adversarial.py`: Updated tip name assertions and count >= 7.
+  - `tests/test_challenger_m4_acoustic_seal.py`: Updated tip 4 badge assertion to "V27 Rounded".
+  - `tests/test_forensic_m3.py`: Updated default tip fallback to 3.
+- **Build status**: All smoke tests (19/19) and pytests pass 100%.
 - **Pending issues**: None
 
 ## Quality Status
-- **Build/test result**: Pending initial smoke test
+- **Build/test result**:
+  - `smoke_test.py`: 19/19 CHECKS PASSED.
+  - `test_prokit_e2e.py`: 87/87 PASSED.
+  - `test_prokit_adversarial_db.py`: 26/26 PASSED.
+  - `test_prokit_adversarial_ui.py`: 21/21 PASSED.
+  - `test_adversarial_dsp.py`: 20/20 PASSED.
+  - `test_history_badge_gate_adversarial.py`: 27/27 PASSED.
+  - `test_challenger_m4_acoustic_seal.py`: 26/26 PASSED.
+  - `test_forensic_m3.py`: 10/10 PASSED.
+  - `inearsnitch.db`: Exactly 16379904 bytes.
 - **Lint status**: Clean
-- **Tests added/modified**: Pending
+- **Tests added/modified**: Updated test suites across all 7 test files for real tip catalog.
 
 ## Loaded Skills
 - None specified in dispatch.
 
 ## Key Decisions Made
-- Will follow pre-flight smoke test & backup commit constraints strictly.
+- Used SQLite `ON CONFLICT(id) DO UPDATE SET ... WHERE TipProfiles.name IN (...)` so custom non-seed tips are preserved while default placeholder tips are upgraded cleanly.
+- Dynamically resolved default tip in `main.py` by inspecting `is_default == 1` from `get_all_tips()` with fallback to id=3 ("V26 Straight").
 
 ## Artifact Index
 - DISPATCH.md — Assignment from orchestrator
 - BRIEFING.md — Persistent working memory
 - progress.md — Heartbeat and step log
+- handoff.md — 5-component handoff report

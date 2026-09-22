@@ -57,6 +57,7 @@ class DatabaseManager:
             CREATE TABLE IF NOT EXISTS TipProfiles (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
+                description TEXT DEFAULT '',
                 material TEXT,
                 color_hex TEXT,
                 icon_char TEXT,
@@ -64,18 +65,38 @@ class DatabaseManager:
             )
         """)
 
-        # Insert seed data deterministically (Unbekannt ALWAYS gets id=1)
-        seed_tips = [
-            (1, "Unbekannt", "Standard", "#6b7280", "?", 0),
-            (2, "Kein Aufsatz", "None", "#94a3b8", "○", 0),
-            (3, "Standard Foam", "Foam", "#f59e0b", "●", 0),
-            (4, "ProKit V1", "Silicone", "#3b82f6", "◆", 0),
-            (5, "ProKit V2", "Silicone", "#10b981", "★", 1),
+        # Migration: ensure description column exists in TipProfiles
+        cursor.execute("PRAGMA table_info(TipProfiles)")
+        tp_cols = [c[1] for c in cursor.fetchall()]
+        if "description" not in tp_cols:
+            try:
+                cursor.execute("ALTER TABLE TipProfiles ADD COLUMN description TEXT DEFAULT ''")
+            except sqlite3.OperationalError:
+                pass
+
+        # Populate or update TipProfiles with the 7 real tips deterministically with IDs 1 to 7
+        default_tips = [
+            # id=1 MUST be "Unbekannt" (legacy fallback) — DO NOT CHANGE
+            (1, "Unbekannt", "Legacy-Messung ohne Tip-Information", "", "#444444", "?", 0),
+            (2, "Kein Aufsatz", "Direkt ohne Tip gemessen", "", "#555555", "○", 0),
+            (3, "V26 Straight", "Bester Allrounder — gerade 90°-Kante", "Silicone", "#22c55e", "▮", 1),
+            (4, "V27 Rounded", "Komfort-Update — 2mm Abrundung an der Spitze", "Silicone", "#3b82f6", "▮", 0),
+            (5, "V29-C Cone", "Konisch zulaufend — extremer Seal durch tiefes Einpressen", "Silicone", "#f97316", "◆", 0),
+            (6, "V30-C Pro", "9mm Torus-Lippe, 4mm Loch — Stabilitäts-Upgrade", "Silicone", "#3b82f6", "◉", 0),
+            (7, "V31-XL Panzer", "10mm Lippe, 6mm Loch — für fette Custom In-Ears", "Silicone", "#f97316", "◉", 0),
         ]
-        for tip in seed_tips:
+        for tip in default_tips:
             cursor.execute("""
-                INSERT OR IGNORE INTO TipProfiles (id, name, material, color_hex, icon_char, is_default)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO TipProfiles (id, name, description, material, color_hex, icon_char, is_default)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    name=excluded.name,
+                    description=excluded.description,
+                    material=excluded.material,
+                    color_hex=excluded.color_hex,
+                    icon_char=excluded.icon_char,
+                    is_default=excluded.is_default
+                WHERE TipProfiles.name IN ('', 'Unbekannt', 'Kein Aufsatz', 'Standard Foam', 'ProKit V1', 'ProKit V2', 'V26 Straight', 'V27 Rounded', 'V29-C Cone', 'V30-C Pro', 'V31-XL Panzer')
             """, tip)
 
         # Historical measurements for reference overlays
@@ -177,18 +198,19 @@ class DatabaseManager:
         cursor = conn.cursor()
         try:
             if include_unknown:
-                cursor.execute("SELECT id, name, material, color_hex, icon_char, is_default FROM TipProfiles ORDER BY id ASC")
+                cursor.execute("SELECT id, name, description, material, color_hex, icon_char, is_default FROM TipProfiles ORDER BY id ASC")
             else:
-                cursor.execute("SELECT id, name, material, color_hex, icon_char, is_default FROM TipProfiles WHERE id != 1 ORDER BY id ASC")
+                cursor.execute("SELECT id, name, description, material, color_hex, icon_char, is_default FROM TipProfiles WHERE id != 1 ORDER BY id ASC")
             rows = cursor.fetchall()
             return [
                 {
                     "id": r[0],
                     "name": r[1],
-                    "material": r[2],
-                    "color_hex": r[3],
-                    "icon_char": r[4],
-                    "is_default": bool(r[5])
+                    "description": r[2] if r[2] is not None else "",
+                    "material": r[3],
+                    "color_hex": r[4],
+                    "icon_char": r[5],
+                    "is_default": bool(r[6])
                 }
                 for r in rows
             ]

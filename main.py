@@ -4125,8 +4125,14 @@ class MainWindow(QMainWindow):
             name = tip.get('name', '')
             display_text = f"{icon} {name}".strip()
             self.combo_tip.addItem(display_text, userData=tip['id'])
-            if tip.get('is_default') in (1, True) or tip.get('id') == 5:
+            if tip.get('is_default') in (1, True):
                 default_idx = i
+
+        if default_idx == -1:
+            for i, tip in enumerate(tips):
+                if tip.get('id') == 3:
+                    default_idx = i
+                    break
                 
         if cur_id is not None and self.combo_tip.findData(cur_id) != -1:
             self.combo_tip.setCurrentIndex(self.combo_tip.findData(cur_id))
@@ -4135,6 +4141,8 @@ class MainWindow(QMainWindow):
         elif self.combo_tip.count() > 0:
             self.combo_tip.setCurrentIndex(0)
         self.combo_tip.blockSignals(False)
+
+    update_tip_selector = populate_tips
 
     def suggest_tip_for_current_iem(self):
         """Auto-suggest last used tip for current IEM, falling back to default."""
@@ -4154,8 +4162,21 @@ class MainWindow(QMainWindow):
                 self.combo_tip.setCurrentIndex(idx)
                 return
                 
-        # Fallback to default tip (is_default == 1, id=5)
-        def_idx = self.combo_tip.findData(5)
+        # Fallback to default tip (is_default == 1, or fallback to id=3 "V26 Straight")
+        def_id = None
+        try:
+            tips = self.db.get_all_tips(include_unknown=True) if hasattr(self.db, 'get_all_tips') else []
+            for tip in tips:
+                if tip.get('is_default') in (1, True):
+                    def_id = tip.get('id')
+                    break
+        except Exception:
+            def_id = None
+
+        if def_id is None:
+            def_id = 3
+
+        def_idx = self.combo_tip.findData(def_id)
         if def_idx != -1:
             self.combo_tip.setCurrentIndex(def_idx)
         elif self.combo_tip.count() > 0:
