@@ -1300,6 +1300,17 @@ class MainWindow(QMainWindow):
         self.page_ana.main_window = self
         self.page_ana.request_measurement.connect(self.run_measurement)
         self.page_ana.request_stress_test.connect(self.run_stress_test)
+
+        # Synchronize bottom bar tip changes with Analysis Page
+        def _on_bottom_bar_tip_changed(idx):
+            if hasattr(self, 'combo_tip') and hasattr(self, 'page_ana'):
+                t_id = self.combo_tip.currentData()
+                if t_id is not None:
+                    self.page_ana.current_tip_id = t_id
+                    if hasattr(self.page_ana, 'tip_analysis_card') and self.page_ana.tip_analysis_card:
+                        self.page_ana.tip_analysis_card.set_active_tip(t_id)
+
+        self.combo_tip.currentIndexChanged.connect(_on_bottom_bar_tip_changed)
         
         self.meas_overlay = MeasurementAnimator(self.page_ana.plot_widget)
         self.stress_overlay = MeasurementAnimator(self.page_ana.thd_widget)

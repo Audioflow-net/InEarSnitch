@@ -1156,14 +1156,14 @@ class AnalysisWidget(QWidget):
             if iem_id is None:
                 iem_id = 1
 
-            tip_id = getattr(self, 'current_tip_id', None)
-            if tip_id is None and hasattr(self, 'main_window') and self.main_window:
-                if hasattr(self.main_window, 'combo_tip') and self.main_window.combo_tip:
-                    combo_data = self.main_window.combo_tip.currentData()
-                    if combo_data is not None:
-                        tip_id = combo_data
+            # Always read active tip from main window bottom bar if available
+            tip_id = None
+            if hasattr(self, 'main_window') and self.main_window and hasattr(self.main_window, 'combo_tip') and self.main_window.combo_tip:
+                combo_data = self.main_window.combo_tip.currentData()
+                if combo_data is not None:
+                    tip_id = combo_data
             if tip_id is None:
-                tip_id = 1
+                tip_id = getattr(self, 'current_tip_id', 1)
 
             self.tip_analysis_card = TipAnalysisCardWidget(
                 parent=self.report_container,
