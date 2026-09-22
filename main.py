@@ -1275,10 +1275,11 @@ class MainWindow(QMainWindow):
         self.populate_tips()
         self.tip_container.setVisible(config.is_prokit_unlocked())
         
+        left_group.addWidget(self.tip_container)
+        
         right_group = QHBoxLayout()
         right_group.setSpacing(7) # Pushes RTA 8px to the right to align with the visual edge of the QTabWidget above
         right_group.addWidget(rta_widget)
-        right_group.addWidget(self.tip_container)
         right_group.addLayout(mod_capture)
         
         control_layout.setAlignment(Qt.AlignBottom)
@@ -4066,8 +4067,8 @@ class MainWindow(QMainWindow):
         """Prompt user for ProKit unlock code and activate features if valid."""
         code, ok = QInputDialog.getText(
             self,
-            "ProKit Freischaltung",
-            "Freischaltcode eingeben:"
+            "ProKit Unlock",
+            "Enter unlock code:"
         )
         if not ok:
             return False
@@ -4075,16 +4076,16 @@ class MainWindow(QMainWindow):
         if config.unlock_prokit(code):
             QMessageBox.information(
                 self,
-                "Erfolg",
-                "ProKit erfolgreich freigeschaltet!"
+                "Success",
+                "ProKit unlocked successfully!"
             )
             self.update_prokit_ui_visibility()
             return True
         else:
             QMessageBox.warning(
                 self,
-                "Ungültiger Code",
-                "Der eingegebene Freischaltcode ist ungültig."
+                "Invalid code",
+                "The entered unlock code is invalid."
             )
             return False
 

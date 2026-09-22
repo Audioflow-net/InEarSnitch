@@ -76,9 +76,9 @@ class DatabaseManager:
 
         # Populate or update TipProfiles with the 7 real tips deterministically with IDs 1 to 7
         default_tips = [
-            # id=1 MUST be "Unbekannt" (legacy fallback) — DO NOT CHANGE
-            (1, "Unbekannt", "Legacy-Messung ohne Tip-Information", "", "#444444", "?", 0),
-            (2, "Kein Aufsatz", "Direkt ohne Tip gemessen", "", "#555555", "○", 0),
+            # id=1 MUST be "Unknown" (legacy fallback) — DO NOT CHANGE
+            (1, "Unknown", "Legacy measurement without tip info", "", "#444444", "?", 0),
+            (2, "No Tip", "Measured directly without tip", "", "#555555", "○", 0),
             (3, "V26 Straight", "Bester Allrounder — gerade 90°-Kante", "Silicone", "#22c55e", "▮", 1),
             (4, "V27 Rounded", "Komfort-Update — 2mm Abrundung an der Spitze", "Silicone", "#3b82f6", "▮", 0),
             (5, "V29-C Cone", "Konisch zulaufend — extremer Seal durch tiefes Einpressen", "Silicone", "#f97316", "◆", 0),
@@ -96,7 +96,7 @@ class DatabaseManager:
                     color_hex=excluded.color_hex,
                     icon_char=excluded.icon_char,
                     is_default=excluded.is_default
-                WHERE TipProfiles.name IN ('', 'Unbekannt', 'Kein Aufsatz', 'Standard Foam', 'ProKit V1', 'ProKit V2', 'V26 Straight', 'V27 Rounded', 'V29-C Cone', 'V30-C Pro', 'V31-XL Panzer')
+                WHERE TipProfiles.name IN ('', 'Unknown', 'No Tip', 'Standard Foam', 'ProKit V1', 'ProKit V2', 'V26 Straight', 'V27 Rounded', 'V29-C Cone', 'V30-C Pro', 'V31-XL Panzer')
             """, tip)
 
         # Historical measurements for reference overlays
@@ -133,7 +133,7 @@ class DatabaseManager:
             except sqlite3.OperationalError:
                 pass
 
-        # Legacy backfill: assign existing measurements to Unbekannt (id=1)
+        # Legacy backfill: assign existing measurements to Unknown (id=1)
         try:
             cursor.execute("UPDATE Measurements SET tip_id = 1 WHERE tip_id IS NULL")
         except sqlite3.OperationalError:
@@ -220,7 +220,7 @@ class DatabaseManager:
     def get_last_used_tip(self, iem_id):
         """
         Returns the ID of the most recently used known tip for the specified IEM.
-        Excludes 'Unbekannt' (id=1) and NULL. Returns None if no known tip measurement exists.
+        Excludes 'Unknown' (id=1) and NULL. Returns None if no known tip measurement exists.
         """
         if not iem_id:
             return None

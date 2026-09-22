@@ -86,7 +86,7 @@ class HistoryCardWidget(QWidget):
         side,
         parent=None,
         tip_id=1,
-        tip_name="Unbekannt",
+        tip_name="Unknown",
         tip_color="#6b7280",
         tip_icon="?",
         tip_material="Standard",
@@ -103,7 +103,7 @@ class HistoryCardWidget(QWidget):
         self.iem_name = iem_name
         self.side = side
         self.tip_id = int(tip_id) if tip_id is not None else 1
-        self.tip_name = tip_name if tip_name else "Unbekannt"
+        self.tip_name = tip_name if tip_name else "Unknown"
         self.tip_color = tip_color if tip_color else "#6b7280"
         self.tip_icon = tip_icon if tip_icon else "?"
         self.tip_material = tip_material if tip_material else "Standard"
@@ -249,12 +249,12 @@ class HistoryCardWidget(QWidget):
 
     def _configure_tip_badge(self):
         """Format badge text, tooltip, and stylesheet based on tip identity."""
-        if self.tip_id == 1 or self.tip_name == "Unbekannt":
+        if self.tip_id == 1 or self.tip_name == "Unknown":
             self.lbl_tip_badge.setText("?")
             self.lbl_tip_badge.setStyleSheet(
                 "background-color: #6b7280; color: #a1a1aa; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;"
             )
-            self.lbl_tip_badge.setToolTip("Ear Tip: Unbekannt")
+            self.lbl_tip_badge.setToolTip("Ear Tip: Unknown")
         else:
             icon = self.tip_icon if self.tip_icon else "?"
             self.lbl_tip_badge.setText(f"{icon} {self.tip_name}")
@@ -263,10 +263,10 @@ class HistoryCardWidget(QWidget):
             )
             self.lbl_tip_badge.setToolTip(f"Ear Tip: {self.tip_name} ({self.tip_material})")
 
-    def set_tip(self, tip_id, tip_name="Unbekannt", tip_color="#6b7280", tip_icon="?", tip_material="Standard"):
+    def set_tip(self, tip_id, tip_name="Unknown", tip_color="#6b7280", tip_icon="?", tip_material="Standard"):
         """Dynamically update tip information."""
         self.tip_id = int(tip_id) if tip_id is not None else 1
-        self.tip_name = tip_name if tip_name else "Unbekannt"
+        self.tip_name = tip_name if tip_name else "Unknown"
         self.tip_color = tip_color if tip_color else "#6b7280"
         self.tip_icon = tip_icon if tip_icon else "?"
         self.tip_material = tip_material if tip_material else "Standard"
@@ -716,7 +716,7 @@ class HistoryWidget(QWidget):
                     pass
 
             cursor.execute('''
-                SELECT m.timestamp, m.notes, m.photo_path, m.frequencies, m.magnitude_l, m.magnitude_r, iem.model_name, iem.custom_name, m.meas_name, COALESCE(m.tip_id, 1) AS tip_id, COALESCE(t.name, 'Unbekannt') AS tip_name, COALESCE(t.icon_char, '?') AS tip_icon, COALESCE(t.color_hex, '#6b7280') AS tip_color FROM Measurements m JOIN IEM_Models iem ON m.iem_id = iem.id LEFT JOIN TipProfiles t ON m.tip_id = t.id WHERE iem.musician_id = ? ORDER BY m.timestamp DESC LIMIT 100
+                SELECT m.timestamp, m.notes, m.photo_path, m.frequencies, m.magnitude_l, m.magnitude_r, iem.model_name, iem.custom_name, m.meas_name, COALESCE(m.tip_id, 1) AS tip_id, COALESCE(t.name, 'Unknown') AS tip_name, COALESCE(t.icon_char, '?') AS tip_icon, COALESCE(t.color_hex, '#6b7280') AS tip_color FROM Measurements m JOIN IEM_Models iem ON m.iem_id = iem.id LEFT JOIN TipProfiles t ON m.tip_id = t.id WHERE iem.musician_id = ? ORDER BY m.timestamp DESC LIMIT 100
             ''', (m_id,))
             
             rows = cursor.fetchall()
@@ -729,7 +729,7 @@ class HistoryWidget(QWidget):
                 display_name = meas_name if meas_name else base_name
                 
                 tip_id = int(raw_tip_id) if raw_tip_id is not None else 1
-                tip_name = raw_tip_name if raw_tip_name else "Unbekannt"
+                tip_name = raw_tip_name if raw_tip_name else "Unknown"
                 tip_icon = raw_tip_icon if raw_tip_icon else "?"
                 tip_color = raw_tip_color if raw_tip_color else "#6b7280"
 

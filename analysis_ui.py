@@ -385,7 +385,7 @@ class TipAnalysisCardWidget(QFrame):
         self.cb_tip_selector.blockSignals(True)
         self.cb_tip_selector.clear()
         if not self.db or not hasattr(self.db, 'get_all_tips'):
-            self.cb_tip_selector.addItem("Unbekannt", userData=1)
+            self.cb_tip_selector.addItem("Unknown", userData=1)
             self.cb_tip_selector.blockSignals(False)
             return
         try:
@@ -393,7 +393,7 @@ class TipAnalysisCardWidget(QFrame):
             cur_idx = 0
             for i, tip in enumerate(tips):
                 t_id = tip.get('id')
-                name = tip.get('name', 'Unbekannt')
+                name = tip.get('name', 'Unknown')
                 icon = tip.get('icon_char', '?')
                 mat = tip.get('material', '')
                 mat_str = f" ({mat})" if mat else ""
@@ -403,7 +403,7 @@ class TipAnalysisCardWidget(QFrame):
                     cur_idx = i
             self.cb_tip_selector.setCurrentIndex(cur_idx)
         except Exception:
-            self.cb_tip_selector.addItem("Unbekannt", userData=1)
+            self.cb_tip_selector.addItem("Unknown", userData=1)
         finally:
             self.cb_tip_selector.blockSignals(False)
 
@@ -452,10 +452,10 @@ class TipAnalysisCardWidget(QFrame):
         # 1. Helmholtz Resonance Peak
         peak_l = None
         peak_r = None
-        if self.freqs is not None:
-            if self.mag_l is not None:
+        if getattr(self, 'freqs', None) is not None:
+            if getattr(self, 'mag_l', None) is not None:
                 peak_l = self.detect_helmholtz_peak(self.freqs, self.mag_l)
-            if self.mag_r is not None:
+            if getattr(self, 'mag_r', None) is not None:
                 peak_r = self.detect_helmholtz_peak(self.freqs, self.mag_r)
 
         # Fallback to historical median peak if live data not available
@@ -1149,9 +1149,7 @@ class AnalysisWidget(QWidget):
 
             iem_id = getattr(self, 'current_iem_id', None)
             if iem_id is None and hasattr(self, 'main_window') and self.main_window:
-                if hasattr(self.main_window, 'active_card') and self.main_window.active_card and hasattr(self.main_window.active_card, 'm_id'):
-                    iem_id = self.main_window.active_card.m_id
-                elif hasattr(self.main_window, 'current_iem_id'):
+                if hasattr(self.main_window, 'current_iem_id'):
                     iem_id = self.main_window.current_iem_id
             if iem_id is None:
                 iem_id = 1
