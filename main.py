@@ -63,11 +63,13 @@ import theme
 import traceback
 import numpy as np
 import pyqtgraph as pg
+import time
+import config
 from PySide6.QtWidgets import (QApplication, QMainWindow, QButtonGroup, QSizePolicy, QWidget, QVBoxLayout, 
                                QHBoxLayout, QPushButton, QLabel, QComboBox, 
-                               QSplitter, QFrame, QLineEdit,
+                               QSplitter, QFrame, QLineEdit, QInputDialog,
                                QStackedWidget, QMessageBox, QGridLayout, QFileDialog, QScrollArea)
-from PySide6.QtCore import Qt, QSize, QThread, Signal, QTimer
+from PySide6.QtCore import Qt, QSize, QThread, Signal, QTimer, QEvent
 from PySide6.QtGui import QColor, QFont
 import sqlite3
 import numpy as np
@@ -631,6 +633,41 @@ class MeasurementWorker(QThread):
             self.error.emit(str(e))  # Prints to stderr, which LogStream catches!
             self.error.emit(str(e))
 
+
+class LogoTripleClickFilter(QObject):
+    """
+    Event filter for triple-click detection on the header logo/title label.
+    Detects 3 rapid left-clicks within 600ms.
+    Handles press and double-click sequences, ignores non-left clicks,
+    resets after triggering, and prevents duplicate re-entrant dialogs.
+    """
+    def __init__(self, parent, on_triple_click_callback, max_interval=0.6):
+        super().__init__(parent)
+        self.callback = on_triple_click_callback
+        self.max_interval = max_interval
+        self.clicks = []
+        self._dialog_active = False
+
+    def eventFilter(self, watched, event):
+        if event.type() in (QEvent.MouseButtonPress, QEvent.MouseButtonDblClick):
+            if event.button() == Qt.LeftButton:
+                if self._dialog_active:
+                    return False
+                now = time.monotonic()
+                if self.clicks and (now - self.clicks[-1]) > self.max_interval:
+                    self.clicks = []
+                self.clicks.append(now)
+                if len(self.clicks) >= 3:
+                    self.clicks = []
+                    self._dialog_active = True
+                    try:
+                        self.callback()
+                    finally:
+                        self._dialog_active = False
+                    return True
+        return False
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -674,6 +711,7 @@ class MainWindow(QMainWindow):
 
         self.setup_ui()
         self.apply_theme()
+        self.update_prokit_ui_visibility()
 
         # Keyboard shortcuts
         from PySide6.QtGui import QShortcut
@@ -750,6 +788,20 @@ class MainWindow(QMainWindow):
         sublogo.setStyleSheet("color: #666; font-size: 14px; margin-left: 10px;")
         top_layout.addWidget(logo)
         top_layout.addWidget(sublogo)
+        
+        # ProKit: Header logo references and triple-click unlock filter
+        self.lbl_logo = logo
+        self.lbl_title = logo
+        self.lbl_sublogo = sublogo
+        self.logo = logo
+        self.sublogo = sublogo
+        self.logo_triple_click_filter = LogoTripleClickFilter(
+            self,
+            self.prompt_prokit_unlock,
+            max_interval=0.6
+        )
+        self.lbl_logo.installEventFilter(self.logo_triple_click_filter)
+        self.lbl_sublogo.installEventFilter(self.logo_triple_click_filter)
         
         # Center the profile label
         top_layout.addStretch()
@@ -1170,9 +1222,63 @@ class MainWindow(QMainWindow):
         left_group.addLayout(mod_compare)
         left_group.addWidget(chan_widget)
         
+        # --- PROKIT EAR TIP SELECTOR ---
+        self.tip_container = QWidget()
+        self.tip_container.setObjectName("tip_container")
+        mod_tip = QVBoxLayout(self.tip_container)
+        mod_tip.setContentsMargins(0, 0, 0, 0)
+        mod_tip.setSpacing(4)
+        
+        lbl_tip = QLabel("EAR TIP")
+        lbl_tip.setStyleSheet("color: #777; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;")
+        lbl_tip.setAlignment(Qt.AlignCenter)
+        self.lbl_tip = lbl_tip
+        
+        self.combo_tip = QComboBox()
+        self.combo_tip.setObjectName("cb_prokit_tip")
+        self.combo_tip.setEditable(False)
+        self.combo_tip.setFixedWidth(135)
+        self.combo_tip.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        self.combo_tip.setToolTip("Select ProKit Coupler Ear Tip")
+        self.combo_tip.setStyleSheet("""
+            QComboBox {
+                background-color: #222;
+                color: #e4e4e7;
+                font-weight: bold;
+                font-size: 12px;
+                border: 1px solid #444;
+                border-radius: 4px;
+                padding: 4px 8px;
+            }
+            QComboBox:hover {
+                border-color: #10b981;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 18px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #222;
+                color: #e4e4e7;
+                selection-background-color: #10b981;
+                selection-color: black;
+                border: 1px solid #444;
+            }
+        """)
+        # Aliases
+        self.cb_tip = self.combo_tip
+        self.cb_prokit_tip = self.combo_tip
+        
+        mod_tip.addWidget(lbl_tip)
+        mod_tip.addWidget(self.combo_tip, stretch=1)
+        
+        self.populate_tips()
+        self.tip_container.setVisible(config.is_prokit_unlocked())
+        
         right_group = QHBoxLayout()
         right_group.setSpacing(7) # Pushes RTA 8px to the right to align with the visual edge of the QTabWidget above
         right_group.addWidget(rta_widget)
+        right_group.addWidget(self.tip_container)
         right_group.addLayout(mod_capture)
         
         control_layout.setAlignment(Qt.AlignBottom)
@@ -2925,6 +3031,9 @@ class MainWindow(QMainWindow):
             self.sub_lbl.setText("Status: Ready to measure.")
             self.current_iem_id = iem_id
             
+            # ProKit: auto-suggest last used tip for current IEM
+            self.suggest_tip_for_current_iem()
+            
             # Enable buttons since a profile is selected
             self.btn_capture.setEnabled(True)
             if hasattr(self, 'btn_save_tgt'): self.btn_save_tgt.setEnabled(True)
@@ -3855,6 +3964,12 @@ class MainWindow(QMainWindow):
         notes = ""
         
         try:
+            tip_id = 1
+            if hasattr(self, 'combo_tip') and (self.combo_tip.isVisible() or (hasattr(self, 'tip_container') and not self.tip_container.isHidden() and config.is_prokit_unlocked())):
+                val = self.combo_tip.currentData()
+                if val is not None:
+                    tip_id = int(val)
+
             self.db.save_measurement(
                 self.current_iem_id, 
                 self.temp_freqs, 
@@ -3864,7 +3979,8 @@ class MainWindow(QMainWindow):
                 self.temp_phase_r,
                 gain,
                 notes,
-                ""
+                "",
+                tip_id=tip_id
             )
             self.sub_lbl.setText("Status: Saved to Database.")
             self.sub_lbl.setStyleSheet("color: #00FF99; font-size: 12px;")
@@ -3933,6 +4049,123 @@ class MainWindow(QMainWindow):
                 f.write("done")
         except:
             pass
+
+    # ── ProKit Tip-Tracking Methods ───────────────────────────────────────────
+    def prompt_prokit_unlock(self):
+        """Prompt user for ProKit unlock code and activate features if valid."""
+        code, ok = QInputDialog.getText(
+            self,
+            "ProKit Freischaltung",
+            "Freischaltcode eingeben:"
+        )
+        if not ok:
+            return False
+
+        if config.unlock_prokit(code):
+            QMessageBox.information(
+                self,
+                "Erfolg",
+                "ProKit erfolgreich freigeschaltet!"
+            )
+            self.update_prokit_ui_visibility()
+            return True
+        else:
+            QMessageBox.warning(
+                self,
+                "Ungültiger Code",
+                "Der eingegebene Freischaltcode ist ungültig."
+            )
+            return False
+
+    # Aliases for unlock dialog
+    open_prokit_unlock_dialog = prompt_prokit_unlock
+    on_logo_triple_clicked = prompt_prokit_unlock
+
+    def update_prokit_ui_visibility(self):
+        """Update visibility of ProKit UI controls based on unlock state."""
+        unlocked = config.is_prokit_unlocked()
+        if hasattr(self, 'tip_container'):
+            self.tip_container.setVisible(unlocked)
+        if hasattr(self, 'combo_tip'):
+            self.combo_tip.setVisible(unlocked)
+            if unlocked:
+                self.populate_tips()
+                self.suggest_tip_for_current_iem()
+        if hasattr(self, 'page_hist') and hasattr(self.page_hist, 'load_history'):
+            try:
+                m_id = None
+                if hasattr(self, 'active_card') and self.active_card and hasattr(self.active_card, 'm_id'):
+                    m_id = self.active_card.m_id
+                if m_id is not None:
+                    self.page_hist.load_history(m_id)
+            except Exception:
+                pass
+        if hasattr(self, 'page_ana') and hasattr(self.page_ana, 'render_diagnostics'):
+            try:
+                self.page_ana.render_diagnostics()
+            except Exception:
+                pass
+
+    update_prokit_visibility = update_prokit_ui_visibility
+
+    def populate_tips(self):
+        """Populate the tip selection dropdown from the database catalog."""
+        if not hasattr(self, 'combo_tip') or not hasattr(self, 'db'):
+            return
+        cur_id = self.combo_tip.currentData()
+        self.combo_tip.blockSignals(True)
+        self.combo_tip.clear()
+        try:
+            tips = self.db.get_all_tips(include_unknown=True) if hasattr(self.db, 'get_all_tips') else []
+        except Exception:
+            tips = []
+        default_idx = -1
+        for i, tip in enumerate(tips):
+            icon = tip.get('icon_char', '')
+            name = tip.get('name', '')
+            display_text = f"{icon} {name}".strip()
+            self.combo_tip.addItem(display_text, userData=tip['id'])
+            if tip.get('is_default') in (1, True) or tip.get('id') == 5:
+                default_idx = i
+                
+        if cur_id is not None and self.combo_tip.findData(cur_id) != -1:
+            self.combo_tip.setCurrentIndex(self.combo_tip.findData(cur_id))
+        elif default_idx != -1:
+            self.combo_tip.setCurrentIndex(default_idx)
+        elif self.combo_tip.count() > 0:
+            self.combo_tip.setCurrentIndex(0)
+        self.combo_tip.blockSignals(False)
+
+    def suggest_tip_for_current_iem(self):
+        """Auto-suggest last used tip for current IEM, falling back to default."""
+        if not hasattr(self, 'combo_tip') or not hasattr(self, 'db'):
+            return
+        
+        last_tip_id = None
+        if getattr(self, 'current_iem_id', None) and hasattr(self.db, 'get_last_used_tip'):
+            try:
+                last_tip_id = self.db.get_last_used_tip(self.current_iem_id)
+            except Exception:
+                last_tip_id = None
+            
+        if last_tip_id is not None:
+            idx = self.combo_tip.findData(last_tip_id)
+            if idx != -1:
+                self.combo_tip.setCurrentIndex(idx)
+                return
+                
+        # Fallback to default tip (is_default == 1, id=5)
+        def_idx = self.combo_tip.findData(5)
+        if def_idx != -1:
+            self.combo_tip.setCurrentIndex(def_idx)
+        elif self.combo_tip.count() > 0:
+            self.combo_tip.setCurrentIndex(0)
+
+    on_iem_changed = suggest_tip_for_current_iem
+
+
+# Module-level alias for test harness compatibility
+InEarSnitchApp = MainWindow
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
