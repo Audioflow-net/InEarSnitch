@@ -3965,7 +3965,7 @@ class MainWindow(QMainWindow):
         
         try:
             tip_id = 1
-            if hasattr(self, 'combo_tip') and (self.combo_tip.isVisible() or (hasattr(self, 'tip_container') and not self.tip_container.isHidden() and config.is_prokit_unlocked())):
+            if config.is_prokit_unlocked() and hasattr(self, 'combo_tip') and (self.combo_tip.isVisible() or (hasattr(self, 'tip_container') and not self.tip_container.isHidden())):
                 val = self.combo_tip.currentData()
                 if val is not None:
                     tip_id = int(val)
