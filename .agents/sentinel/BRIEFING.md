@@ -21,7 +21,15 @@ Coordinate implementation of the ProKit Tip-Tracking feature for InEar Snitch vi
 - **Delivered results**: none
 
 ## Project Status
-- **Phase**: in progress
+- **Phase**: in progress (Final Milestone: Tier 5 Adversarial Coverage Hardening)
+- **Milestones Completed**:
+  * M1 (config.py): PASS (commit da9c4b1, Gate 5/5)
+  * M2 (database.py): PASS (commit 7afc965, Gate 6/6)
+  * M3 (main.py): PASS (commit 30792ac, Gate 6/6)
+  * M4 (history_ui.py): PASS (commit 525c0a1, Gate 6/6)
+  * Priority Directive (Real Tip Catalog): PASS (commit fd2ffce, 87/87 tests pass)
+  * M5 (analysis_ui.py): PASS (commit ad78fd6, Gate 6/6)
+  * Final Milestone: Phase 1 E2E 87/87 pass; Phase 2 Tier 5 Adversarial Hardening running
 - **Cron 1 (Progress)**: 490dae14-150e-406a-bb16-f9f517f2a8d8/task-18
 - **Cron 2 (Liveness)**: 490dae14-150e-406a-bb16-f9f517f2a8d8/task-20
 
