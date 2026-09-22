@@ -1,4 +1,4 @@
-# BRIEFING — 2026-09-22T07:10:00Z
+# BRIEFING — 2026-09-22T07:18:00Z
 
 ## Mission
 Implement ProKit Tip-Tracking UI in InEarSnitch `main.py` (tip selector, triple-click unlock, persistence, profile restore, smoke & test suite compliance).
@@ -21,7 +21,7 @@ Implement ProKit Tip-Tracking UI in InEarSnitch `main.py` (tip selector, triple-
 
 ## Current Parent
 - Conversation ID: d18b5e78-f17e-4319-bb8e-f9a56ecd2248
-- Updated: 2026-09-22T07:10:00Z
+- Updated: 2026-09-22T07:18:00Z
 
 ## Task Summary
 - **What to build**: Tip selector UI (`combo_tip`/`cb_tip`, `tip_container`), logo triple-click filter for ProKit unlock dialog, profile switching tip restore, `save_trace_to_db` tip_id propagation, module-level alias `InEarSnitchApp = MainWindow`.
@@ -30,21 +30,26 @@ Implement ProKit Tip-Tracking UI in InEarSnitch `main.py` (tip selector, triple-
 - **Code layout**: All changes in `/Users/ben/Desktop/InEarSnitch/main.py`.
 
 ## Change Tracker
-- **Files modified**: None yet
-- **Build status**: Untested
-- **Pending issues**: None
+- **Files modified**: `/Users/ben/Desktop/InEarSnitch/main.py` (added `LogoTripleClickFilter`, `tip_container`, `combo_tip`, auto-suggestion in `on_profile_selected`, `tip_id` forwarding in `save_trace_to_db`, `InEarSnitchApp = MainWindow`).
+- **Build status**: Pass (19/19 smoke test, 36/36 targeted E2E UI/Unlock tests, 53/53 M1/M2 tests).
+- **Pending issues**: None.
 
 ## Quality Status
-- **Build/test result**: Not yet run
-- **Lint status**: Clean
-- **Tests added/modified**: None (using existing test suites)
+- **Build/test result**: 19/19 smoke test PASS, 36/36 E2E UI/Unlock tests PASS.
+- **Lint status**: Clean.
+- **Tests added/modified**: Covered by existing test harness in `tests/test_prokit_e2e.py`.
 
 ## Loaded Skills
 - None
 
 ## Key Decisions Made
 - Follow explorer handoffs for exact implementation patterns.
+- Installed `LogoTripleClickFilter` on `lbl_logo` and `lbl_sublogo` with 600ms threshold.
+- Populated `combo_tip` from `TipProfiles` catalog with `setEditable(False)` strictly enforced. Default selected tip: `is_default == 1` (id=5, ProKit V2).
+- Supported dual visibility checks in `save_trace_to_db` to handle both rendered and headless test environments gracefully.
+- Aliased `InEarSnitchApp = MainWindow` at module level.
 
 ## Artifact Index
 - `/Users/ben/Desktop/InEarSnitch/.agents/worker_m3_1/DISPATCH.md` — Assignment
 - `/Users/ben/Desktop/InEarSnitch/.agents/worker_m3_1/progress.md` — Liveness & progress tracking
+- `/Users/ben/Desktop/InEarSnitch/.agents/worker_m3_1/handoff.md` — 5-component handoff report
