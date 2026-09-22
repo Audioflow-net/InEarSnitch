@@ -1,4 +1,4 @@
-# BRIEFING — 2026-09-22T08:22:00+02:00
+# BRIEFING — 2026-09-22T08:26:00+02:00
 
 ## Mission
 Implement Milestone 1: R1 Offline Unlock System in `config.py`, install test suite `tests/test_prokit_gate.py`, verify all 9 unit tests and 19 smoke tests pass, and report back to parent.
@@ -32,19 +32,25 @@ Implement Milestone 1: R1 Offline Unlock System in `config.py`, install test sui
 - **Code layout**: config.py at repo root, tests/test_prokit_gate.py.
 
 ## Change Tracker
-- **Files modified**: None yet
-- **Build status**: Untested
+- **Files modified**:
+  - `config.py`: Added VALID_CODE_HASHES (50 SHA256 hashes), is_prokit_unlocked(), unlock_prokit(), revoke_prokit(). Preserved get_data_dir() and get_db_path() unchanged.
+  - `tests/test_prokit_gate.py`: Installed 9 unit test methods covering hashes set, lock, unlock, whitespace/case insensitivity, all 50 codes, revocation, idempotency, and existing APIs.
+- **Build status**: PASS (all 9 unit tests pass, all 19 smoke checks pass, isolated CLI passes, real FS check passes)
 - **Pending issues**: None
 
 ## Quality Status
-- **Build/test result**: Pending
-- **Lint status**: Pending
-- **Tests added/modified**: tests/test_prokit_gate.py (to be installed)
+- **Build/test result**: 9/9 unittest passed; 19/19 smoke_test passed; CLI isolated verification passed.
+- **Lint status**: Clean standard python syntax.
+- **Tests added/modified**: tests/test_prokit_gate.py (9 tests)
 
 ## Key Decisions Made
-- Follow explorer_m1_2 implementation plan and explorer_m1_3 test suite exactly.
+- Followed explorer_m1_2 implementation plan and explorer_m1_3 test suite exactly.
+- Used code.strip().upper() for normalization.
+- Handled OSError defensively on file operations.
+- Preserved existing get_data_dir() and get_db_path() character-for-character.
 
 ## Artifact Index
 - /Users/ben/Desktop/InEarSnitch/.agents/worker_m1_1/DISPATCH.md — Assignment
 - /Users/ben/Desktop/InEarSnitch/.agents/worker_m1_1/BRIEFING.md — Situational awareness
 - /Users/ben/Desktop/InEarSnitch/.agents/worker_m1_1/progress.md — Liveness & progress tracker
+- /Users/ben/Desktop/InEarSnitch/.agents/worker_m1_1/handoff.md — Handoff report

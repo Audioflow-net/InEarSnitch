@@ -50,7 +50,7 @@ Orchestrate the complete, high-integrity implementation and verification of ProK
 | spec_miner_survey_1 | teamwork_preview_spec_miner | Survey Requirements & Specs | completed | 52371be3-8da8-41ea-b896-b1aa44431a9a |
 | explorer_survey_db_1 | teamwork_preview_explorer | Survey Backend & DB | completed | ba463f4d-a50f-4f89-8eed-716d48f6374b |
 | explorer_survey_ui_1 | teamwork_preview_explorer | Survey UI & Diagnostics | completed | eedd01e9-ff50-420a-b5c3-62e14b76e071 |
-| test_writer_e2e_1 | teamwork_preview_test_writer | E2E Test Suite Design | in-progress | fd0cce63-1c56-4969-a19c-bf8d14715b35 |
+| test_writer_e2e_1 | teamwork_preview_test_writer | E2E Test Suite Design | completed | fd0cce63-1c56-4969-a19c-bf8d14715b35 |
 | explorer_m1_1 | teamwork_preview_spec_miner | M1 Unlock Spec Mining | completed | 5e9cc30c-8dab-42b2-a23d-c8c71a5e5733 |
 | explorer_m1_2 | teamwork_preview_explorer | M1 Config Exploration | completed | 3b8f23b6-34c0-4e05-a984-6bb01265f927 |
 | explorer_m1_3 | teamwork_preview_explorer | M1 Safety & Verification | completed | fce7ce7a-0d14-468e-8339-4d9433d901ac |
@@ -59,7 +59,7 @@ Orchestrate the complete, high-integrity implementation and verification of ProK
 ## Succession Status
 - Succession required: no
 - Spawn count: 8 / 16
-- Pending subagents: fd0cce63-1c56-4969-a19c-bf8d14715b35, d0ec758a-8105-4559-ada0-51ab7842357a
+- Pending subagents: d0ec758a-8105-4559-ada0-51ab7842357a
 - Predecessor: none
 - Successor: not yet spawned
 
