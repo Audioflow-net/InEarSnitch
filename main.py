@@ -1152,6 +1152,55 @@ class MainWindow(QMainWindow):
         self.btn_grp_chan.buttonClicked.connect(self.update_watermark)
         self.btn_grp_chan.buttonClicked.connect(self.on_target_channel_changed)
         
+        # --- PROKIT EAR TIP SELECTOR (next to L/R) ---
+        self.combo_tip = QComboBox()
+        self.combo_tip.setObjectName("cb_prokit_tip")
+        self.combo_tip.setEditable(False)
+        self.combo_tip.setFixedWidth(135)
+        self.combo_tip.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.combo_tip.setToolTip("Select ProKit Coupler Ear Tip")
+        self.combo_tip.setStyleSheet("""
+            QComboBox {
+                background-color: #222;
+                color: #e4e4e7;
+                font-weight: bold;
+                font-size: 12px;
+                border: 1px solid #444;
+                border-radius: 4px;
+                padding: 4px 8px;
+            }
+            QComboBox:hover {
+                border-color: #10b981;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 18px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #222;
+                color: #e4e4e7;
+                selection-background-color: #10b981;
+                selection-color: black;
+                border: 1px solid #444;
+            }
+        """)
+        # Aliases
+        self.cb_tip = self.combo_tip
+        self.cb_prokit_tip = self.combo_tip
+        
+        # Wrap in container for visibility gating
+        self.tip_container = QWidget()
+        self.tip_container.setObjectName("tip_container")
+        tip_h = QHBoxLayout(self.tip_container)
+        tip_h.setContentsMargins(8, 0, 0, 0)
+        tip_h.setSpacing(0)
+        tip_h.addWidget(self.combo_tip)
+        
+        self.populate_tips()
+        self.tip_container.setVisible(config.is_prokit_unlocked())
+        
+        chan_layout.addWidget(self.tip_container)
+        
         # --- MODULE 4: LIVE TOOLS (RTA / Depth) ---
         rta_widget = QWidget()
         rta_layout = QVBoxLayout(rta_widget)
@@ -1221,61 +1270,6 @@ class MainWindow(QMainWindow):
         left_group.addLayout(mod_actions)
         left_group.addLayout(mod_compare)
         left_group.addWidget(chan_widget)
-        
-        # --- PROKIT EAR TIP SELECTOR ---
-        self.tip_container = QWidget()
-        self.tip_container.setObjectName("tip_container")
-        mod_tip = QVBoxLayout(self.tip_container)
-        mod_tip.setContentsMargins(0, 0, 0, 0)
-        mod_tip.setSpacing(4)
-        
-        lbl_tip = QLabel("EAR TIP")
-        lbl_tip.setStyleSheet("color: #777; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;")
-        lbl_tip.setAlignment(Qt.AlignCenter)
-        self.lbl_tip = lbl_tip
-        
-        self.combo_tip = QComboBox()
-        self.combo_tip.setObjectName("cb_prokit_tip")
-        self.combo_tip.setEditable(False)
-        self.combo_tip.setFixedWidth(135)
-        self.combo_tip.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-        self.combo_tip.setToolTip("Select ProKit Coupler Ear Tip")
-        self.combo_tip.setStyleSheet("""
-            QComboBox {
-                background-color: #222;
-                color: #e4e4e7;
-                font-weight: bold;
-                font-size: 12px;
-                border: 1px solid #444;
-                border-radius: 4px;
-                padding: 4px 8px;
-            }
-            QComboBox:hover {
-                border-color: #10b981;
-            }
-            QComboBox::drop-down {
-                border: none;
-                width: 18px;
-            }
-            QComboBox QAbstractItemView {
-                background-color: #222;
-                color: #e4e4e7;
-                selection-background-color: #10b981;
-                selection-color: black;
-                border: 1px solid #444;
-            }
-        """)
-        # Aliases
-        self.cb_tip = self.combo_tip
-        self.cb_prokit_tip = self.combo_tip
-        
-        mod_tip.addWidget(lbl_tip)
-        mod_tip.addWidget(self.combo_tip, stretch=1)
-        
-        self.populate_tips()
-        self.tip_container.setVisible(config.is_prokit_unlocked())
-        
-        left_group.addWidget(self.tip_container)
         
         right_group = QHBoxLayout()
         right_group.setSpacing(7) # Pushes RTA 8px to the right to align with the visual edge of the QTabWidget above
