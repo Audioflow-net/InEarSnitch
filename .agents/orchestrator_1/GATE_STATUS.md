@@ -33,3 +33,15 @@ Gate Result: **PASS**
 | auditor_m3_1 | teamwork_preview_auditor | CLEAN (zero facades, genuine PySide6 events and SQLite persistence) | handoff.md |
 
 Gate Result: **FAIL** (challenger_m3_1 REQUEST_CHANGES: save_trace_to_db gate bypass vulnerability)
+
+## Gate — Milestone 3 (R3 main.py) — Iteration 2
+| Agent | Role | Verdict | Source |
+|-------|------|---------|--------|
+| worker_m3_2 | teamwork_preview_worker | DONE (remediated main.py:3968, commit 30792ac, smoke test 19/19 pass) | handoff.md |
+| reviewer_m3_3 | teamwork_preview_reviewer | APPROVE (save_trace_to_db outermost unlock condition verified) | handoff.md |
+| reviewer_m3_4 | teamwork_preview_reviewer | APPROVE (interface conformance, 35/35 E2E UI/Unlock tests pass) | handoff.md |
+| challenger_m3_3 | teamwork_preview_challenger | APPROVE (reproduction test confirmed tip_id=1 enforced, 21/21 adversarial UI tests pass) | handoff.md |
+| challenger_m3_4 | teamwork_preview_challenger | APPROVE (23/23 header triple-click adversarial tests pass) | handoff.md |
+| auditor_m3_2 | teamwork_preview_auditor | CLEAN (zero facades/bypasses, 10/10 forensic tests pass, 44/44 adversarial tests pass) | handoff.md |
+
+Gate Result: **PASS**

@@ -18,15 +18,15 @@ Orchestrate the complete, high-integrity implementation and verification of ProK
 3. **On failure**: Retry -> Replace -> Skip (auditor non-skippable) -> Redistribute -> Redesign -> Escalate.
 4. **Succession**: Self-succeed at 16 spawns.
 - **Work items**:
-  - 0. Survey full scope and design tests [pending]
-  - 1. Milestone 1: R1 config.py (Unlock System) [pending]
-  - 2. Milestone 2: R2 database.py (TipProfiles schema, migration, seed, API) [pending]
-  - 3. Milestone 3: R3 main.py (Bottom-Bar Tip Selector & Triple-Click Unlock Dialog) [pending]
-  - 4. Milestone 4: R4 history_ui.py (Tip Badge & Seal Status in History Cards) [pending]
+  - 0. Survey full scope and design tests [done]
+  - 1. Milestone 1: R1 config.py (Unlock System) [done]
+  - 2. Milestone 2: R2 database.py (TipProfiles schema, migration, seed, API) [done]
+  - 3. Milestone 3: R3 main.py (Bottom-Bar Tip Selector & Triple-Click Unlock Dialog) [done]
+  - 4. Milestone 4: R4 history_ui.py (Tip Badge & Seal Status in History Cards) [in-progress]
   - 5. Milestone 5: R5 analysis_ui.py (Tip Analysis Card in Diagnostics) [pending]
   - 6. Final Milestone: Pass 100% E2E test suite & Adversarial Coverage Hardening [pending]
-- **Current phase**: 2 (Milestone 2 Execution)
-- **Current focus**: Milestone 2 Worker implementation for database.py
+- **Current phase**: 4 (Milestone 4 Exploration & Implementation)
+- **Current focus**: Milestone 4 Exploration for history_ui.py (Tip Badges & Seal Status)
 
 ## 🔒 Key Constraints
 - Start-Protokoll: First response begins with 'eisteepfirsich'.
@@ -80,19 +80,26 @@ Orchestrate the complete, high-integrity implementation and verification of ProK
 | challenger_m3_1 | teamwork_preview_challenger | M3 UI Challenger | completed | 776cb6be-01de-4214-bc65-b566581a5151 |
 | challenger_m3_2 | teamwork_preview_challenger | M3 Unlock Challenger | completed | 2e07aa31-ab44-425e-8ff4-cb82b22a5feb |
 | auditor_m3_1 | teamwork_preview_auditor | M3 Forensic Audit | completed | e17c2d93-fce8-4555-b21d-281af7760634 |
-| worker_m3_2 | teamwork_preview_worker | M3 Gate Remediation | in-progress | e6dd4ac2-83a3-43e2-b380-e01a32d79c16 |
+| worker_m3_2 | teamwork_preview_worker | M3 Gate Remediation | completed | e6dd4ac2-83a3-43e2-b380-e01a32d79c16 |
+| reviewer_m3_3 | teamwork_preview_reviewer | M3 Code Review 1 (Rerun) | completed | 3bae837f-7a20-4ac2-9860-adcdd30395cd |
+| reviewer_m3_4 | teamwork_preview_reviewer | M3 Code Review 2 (Rerun) | completed | b6489a47-ad93-43bc-866b-72394adebf58 |
+| challenger_m3_3 | teamwork_preview_challenger | M3 UI Challenger (Rerun) | completed | e25dc456-6f9f-47f1-baab-79c9c98f5d77 |
+| challenger_m3_4 | teamwork_preview_challenger | M3 Unlock Challenger (Rerun) | completed | f3a298b2-66e0-4392-8578-297f19898d90 |
+| auditor_m3_2 | teamwork_preview_auditor | M3 Forensic Auditor (Rerun) | completed | 7e0aead8-ae6f-48f4-95c4-86c4c0a0eb98 |
+| explorer_m4_1 | teamwork_preview_spec_miner | M4 Spec & SQL Query Miner | completed | 63c0a57e-6fd9-4ae7-9ebf-5fb021961349 |
+| explorer_m4_2 | teamwork_preview_explorer | M4 Card UI & Badge Designer | completed | e1e4e343-4c49-4b39-869e-cfe2944d18fe |
+| explorer_m4_3 | teamwork_preview_explorer | M4 BLOB Seal & Gate Explorer | completed | 1c4534f7-9944-46b9-ba9b-668e69ce393e |
+| worker_m4_1 | teamwork_preview_worker | M4 Implementation Worker | in-progress | ecf02d0d-c71e-46c6-9e33-0938af7c2614 |
 
 ## Succession Status
-- Succession required: yes (upon worker_m3_2 completion)
-- Generation: 2 (recovered post-truncation)
-- Generation 2 Spawn count: 16 / 16
-- Total session spawns: 32 / 128
-- Pending subagents: e6dd4ac2-83a3-43e2-b380-e01a32d79c16
-- Predecessor: orchestrator_1 (Gen 1)
-- Successor: not yet spawned
+- Succession required: no (single persistent orchestrator session up to 128 subagents)
+- Cumulative Spawns: 41 / 128
+- Pending subagents: ecf02d0d-c71e-46c6-9e33-0938af7c2614
+- Predecessor: none
+- Successor: none
 
 ## Active Timers
-- Heartbeat cron: d18b5e78-f17e-4319-bb8e-f9a56ecd2248/task-34
+- Heartbeat cron: d18b5e78-f17e-4319-bb8e-f9a56ecd2248/task-480
 - Safety timer: none
 
 ## Artifact Index
