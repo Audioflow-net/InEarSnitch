@@ -272,6 +272,7 @@ class TipAnalysisCardWidget(QFrame):
         s1_layout.addLayout(grid1)
 
         self.lbl_peak_target = QLabel("Target: 8,000 Hz")
+        self.lbl_peak_target.setWordWrap(True)
         self.lbl_peak_target.setStyleSheet("color: #666666; font-size: 9px; background: transparent; border: none;")
         s1_layout.addWidget(self.lbl_peak_target)
         card_layout.addWidget(sec1)
@@ -301,6 +302,7 @@ class TipAnalysisCardWidget(QFrame):
         self.lbl_repro_warning = QLabel("")
         self.lbl_repro_warning.setObjectName("lbl_repro_warning")
         self.lbl_repro_empty = self.lbl_repro_warning
+        self.lbl_repro_warning.setWordWrap(True)
         self.lbl_repro_warning.setStyleSheet("background: transparent; border: 1px dashed #444444; border-radius: 4px; padding: 4px 8px; color: #555555; font-size: 9px;")
         self.lbl_repro_warning.hide()
         s2_layout.addWidget(self.lbl_repro_warning)
@@ -985,9 +987,10 @@ class AnalysisWidget(QWidget):
         self.tips_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
         
         self.tips_container = QWidget()
+        self.tips_container.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
         self.tips_layout = QVBoxLayout(self.tips_container)
         self.tips_layout.setAlignment(Qt.AlignTop)
-        self.tips_layout.setContentsMargins(0, 0, 0, 0)
+        self.tips_layout.setContentsMargins(4, 4, 4, 4)
         
         self.tip_analysis_card = TipAnalysisCardWidget(
             parent=self.tips_container,
