@@ -3516,12 +3516,12 @@ class MainWindow(QMainWindow):
             if not hasattr(self, '_max_rta_mean'):
                 self._max_rta_mean = current_mean
             
-            # Slowly decay the peak tracking, but jump up instantly
+            # Slowly decay the peak tracking; cap upward jumps to 2 dB/frame
+            # so single-frame transients (mic taps, cable bumps) can't spike it
             if current_mean > self._max_rta_mean:
-                self._max_rta_mean = current_mean
+                self._max_rta_mean = min(current_mean, self._max_rta_mean + 2.0)
             else:
-                # Fast decay (~1 second recovery) so mic taps/cable bumps don't
-                # permanently spike the tracker and cause false "Silence" detection
+                # Fast decay (~1 second recovery)
                 self._max_rta_mean = 0.95 * self._max_rta_mean + 0.05 * current_mean
 
             if current_mean < self._max_rta_mean - 25.0:

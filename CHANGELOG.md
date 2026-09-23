@@ -1,6 +1,17 @@
 # InEar Snitch Hardware & CAD Changelog
 *Lückenlose Dokumentation aller physikalischen Änderungen an den 3D-Modellen, um wissenschaftliche Reproduzierbarkeit sicherzustellen.*
 
+## [V36.8 V27 Upside-Down Refactor] - 2026-09-23
+**Fokus:** Anpassung der Z-Orientierung von V27 und parametrisierbare Schaftlänge.
+
+### Geändert (MASTER_Silikon_Formen.scad)
+1. **Version / Datum:** V36.8 - 2026-09-23
+2. **Das betroffene Bauteil:** Formblöcke `outer_cavity_v27` und Tamper `piston_v27`.
+3. **Maße (Alt vs. Neu):** Der Schaft von V27 ist jetzt über die Variable `extra_v27_length = 3.0` (Standardmäßig 3 mm länger) flexibel einstellbar.
+4. **Formen-Änderung:** V27 war historisch die einzige Form, die "richtig herum" in der Form lag (Flansch unten, Spitze oben). Dies machte Lufteinschlüsse wahrscheinlich und begrenzte die Schaftlänge, da die Spitze oben gegen den Tamperdeckel stieß. V27 wurde nun komplett "Kopfüber" (Upside-Down) umgebaut, identisch zur Architektur von V29/V30/V31. Der Flansch (20mm) liegt am Gussloch oben (Z=9.6), die Spitze (und ein neues 4mm Ankerloch) zeigen nach unten in die Tiefe (Z=-8) des Formblocks. Der Tamper übernimmt nun die Mikrofonaussparung (7.5mm) oben.
+5. **Die Idee / Der Grund:** Durch die Umkehrung der Gießrichtung wird V27 viel sauberer und blasenfreier gegossen. Außerdem ragt der Schaft nun nach unten in den Formblock, wo wir unendlich viel Platz haben, um ihn beliebig lang zu machen, ohne die Deckel-Ebene (Z=14.1) zu verletzen.
+
+
 ## [V36.7 File Unification] - 2026-09-23
 **Fokus:** Zusammenführung aller Geometrien in eine einzige Master-Datei.
 
