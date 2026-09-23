@@ -1,4 +1,4 @@
-# BRIEFING — 2026-09-23T10:46:30Z
+# BRIEFING — 2026-09-23T10:52:50Z
 
 ## Mission
 Design and implement 3 fast, material-efficient CAD variants for the silicone mold press system in press_v2 preserving cavities V27, V29, V30, V31.
@@ -31,7 +31,7 @@ Design and implement 3 fast, material-efficient CAD variants for the silicone mo
   4. Variant 3: Twist-Lock Bayonet System [pending]
   5. E2E CLI Render Verification & Work Paper Audit [pending]
 - **Current phase**: 0 (Survey)
-- **Current focus**: Survey existing MASTER_Silikon_Formen.scad, extract cavities, evaluate mechanical press concepts
+- **Current focus**: Awaiting Survey Explorer 1 (Cavity Extraction) to finalize PROJECT.md
 
 ## 🔒 Key Constraints
 - NEVER write, modify, or create source code files directly.
@@ -50,19 +50,20 @@ Design and implement 3 fast, material-efficient CAD variants for the silicone mo
 ## Key Decisions Made
 - Problem classified as Project (Greenfield CAD / Hardware Engineering).
 - Selected Project Pattern with 3 parallel Explorers for Step 0 (Survey).
-- Spawning 3 Survey Explorers for Cavity Extraction, Mechanical Architecture, and CAD CLI Toolchain.
+- Survey 2 findings: 3 mechanical concepts (Wedge, Cam, Bayonet) with 69-80% material savings and <2s closure.
+- Survey 3 findings: OpenSCAD CLI verified at /Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD; 4-module architecture with `use <shared_cavities.scad>;` and automated Python test suite.
 
 ## Team Roster
 | Agent | Type | Work Item | Status | Conv ID |
 |-------|------|-----------|--------|---------|
 | explorer_survey_1 | teamwork_preview_explorer | Survey Cavity & SCAD | in-progress | 7e238e17-5208-4dbe-9a11-fc30e207157f |
-| explorer_survey_2 | teamwork_preview_explorer | Survey Mechanical Press Concepts | in-progress | 2c93a007-1448-4cdf-b8a5-5a13ca342976 |
-| explorer_survey_3 | teamwork_preview_explorer | Survey CAD Toolchain & Compliance | in-progress | 4aab6730-1993-40f1-928a-a2b92b34c436 |
+| explorer_survey_2 | teamwork_preview_explorer | Survey Mechanical Press Concepts | completed | 2c93a007-1448-4cdf-b8a5-5a13ca342976 |
+| explorer_survey_3 | teamwork_preview_explorer | Survey CAD Toolchain & Compliance | completed | 4aab6730-1993-40f1-928a-a2b92b34c436 |
 
 ## Succession Status
 - Succession required: no
 - Spawn count: 3 / 16
-- Pending subagents: 7e238e17-5208-4dbe-9a11-fc30e207157f, 2c93a007-1448-4cdf-b8a5-5a13ca342976, 4aab6730-1993-40f1-928a-a2b92b34c436
+- Pending subagents: 7e238e17-5208-4dbe-9a11-fc30e207157f
 - Predecessor: none
 - Successor: not yet spawned
 
@@ -74,4 +75,6 @@ Design and implement 3 fast, material-efficient CAD variants for the silicone mo
 - /Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/DISPATCH.md — Assignment instructions
 - /Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/BRIEFING.md — Persistent memory & context
 - /Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/progress.md — Liveness & status tracking
+- /Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/explorer_survey_2/handoff.md — Mechanical Architecture Handoff
+- /Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/explorer_survey_3/handoff.md — CAD Toolchain & Architecture Handoff
 - /Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/PROJECT.md — Global architecture and decomposition (pending survey)

@@ -1222,14 +1222,7 @@ class MainWindow(QMainWindow):
         self.btn_iec_guide.clicked.connect(self.on_rta_button_clicked)
         
         rta_layout.addWidget(self.btn_rta_raw, stretch=1)
-        
-        # Depth + Tip selector in one horizontal row
-        depth_row = QHBoxLayout()
-        depth_row.setSpacing(4)
-        depth_row.setContentsMargins(0, 0, 0, 0)
-        depth_row.addWidget(self.tip_container)
-        depth_row.addWidget(self.btn_iec_guide)
-        rta_layout.addLayout(depth_row)
+        rta_layout.addWidget(self.btn_iec_guide)
         
         # --- MODULE 5: CAPTURE BLOCK (RUN + Sweeps) ---
         mod_capture = QVBoxLayout()
@@ -1279,6 +1272,7 @@ class MainWindow(QMainWindow):
         
         right_group = QHBoxLayout()
         right_group.setSpacing(7) # Pushes RTA 8px to the right to align with the visual edge of the QTabWidget above
+        right_group.addWidget(self.tip_container)
         right_group.addWidget(rta_widget)
         right_group.addLayout(mod_capture)
         
