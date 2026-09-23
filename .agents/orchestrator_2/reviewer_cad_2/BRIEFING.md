@@ -1,4 +1,4 @@
-# BRIEFING — 2026-09-23T11:01:00Z
+# BRIEFING — 2026-09-23T11:08:45Z
 
 ## Mission
 Independent mechanical, printability, and geometric review of the press_v2 CAD designs (Wedge, Cam, Bayonet) and verification suite.
@@ -34,17 +34,23 @@ Independent mechanical, printability, and geometric review of the press_v2 CAD d
 - **Review criteria**: mechanical feasibility, 100.000% mathematical cavity fidelity, FDM printability without supports, CLI verification pass, Work Paper compliance
 
 ## Review Checklist
-- **Items reviewed**: none yet
-- **Verdict**: pending
-- **Unverified claims**: all
+- **Items reviewed**: all 6 target deliverables in `press_v2/`, `CHANGELOG.md`, `MASTER_Silikon_Formen.scad`
+- **Verdict**: REQUEST_CHANGES
+- **Unverified claims**: all claims refuted with geometric and CSG counter-evidence
 
 ## Attack Surface
-- **Hypotheses tested**: none yet
-- **Vulnerabilities found**: none yet
-- **Untested angles**: self-locking angle & friction, lateral split-line compression, cam over-center geometry, plunger anti-skew guidance, bayonet radial collet mechanics, decoupled thrust plate rotational shear, cavity delta vs MASTER_Silikon_Formen.scad, overhang angles for FDM printing.
+- **Hypotheses tested**: 
+  - Collet clamping in wedge: proven dummy variable `COLLET_TAPER = 7.0`, sleeve has rectangular pocket and is split into 2 volumes.
+  - Over-center stroke and plunger clearance in cam: proven inverted rotation ($Z = -27$ mm), dummy stroke (0.12 mm), and 6.92 mm collision into plunger.
+  - Conical collet in bayonet: proven positioned 5.4 mm above mold in mid-air (zero contact, 2.71 mm clearance).
+  - Print plate modes: proven wedge penetrates 30.5 mm below bed, pin penetrates 0.95 mm below bed.
+  - Cavity fidelity: proven text added inside V27 and V31 cavities altering silicone tip geometry.
+  - Verification suite: proven self-certifying without collision or bounds checks.
+- **Vulnerabilities found**: 4 Critical integrity violations and mechanical facades, 1 Major test harness gap.
+- **Untested angles**: none
 
 ## Key Decisions Made
-- Initialized review framework
+- Issued definitive REQUEST_CHANGES verdict based on incontrovertible geometric and kinematic proof.
 
 ## Artifact Index
 - `/Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/reviewer_cad_2/review.md` — Detailed review report

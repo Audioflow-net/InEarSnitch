@@ -1,6 +1,18 @@
 # InEar Snitch Hardware & CAD Changelog
 *Lückenlose Dokumentation aller physikalischen Änderungen an den 3D-Modellen, um wissenschaftliche Reproduzierbarkeit sicherzustellen.*
 
+## [V36.1 Silikon-Formen Cleanup] - 2026-09-23
+**Fokus:** Beseitigung aller den Guss störenden Textmarkierungen und Standardisierung der Kegel-Pömpel.
+
+### Geändert (MASTER_Silikon_Formen.scad)
+1. **Version / Datum:** V36.1 - 2026-09-23
+2. **Das betroffene Bauteil:** Silikon-Gussformen (V27, V29, V30, V31) `outer_cavity_vXX` & Tamper `piston_vXX`
+3. **Maße (Alt vs. Neu):** 
+   - Text-Markierungen auf Silikon-Kontaktflächen (Zahlen/Versionen) restlos entfernt. 
+   - V27 Alignment-Pins auf Loch d=3.2mm, h=8mm ($fn=32) und Kegel d1=1.5mm, d2=4.1mm, h=4mm ($fn=32) aktualisiert.
+4. **Formen-Änderung:** Die `text()`-Befehle, die erhabene Zahlen auf das Silikon prägen (in `outer_cavity_vXX` und an der Tamper-Unterseite), wurden komplett gelöscht. Die V27 Pins wurden mit `$fn=32` an V29-V31 angeglichen. Äußere Markierungen (Formblock-Außenseite, Tamper-Oberseite) bleiben unberührt.
+5. **Die Idee / Der Grund:** Jegliche Text-Artefakte auf dem Silikon stören den perfekten Guss und das Entformen. Die `$fn=32`-konischen Pömpel verhindern ein Verkanten der Hälften beim stehenden 3D-Druck.
+
 ## [V36 Press V2 - High-Speed Modular Silicone Press Systems] - 2026-09-23
 **Fokus:** Re-Engineering des Silikon-Presssystems für Hochgeschwindigkeits-Schließung (< 2.5s), aktiven Rundum-Druck und radikale Materialersparnis.
 

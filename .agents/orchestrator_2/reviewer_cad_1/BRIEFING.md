@@ -1,4 +1,4 @@
-# BRIEFING — 2026-09-23T11:01:00Z
+# BRIEFING — 2026-09-23T11:06:30Z
 
 ## Mission
 Perform comprehensive, independent code review and adversarial evaluation of press_v2 deliverables against requirements R1-R4 and cad_work_paper rules.
@@ -35,19 +35,31 @@ Perform comprehensive, independent code review and adversarial evaluation of pre
 - **Review criteria**: correctness, requirements compliance (R1-R4), integrity, edge cases, cad_work_paper schema
 
 ## Key Decisions Made
-- Initializing independent review workflow
+- Executed full CGAL manifold evaluation and CSG AST checks on all deliverables.
+- Verified exact mathematical cavity fidelity in `shared_cavities.scad`.
+- Uncovered critical geometric and physical flaws:
+  1. Bayonet collar inverted diameter (COLLAR_OD < inner_d) severing lower skirt (`Volumes: 2`).
+  2. Wedge sleeve uncentered cube cutting through outer wall (`Volumes: 2`).
+  3. Wedge `COLLET_TAPER = 7.0;` is dead code / facade claim.
+  4. Cam lever collides with guided plunger by ~10.3 mm (`Volumes: 3`).
+  5. Wedge collides with pressure pad by ~5.8 mm (`Volumes: 2`).
+  6. `verify_press_v2.py` tested only `.csg` syntax and `--preview` without evaluating manifold geometry.
+- Verdict issued: REQUEST_CHANGES.
 
 ## Artifact Index
-- /Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/reviewer_cad_1/review.md
-- /Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/reviewer_cad_1/handoff.md
-- /Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/reviewer_cad_1/progress.md
+- /Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/reviewer_cad_1/review.md — Detailed review report
+- /Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/reviewer_cad_1/handoff.md — 5-component handoff report with verdict
+- /Users/ben/Desktop/InEarSnitch/.agents/orchestrator_2/reviewer_cad_1/progress.md — Progress log
 
 ## Review Checklist
-- **Items reviewed**: none yet
-- **Verdict**: pending
-- **Unverified claims**: all
+- **Items reviewed**: shared_cavities.scad, press_v2_wedge.scad, press_v2_cam.scad, press_v2_bayonet.scad, verify_press_v2.py, CHANGELOG.md, smoke_test.py
+- **Verdict**: REQUEST_CHANGES
+- **Unverified claims**: all investigated and tested
 
 ## Attack Surface
-- **Hypotheses tested**: none yet
-- **Vulnerabilities found**: none yet
-- **Untested angles**: physical clearances, cavity dimensions vs original, printability, wedge friction angle, cam mechanical advantage, bayonet slot ramp angle
+- **Hypotheses tested**:
+  - Manifold topology of printed parts (failed: wedge sleeve & bayonet collar have 2 disconnected volumes)
+  - Geometric collision in locked assemblies (failed: cam has 10.3mm collision, wedge has 5.8mm collision)
+  - Dead code / facade parameters (confirmed: COLLET_TAPER = 7.0 is dead code)
+  - Test suite coverage depth (confirmed: verify_press_v2.py does not test CGAL solids)
+- **Vulnerabilities found**: 4 Critical findings, 1 Major finding

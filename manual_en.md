@@ -297,3 +297,22 @@ These dynamic range compressors try to suppress the extremely loud measurement s
 
 ### 2. Warning: "Signal too quiet" despite high volume
 InEar Snitch deliberately outputs the measurement sweep at a very low digital volume (-20 dBFS) to prevent your microphone from clipping. An In-Ear Monitor inside a sealed silicone coupler generates well over 115 dB SPL! Outputting a full-scale sweep (0 dBFS) would instantly clip the ADC (Analog-to-Digital Converter) of your sound card, which *also* results in a perfectly flat and invalid curve. If the app warns you that the signal is too quiet, you should increase the physical input gain on your microphone interface, not your headphone volume.
+
+---
+
+## 16. Liability Disclaimer & Hardware Safety (IMPORTANT!)
+
+In addition to the software, the InEar Snitch system includes physical 3D-printed parts (TPU inserts) and cast silicone adapters. You must strictly observe the following hardware guidelines:
+
+### Liability Disclaimer (Damage to In-Ears)
+> **Use the adapters and the measurement rig at your own risk.**  
+> Never use force when inserting In-Ear Monitors (especially sensitive Custom In-Ears made of acrylic). Be careful not to tilt or jam the sound nozzles. **We are not liable for any mechanical or cosmetic damage to your In-Ear Monitors.**
+
+### Materials & Compatibility
+- **Peli-Insert / Cradle:** The main housing is made of **TPU 95A** (Thermoplastic Polyurethane). It is robust, shock-absorbing, and chemically stable. However, protect it from extreme heat (e.g., in a car during mid-summer).
+- **Measurement Adapters (Silicone):** The flexible adapters are made of **TFC Silicone Rubber Type 9 (Soft Putty Silicone Shore 25 1:1)**. This addition-curing (platinum) silicone does not outgas and contains no aggressive plasticizers or acetic acids. It is chemically neutral and will not attack the sensitive clear coat of your Custom In-Ears.
+
+### Hardware Best Practices
+- **This is not a medical device:** The entire kit is a measurement tool (jig) and must under no circumstances be inserted into the human ear canal.
+- **Secure fit:** Before every measurement, ensure that the silicone adapter sits securely and flush on the TPU mount of the cradle so your IEM does not slip off when applying pressure.
+- **Cleaning:** Do not use aggressive solvents like acetone or pure isopropanol on the TPU and silicone parts. A slightly damp cloth or glasses cleaning cloth is completely sufficient.

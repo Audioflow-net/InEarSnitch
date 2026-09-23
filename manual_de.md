@@ -299,3 +299,22 @@ Diese Filter versuchen den extrem lauten Sweep künstlich leise zu regeln (Kompr
 
 ### 2. Warnung: "Signal too quiet" trotz hoher Lautstärke
 Die Software gibt den Sweep absichtlich sehr leise aus (-20 dBFS), um zu verhindern, dass Ihr Mikrofon übersteuert. Ein In-Ear-Monitor erzeugt in einem abgedichteten Silikon-Coupler ohnehin über 115 dB SPL! Ein voll ausgesteuerter Sweep (0 dBFS) würde den ADC (Analog-Digital-Wandler) Ihrer Soundkarte zum "Clippen" bringen, was wiederum eine komplett flache, verfälschte Kurve erzeugt. Wenn das Signal zu leise ist, erhöhen Sie stattdessen den Gain am Mikrofon-Interface.
+
+---
+
+## 16. Haftungsausschluss & Hardware-Sicherheit (WICHTIG!)
+
+Neben der Software besteht das InEar Snitch System aus physischen 3D-Druckteilen (TPU-Einlagen) und gegossenen Silikon-Adaptern. Bitte beachten Sie zwingend die folgenden Hinweise zur Hardware:
+
+### Haftungsausschluss (Schäden an In-Ears)
+> **Die Nutzung der Adapter und der Messvorrichtung erfolgt auf eigene Gefahr.**  
+> Wenden Sie beim Einspannen der In-Ear-Monitore (insbesondere bei empfindlichen Custom In-Ears aus Acryl) niemals Gewalt an. Achten Sie darauf, die Schallröhrchen (Nozzles) nicht zu verkanten. **Wir haften nicht für mechanische oder kosmetische Schäden an Ihren In-Ear-Monitoren.**
+
+### Materialien & Verträglichkeit
+- **Peli-Insert / Wippe:** Das Hauptgehäuse besteht aus **TPU 95A** (Thermoplastisches Polyurethan). Es ist robust, dämpfend und chemisch stabil. Schützen Sie es jedoch vor extremer Hitze (z.B. im Auto im Hochsommer).
+- **Mess-Adapter (Silikon):** Die flexiblen Adapter werden aus **TFC Silikon Kautschuk Typ 9 (Knetsilikon weich Shore 25 1:1)** gefertigt. Dieses additionsvernetzende (Platin-)Silikon gast nicht aus und enthält keine aggressiven Weichmacher oder Essigsäuren. Es ist chemisch neutral und greift den sensiblen Klarlack Ihrer Custom In-Ears nicht an.
+
+### Best Practices für die Hardware
+- **Dies ist kein Medizinprodukt:** Das gesamte Kit ist ein Mess-Werkzeug (Jig) und darf unter keinen Umständen in den menschlichen Gehörgang eingeführt werden.
+- **Fester Sitz:** Prüfen Sie vor jeder Messung, ob der Silikon-Adapter sicher und bündig auf dem TPU-Pin der Wippe sitzt, damit Ihr In-Ear beim Aufdrücken nicht abrutscht.
+- **Reinigung:** Verwenden Sie für die TPU- und Silikon-Teile keine aggressiven Lösungsmittel wie Aceton oder reines Isopropanol. Ein leicht feuchtes Tuch oder Brillenputztuch ist völlig ausreichend.
