@@ -241,24 +241,22 @@ class TipAnalysisCardWidget(QFrame):
         card_layout.setSpacing(6)
 
         # ── Header Row ──────────────────────────────────────────────
-        hdr_layout = QHBoxLayout()
+        hdr_layout = QVBoxLayout()
         hdr_layout.setSpacing(6)
 
         tag_lbl = QLabel("PROKIT")
         tag_lbl.setStyleSheet("background: #0ea5e9; color: white; font-size: 9px; font-weight: 900; border-radius: 3px; padding: 2px 5px; letter-spacing: 1px;")
-        hdr_layout.addWidget(tag_lbl)
-
-        title_lbl = QLabel("Ear Tip Analysis & Acoustic Coupling")
-        title_lbl.setStyleSheet(f"color: {fg_pri}; font-weight: bold; font-size: 11px;")
-        hdr_layout.addWidget(title_lbl)
-
-        hdr_layout.addStretch()
+        
+        tag_container = QHBoxLayout()
+        tag_container.addWidget(tag_lbl)
+        tag_container.addStretch()
+        hdr_layout.addLayout(tag_container)
 
         self.cb_tip_selector = QComboBox()
         self.cb_tip_selector.setObjectName("cb_tip_selector")
-        self.cb_tip_selector.setToolTip("Select Ear Tip Profile for Analysis")
         self.cb_tip_selector.currentIndexChanged.connect(self._on_tip_combo_changed)
-        hdr_layout.addWidget(self.cb_tip_selector)
+        self.cb_tip_selector.hide()
+        
         card_layout.addLayout(hdr_layout)
 
         # ── Section 1: Helmholtz Resonance Peak (6-10 kHz) ──────────
@@ -268,12 +266,12 @@ class TipAnalysisCardWidget(QFrame):
         s1_layout.setContentsMargins(6, 4, 6, 4)
         s1_layout.setSpacing(4)
 
-        s1_title = QLabel("HELMHOLTZ RESONANCE PEAK (IEC-711)")
+        s1_title = QLabel("HELMHOLTZ PEAK")
         s1_title.setStyleSheet("color: #06b6d4; font-size: 10px; font-weight: 900; letter-spacing: 1px;")
         s1_layout.addWidget(s1_title)
 
-        grid1 = QHBoxLayout()
-        grid1.setSpacing(8)
+        grid1 = QVBoxLayout()
+        grid1.setSpacing(4)
 
         # Left Peak Box
         self.lbl_peak_l = QLabel("L: — Hz")
@@ -301,7 +299,7 @@ class TipAnalysisCardWidget(QFrame):
 
         s1_layout.addLayout(grid1)
 
-        self.lbl_peak_target = QLabel("Target: 8,000 Hz (Half-Wave Coupler Resonance)")
+        self.lbl_peak_target = QLabel("Target: 8,000 Hz")
         self.lbl_peak_target.setStyleSheet(f"color: {fg_sec}; font-size: 9px;")
         s1_layout.addWidget(self.lbl_peak_target)
         card_layout.addWidget(sec1)
@@ -313,11 +311,10 @@ class TipAnalysisCardWidget(QFrame):
         s2_layout.setContentsMargins(6, 4, 6, 4)
         s2_layout.setSpacing(4)
 
-        s2_hdr = QHBoxLayout()
-        s2_title = QLabel("COUPLING REPRODUCIBILITY (20 Hz – 8 kHz)")
+        s2_hdr = QVBoxLayout()
+        s2_title = QLabel("REPRODUCIBILITY")
         s2_title.setStyleSheet("color: #10b981; font-size: 10px; font-weight: 900; letter-spacing: 1px;")
         s2_hdr.addWidget(s2_title)
-        s2_hdr.addStretch()
 
         self.badge_repro_status = QLabel("")
         self.badge_repro_status.setObjectName("badge_repro_preliminary")
@@ -334,9 +331,9 @@ class TipAnalysisCardWidget(QFrame):
         s2_layout.addWidget(self.lbl_repro_warning)
 
         self.repro_scores_widget = QWidget()
-        scores_layout = QHBoxLayout(self.repro_scores_widget)
+        scores_layout = QVBoxLayout(self.repro_scores_widget)
         scores_layout.setContentsMargins(0, 0, 0, 0)
-        scores_layout.setSpacing(12)
+        scores_layout.setSpacing(4)
 
         self.lbl_score_l = QLabel("L: —")
         self.lbl_score_l.setObjectName("lbl_score_l")
@@ -347,7 +344,6 @@ class TipAnalysisCardWidget(QFrame):
 
         scores_layout.addWidget(self.lbl_score_l)
         scores_layout.addWidget(self.lbl_score_r)
-        scores_layout.addStretch()
         s2_layout.addWidget(self.repro_scores_widget)
         card_layout.addWidget(sec2)
 
@@ -358,12 +354,12 @@ class TipAnalysisCardWidget(QFrame):
         s3_layout.setContentsMargins(6, 4, 6, 4)
         s3_layout.setSpacing(4)
 
-        s3_title = QLabel("ACOUSTIC SEAL HISTORY (40 Hz vs 500 Hz)")
+        s3_title = QLabel("SEAL HISTORY")
         s3_title.setStyleSheet("color: #a855f7; font-size: 10px; font-weight: 900; letter-spacing: 1px;")
         s3_layout.addWidget(s3_title)
 
-        seal_grid = QHBoxLayout()
-        seal_grid.setSpacing(12)
+        seal_grid = QVBoxLayout()
+        seal_grid.setSpacing(4)
 
         self.lbl_seal_summary_l = QLabel("L: —")
         self.lbl_seal_summary_l.setStyleSheet("color: #3b82f6; font-size: 10px;")
@@ -372,10 +368,9 @@ class TipAnalysisCardWidget(QFrame):
 
         seal_grid.addWidget(self.lbl_seal_summary_l)
         seal_grid.addWidget(self.lbl_seal_summary_r)
-        seal_grid.addStretch()
         s3_layout.addLayout(seal_grid)
 
-        self.trend_chips_layout = QHBoxLayout()
+        self.trend_chips_layout = QVBoxLayout()
         self.trend_chips_layout.setSpacing(3)
         s3_layout.addLayout(self.trend_chips_layout)
         card_layout.addWidget(sec3)
@@ -1005,6 +1000,34 @@ class AnalysisWidget(QWidget):
         dsp_layout.addWidget(self.preset_cards_scroll, stretch=1)
         
         self.tools_tabs.addTab(self.dsp_container, "EQ")
+        
+        self.tips_scroll = QScrollArea()
+        self.tips_scroll.setWidgetResizable(True)
+        self.tips_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.tips_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.tips_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        
+        self.tips_container = QWidget()
+        self.tips_layout = QVBoxLayout(self.tips_container)
+        self.tips_layout.setAlignment(Qt.AlignTop)
+        self.tips_layout.setContentsMargins(0, 0, 0, 0)
+        
+        self.tip_analysis_card = TipAnalysisCardWidget(
+            parent=self.tips_container,
+            db=getattr(self, 'db', None),
+            iem_id=getattr(self, 'current_iem_id', 1),
+            tip_id=getattr(self, 'current_tip_id', 1),
+            freqs=getattr(self, 'current_freqs', None),
+            mag_l=getattr(self, 'current_mag_l', None),
+            mag_r=getattr(self, 'current_mag_r', None)
+        )
+        self.tips_layout.addWidget(self.tip_analysis_card)
+        self.tips_scroll.setWidget(self.tips_container)
+        
+        self.tools_tabs.addTab(self.tips_scroll, "Tips")
+        tips_idx = self.tools_tabs.indexOf(self.tips_scroll)
+        self.tools_tabs.setTabVisible(tips_idx, config.is_prokit_unlocked())
+
         self.split_layout.addWidget(self.right_pane_wrapper)
         self.split_layout.setStretchFactor(0, 1)
         self.split_layout.setStretchFactor(1, 0)
@@ -1127,22 +1150,7 @@ class AnalysisWidget(QWidget):
             item = self.report_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
-        self.tip_analysis_card = None
-
-        is_prokit = config.is_prokit_unlocked()
-        if (not hasattr(self, '_last_report') or not self._last_report) and not is_prokit:
-            return
-
-        from PySide6.QtWidgets import QFrame, QLabel, QVBoxLayout as QVL
-        from PySide6.QtCore import Qt
-        import numpy as np
-
-        # Filter cards by current graph tab
-        tab_idx = self.graph_tabs.currentIndex()
-        tab_cat_map = {0: 'FR', 1: 'THD', 2: 'CSD'}
-        active_cat = tab_cat_map.get(tab_idx, None)  # None = show all
-
-        if is_prokit and (active_cat is None or active_cat == 'FR'):
+        if hasattr(self, 'tip_analysis_card') and self.tip_analysis_card:
             db = getattr(self, 'db', None)
             if db is None and hasattr(self, 'main_window') and self.main_window and hasattr(self.main_window, 'db'):
                 db = self.main_window.db
@@ -1154,7 +1162,6 @@ class AnalysisWidget(QWidget):
             if iem_id is None:
                 iem_id = 1
 
-            # Always read active tip from main window bottom bar if available
             tip_id = None
             if hasattr(self, 'main_window') and self.main_window and hasattr(self.main_window, 'combo_tip') and self.main_window.combo_tip:
                 combo_data = self.main_window.combo_tip.currentData()
@@ -1163,28 +1170,14 @@ class AnalysisWidget(QWidget):
             if tip_id is None:
                 tip_id = getattr(self, 'current_tip_id', 1)
 
-            self.tip_analysis_card = TipAnalysisCardWidget(
-                parent=self.report_container,
-                db=db,
+            self.tip_analysis_card.db = db
+            self.tip_analysis_card.update_data(
                 iem_id=iem_id,
                 tip_id=tip_id,
                 freqs=getattr(self, 'current_freqs', None),
                 mag_l=getattr(self, 'current_mag_l', None),
-                mag_r=getattr(self, 'current_mag_r', None),
+                mag_r=getattr(self, 'current_mag_r', None)
             )
-            if hasattr(self, 'main_window') and self.main_window and hasattr(self.main_window, 'combo_tip') and self.main_window.combo_tip:
-                def sync_main_tip(t_id):
-                    self.current_tip_id = t_id
-                    idx = self.main_window.combo_tip.findData(t_id)
-                    if idx != -1:
-                        self.main_window.combo_tip.blockSignals(True)
-                        self.main_window.combo_tip.setCurrentIndex(idx)
-                        self.main_window.combo_tip.blockSignals(False)
-                self.tip_analysis_card.tip_changed.connect(sync_main_tip)
-
-            self.report_layout.addWidget(self.tip_analysis_card)
-        else:
-            self.tip_analysis_card = None
 
         is_light = theme.is_light()
         status_style = {
@@ -1265,8 +1258,13 @@ class AnalysisWidget(QWidget):
 
     def update_prokit_visibility(self):
         """Re-evaluates ProKit card visibility upon license state transitions."""
+        is_unlocked = config.is_prokit_unlocked()
+        if hasattr(self, 'tips_scroll'):
+            idx = self.tools_tabs.indexOf(self.tips_scroll)
+            if idx != -1:
+                self.tools_tabs.setTabVisible(idx, is_unlocked)
         if hasattr(self, 'tip_analysis_card') and self.tip_analysis_card:
-            self.tip_analysis_card.setVisible(config.is_prokit_unlocked())
+            self.tip_analysis_card.setVisible(is_unlocked)
         self.render_diagnostics()
 
     def set_active_iem(self, iem_id):
