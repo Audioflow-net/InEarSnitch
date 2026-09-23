@@ -16,6 +16,7 @@ show_tpu_sleeve = true;
 show_dummy_mic = false;
 show_cross_section = false;
 show_test_print = false; // TEST-DRUCK FÜR DIE LASCHE
+show_nameplate = true;   // NEU: Separates Logo-Schild für Option 1!
 
 // --- 1. Design Parameters ---
 // Peli 1020 Internal Dimensions (Drafted)
@@ -425,6 +426,25 @@ module cutouts() {
             }
         }
     }
+    
+    // 5. NAMEPLATE POCKET (Für das Logo-Schild)
+    // 50.4 x 18.4mm Mulde (+0.4mm Toleranz für leichten Fit). 2.0mm tief.
+    // Positioniert mittig im riesigen, leeren Bereich unten rechts!
+    translate([105.0 - 50.4/2, 38.0 - 18.4/2, depth + flange_t - 2.0]) {
+        linear_extrude(height=2.0 + eps)
+            rounded_rect_center_2(50.4, 18.4, 2.0); 
+    }
+}
+
+// Hilfsmodul für das abgerundete Rechteck (falls nicht lokal definiert)
+module rounded_rect_center_2(w, h, r) {
+    translate([r, r])
+    hull() {
+        translate([0, 0]) circle(r=r);
+        translate([w-2*r, 0]) circle(r=r);
+        translate([w-2*r, h-2*r]) circle(r=r);
+        translate([0, h-2*r]) circle(r=r);
+    }
 }
 
 // ==========================================
@@ -707,11 +727,35 @@ module test_print(part="tpu") {
     }
 }
 
+// ==========================================
+// 6. NAMEPLATE BADGE (Option 1 Logo)
+// ==========================================
+module nameplate_badge() {
+    // 50x18mm Schild (passt perfekt in die Mulde, die in cutouts() generiert wird)
+    difference() {
+        // Das Schild selbst (wird mittig generiert, damit es schön auf dem Druckbett liegt)
+        translate([-25.0, -9.0, 0])
+            rounded_rect(50.0, 18.0, 2.0, 2.0);
+            
+        // Text "InEar Snitch" (Debossed) - wir stanzen den Text als Loch ein!
+        // Dadurch scheint das schwarze TPU später durch den Cyan-farbenen Druck hindurch!
+        // Der Text ist rechtsbündig formatiert, damit links Platz für dein Spy-Logo (SVG) ist.
+        translate([5.0, 1.0, -eps])
+            linear_extrude(height=2.0 + 2*eps)
+                text("InEar", size=5.5, font="Arial:style=Bold", halign="center", valign="bottom");
+        translate([5.0, -1.0, -eps])
+            linear_extrude(height=2.0 + 2*eps)
+                text("Snitch", size=5.5, font="Arial:style=Bold", halign="center", valign="top");
+    }
+}
+
 if (show_test_print) {
     color("Gold", 1.0) test_print();
     if (show_dummy_mic) {
         translate([108, 40, 44]) rotate([0, 180, 0]) dummy_coupler();
     }
+} else if (show_nameplate) {
+    color("Cyan", 1.0) nameplate_badge();
 } else if (show_cross_section) {
     difference() {
         assembly();

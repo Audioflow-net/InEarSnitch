@@ -5,9 +5,8 @@ tailwind.config = {
         extend: {
             colors: {
                 background: '#09090b', // Deep Zinc
-                primary: '#3b82f6',    // Blue
-                success: '#10b981',    // Emerald
-                panel: '#18181b',      // zinc-900 for slightly lighter panels
+                primary: '#10b981',    // Emerald (statt Blau)
+                panel: '#18181b',      // zinc-900
                 border: '#27272a',     // zinc-800
             },
             fontFamily: {
