@@ -834,7 +834,7 @@ class AnalysisWidget(QWidget):
         self.tools_tabs = StableTabWidget()
         # self.tools_tabs.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
         self.tools_tabs.setElideMode(Qt.ElideNone)
-        self.tools_tabs.setUsesScrollButtons(True)
+        self.tools_tabs.setUsesScrollButtons(False)
         self.tools_tabs.setMinimumWidth(0)   # Let splitter control width, not minimumWidth
         self.tools_tabs.setMaximumWidth(400)
         self.right_pane_layout.addWidget(self.tools_tabs)
@@ -854,7 +854,7 @@ class AnalysisWidget(QWidget):
         self.report_layout = QVBoxLayout(self.report_container)
         self.report_scroll.setWidget(self.report_container)
         diag_layout.addWidget(self.report_scroll)
-        self.tools_tabs.addTab(self.diag_container, "Diagnostics")
+        self.tools_tabs.addTab(self.diag_container, "Diag")
         
 
         
@@ -1641,7 +1641,7 @@ class AnalysisWidget(QWidget):
         # Update Tabs
         self.graph_tabs.setStyleSheet(f"QTabWidget::tab-bar {{ left: 0px; alignment: left; }} QTabWidget::pane {{ border: 1px solid {border}; border-radius: 4px; }} QTabBar::tab {{ background: {bg}; color: {text_sec}; padding: 4px 10px; min-width: 80px; border: 1px solid {border}; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: bold; font-size: 11px; }} QTabBar::tab:selected {{ background: {active}; color: {fg}; }}")
         if hasattr(self, 'tools_tabs'):
-            self.tools_tabs.setStyleSheet(f"QTabWidget::tab-bar {{ alignment: center; }} QTabWidget::pane {{ border: 1px solid {border}; border-radius: 4px; }} QTabBar::tab {{ background: {bg}; color: {text_sec}; padding: 4px 10px; min-width: 80px; border: 1px solid {border}; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: bold; font-size: 11px; }} QTabBar::tab:selected {{ background: {active}; color: {fg}; }}")
+            self.tools_tabs.setStyleSheet(f"QTabWidget::tab-bar {{ alignment: center; }} QTabWidget::pane {{ border: 1px solid {border}; border-radius: 4px; }} QTabBar::tab {{ background: {bg}; color: {text_sec}; padding: 4px 10px; min-width: 40px; border: 1px solid {border}; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: bold; font-size: 11px; }} QTabBar::tab:selected {{ background: {active}; color: {fg}; }}")
             
         # Update Graph Backgrounds
         pg_bg = theme.get_color('pg_bg')
