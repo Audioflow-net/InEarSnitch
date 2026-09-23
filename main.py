@@ -1156,8 +1156,8 @@ class MainWindow(QMainWindow):
         self.combo_tip = QComboBox()
         self.combo_tip.setObjectName("cb_prokit_tip")
         self.combo_tip.setEditable(False)
-        self.combo_tip.setFixedWidth(135)
-        self.combo_tip.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.combo_tip.setMinimumWidth(100)
+        self.combo_tip.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         self.combo_tip.setToolTip("Select ProKit Coupler Ear Tip")
         self.combo_tip.setStyleSheet("""
             QComboBox {
@@ -1182,6 +1182,7 @@ class MainWindow(QMainWindow):
                 selection-background-color: #10b981;
                 selection-color: black;
                 border: 1px solid #444;
+                min-width: 180px;
             }
         """)
         # Aliases
