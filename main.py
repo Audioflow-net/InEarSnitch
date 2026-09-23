@@ -3520,10 +3520,12 @@ class MainWindow(QMainWindow):
             if current_mean > self._max_rta_mean:
                 self._max_rta_mean = current_mean
             else:
-                self._max_rta_mean = 0.99 * self._max_rta_mean + 0.01 * current_mean
+                # Fast decay (~1 second recovery) so mic taps/cable bumps don't
+                # permanently spike the tracker and cause false "Silence" detection
+                self._max_rta_mean = 0.95 * self._max_rta_mean + 0.05 * current_mean
 
-            if current_mean < self._max_rta_mean - 15.0:
-                # Signal dropped by > 15dB compared to recent max. It was pulled out.
+            if current_mean < self._max_rta_mean - 25.0:
+                # Signal dropped by > 25dB compared to recent max → IEM removed
                 seal_html = "<span style='color: #a8a29e; font-weight: bold;'>IEM Not Detected (Silence)</span>"
                 depth_html = ""
                 if hasattr(self, 'rta_peak_line') and self.rta_peak_line is not None:
