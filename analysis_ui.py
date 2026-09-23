@@ -1190,6 +1190,7 @@ class AnalysisWidget(QWidget):
         gen_items = []
         
         report_items = getattr(self, '_last_report', None) or []
+        active_cat = None
         for item in report_items:
             cat = item.get('category', 'FR')
             if active_cat is not None and cat != active_cat:
