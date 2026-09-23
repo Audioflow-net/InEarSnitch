@@ -1,6 +1,17 @@
 # InEar Snitch Hardware & CAD Changelog
 *Lückenlose Dokumentation aller physikalischen Änderungen an den 3D-Modellen, um wissenschaftliche Reproduzierbarkeit sicherzustellen.*
 
+## [V36.9 V27 Torus Gap Fix] - 2026-09-23
+**Fokus:** Korrektur des 2mm Spalts zwischen V27-Schaft und der abgerundeten Spitze.
+
+### Geändert (MASTER_Silikon_Formen.scad)
+1. **Version / Datum:** V36.9 - 2026-09-23
+2. **Das betroffene Bauteil:** Formblock `outer_cavity_v27` und Tamper `piston_v27`.
+3. **Maße (Alt vs. Neu):** Startpunkt des Schafts von `Z_Spitze + 2.0` auf `Z_Spitze` (Torus-Äquator) korrigiert.
+4. **Formen-Änderung:** Beim Upside-Down-Umbau wurde der Schaft versehentlich 2mm über dem Torus (der Rundung) gestartet, wodurch er in der Luft schwebte. Der Schaft wurde nach unten verlängert, sodass er exakt am Äquator des Torus ansetzt und die obere Torus-Hälfte schluckt. Das Innere der unteren Torus-Hälfte wird nun präzise gefüllt.
+5. **Die Idee / Der Grund:** Behebung des visuellen und geometrischen Bugs aus V36.8, der durch die Invertierung der Koordinaten entstanden war. Die Spitze von V27 ist jetzt wieder massiv und perfekt abgerundet.
+
+
 ## [V36.8 V27 Upside-Down Refactor] - 2026-09-23
 **Fokus:** Anpassung der Z-Orientierung von V27 und parametrisierbare Schaftlänge.
 
