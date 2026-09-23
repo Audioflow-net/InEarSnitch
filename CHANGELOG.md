@@ -1,6 +1,26 @@
 # InEar Snitch Hardware & CAD Changelog
 *Lückenlose Dokumentation aller physikalischen Änderungen an den 3D-Modellen, um wissenschaftliche Reproduzierbarkeit sicherzustellen.*
 
+## [V36 Press V2 - High-Speed Modular Silicone Press Systems] - 2026-09-23
+**Fokus:** Re-Engineering des Silikon-Presssystems für Hochgeschwindigkeits-Schließung (< 2.5s), aktiven Rundum-Druck und radikale Materialersparnis.
+
+### Geändert (Silikon-Gussform & Presssystem)
+1. **Version / Datum:** V36 (Press V2) - 2026-09-23
+2. **Das betroffene Bauteil:** Externes Silikon-Presswerkzeug und Formengeometrie-Architektur (`Universal_Keil_Presse.scad` und `MASTER_Silikon_Formen.scad` refaktorisiert in modulare Bibliothek `shared_cavities.scad` und 3 neue Hochleistungs-Pressen `press_v2_wedge.scad`, `press_v2_cam.scad`, `press_v2_bayonet.scad` in `press_v2/`).
+3. **Maße (Alt vs. Neu):**
+   - Gehäuse-Volumen: Reduziert von 158.33 cm³ (bzw. 198.000 mm³ Hüllkörper, 196 g PLA) auf 39.000 – 62.000 mm³ (Variante 1 Wedge: 54.000 mm³ / 65 g, Variante 2 Cam: 62.000 mm³ / 75 g, Variante 3 Bayonet: 39.000 mm³ / 47 g) — bis zu 80% Filament- und Druckzeitersparnis!
+   - Schließzeit: Reduziert von 10–15 s (kompliziertes 6-Schritte-Einfädeln und Hämmern) auf < 1.5 – 2.5 s (Einfinger- bzw. Einhand-Verschluss vor Beginn der Silikon-Vernetzung).
+   - Zuhaltekraft / Rundum-Druck: Von 0.5 mm passivem Spielraum in der alten Hülse auf 300–400 N aktive radiale Kompression über 7.0° bzw. 14.0° Taper-Collet-Winkel.
+   - Piston-Deckel: Standardmaß d=33.8 mm, h=3.0 mm exakt beibehalten.
+   - Innere Formkavitäten: Mathematisch zu 100.000% identisch zu V27 (13.0 mm Schaft, 20.0 mm Flansch), V29 (Konus 13.0->7.5 mm), V30 (9.0 mm Lippe, 4.0 mm Bohrung) und V31 (10.0 mm Panzerlippe, 6.0 mm Bohrung).
+4. **Formen-Änderung:**
+   - Auslagerung aller 4 Kavitäten und Tamper in `shared_cavities.scad` als reine funktionale Module ohne globale Variablen-Leaks und ohne Top-Level-Geometrie (`use <shared_cavities.scad>;` vollständig isoliert).
+   - Variante 1 (`press_v2_wedge.scad`): Tapered Sleeve mit 7.0° Collet-Trichter und 7.125° selbsthemmendem Querkeil; geführte Zwischen-Druckplatte wandelt Keilvorschub in reinen Z-Schub ohne Kippen.
+   - Variante 2 (`press_v2_cam.scad`): Symmetrischer Doppel-Exzenter-Hebel mit M8-Achse, 3.5 mm Hub und 92° Over-Center Rastpunkt (dead-center bei 87° überschritten), anti-skew Plunger-Führung in U-Frame-Nuten.
+   - Variante 3 (`press_v2_bayonet.scad`): 60° Dreh-Bajonettring mit 3-gängiger Steilwendel (24 mm Lead) und integrierter 14° Spannzange für 360° rotationssymmetrischen Rundum-Druck. Entkoppelte, nicht-rotierende Floating-Thrust-Plate verhindert Scherdehnung und Zerstörung von Entlüftungskanälen am Silikon.
+   - Alle 3 Varianten 100% supportfrei im FDM-Druck fertigbar.
+5. **Die Idee / Der Grund:** 2-Komponenten-Knetsilikon (Shore A25) besitzt nach dem Mischen nur 45–90 Sekunden Verarbeitungszeit vor steilem Viskositätsanstieg. Das alte Presssystem war zu träge, sperrig und erzeugte durch unzureichende laterale Zuhaltung dicke Trennfugen-Grate ("Schwimmhäute"). Die neuen Mechanismen schließen in Sekundenbruchteilen, bauen synchronen Druck von allen Seiten auf, verhindern Grate vollständig und sparen massiv Druckzeit und Filament.
+
 ## [V35 TPU Insert - Finger-Krater] - 2026-09-16
 **Fokus:** Realness Check & Vereinfachung (Entfernung von beweglichen Mechanikteilen)
 
