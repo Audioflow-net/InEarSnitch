@@ -442,13 +442,6 @@ def main():
                 else:
                     status = f"FAIL (Unexpected error: {err.strip()})"
                     passed = False
-            else:
-                if not has_error:
-                    status = "PASS (RENDERED CLEANLY)"
-                    passed = True
-                else:
-                    status = f"FAIL (Unexpected error: {err.strip()})"
-                    passed = False
 
             print(f" [{passed and 'PASS' or 'FAIL'}] ({dt:.1f}s) - {status}")
             stress_results.append({
