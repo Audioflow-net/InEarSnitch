@@ -169,7 +169,8 @@ class AudioEngine:
             in_pos = [0]
             done_event = threading.Event()
             
-            def callback(indata, frames, time_info, status):
+            def callback(indata, outdata, frames, time_info, status):
+                outdata[:] = 0.0  # Stille!
                 r_chunk = min(frames, n_frames - in_pos[0])
                 if r_chunk > 0:
                     rec_buf[in_pos[0]:in_pos[0]+r_chunk] = indata[:r_chunk]
@@ -178,8 +179,8 @@ class AudioEngine:
                     done_event.set()
                     raise sd.CallbackStop
             
-            with sd.InputStream(device=input_device_idx,
-                           samplerate=sr, channels=in_channels,
+            with sd.Stream(device=(input_device_idx, None),
+                           samplerate=sr, channels=(in_channels, 1),
                            callback=callback):
                 done_event.wait(timeout=duration + 2.0)
             return rec_buf[:, 0]

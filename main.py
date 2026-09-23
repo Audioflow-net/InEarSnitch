@@ -3479,6 +3479,13 @@ class MainWindow(QMainWindow):
             target_plot.update()
             target_plot.repaint()
             
+            # Reset all EMA state so curve doesn't drift from top
+            for attr in ('_rta_shift', '_max_rta_mean', '_iec_smooth_mags',
+                         '_iec_status_counter', '_iec_last_ok'):
+                if hasattr(self, attr):
+                    delattr(self, attr)
+            self._rta_warmup = 0  # Suppress seal diagnostics for first 30 frames (~1s)
+            
             self.live_worker = LiveSealWorker(self.selected_in_idx, self.selected_out_idx, cal_f, cal_m, target_channel=self.get_current_channel())
             self.live_worker.update_signal.connect(self.update_live_rta)
             self.live_worker.error.connect(self.on_measurement_error)
@@ -3534,6 +3541,11 @@ class MainWindow(QMainWindow):
         self.live_rta_line.setData(freqs[mask], mag_db[mask] + self._rta_shift)
         
         # --- Live IEC 711 Positioning Diagnostics ---
+        # Skip diagnostics during warmup (~1 second) while EMA settles
+        warmup = getattr(self, '_rta_warmup', 0)
+        if warmup < 30:
+            self._rta_warmup = warmup + 1
+            return
         try:
             # Detect if IEM is pulled out (massive drop in volume from recent peak)
             if not hasattr(self, '_max_rta_mean'):
