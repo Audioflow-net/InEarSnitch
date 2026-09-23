@@ -246,8 +246,7 @@ class TipAnalysisCardWidget(QFrame):
 
         tag_lbl = QLabel("PROKIT")
         tag_lbl.setStyleSheet("background: #0ea5e9; color: white; font-size: 9px; font-weight: 900; border-radius: 3px; padding: 2px 5px; letter-spacing: 1px;")
-        
-        tag_container = QHBoxLayout()
+        tag_container = QVBoxLayout()
         tag_container.addWidget(tag_lbl)
         tag_container.addStretch()
         hdr_layout.addLayout(tag_container)
@@ -279,7 +278,7 @@ class TipAnalysisCardWidget(QFrame):
         self.lbl_peak_l.setStyleSheet("color: #3b82f6; font-size: 11px; font-weight: bold;")
         self.badge_peak_delta_l = QLabel("—")
         self.badge_peak_delta_l.setStyleSheet("background: #27272a; color: #71717a; border-radius: 3px; padding: 1px 4px; font-size: 9px;")
-        box_l = QHBoxLayout()
+        box_l = QVBoxLayout()
         box_l.addWidget(self.lbl_peak_l)
         box_l.addWidget(self.badge_peak_delta_l)
         box_l.addStretch()
@@ -291,7 +290,7 @@ class TipAnalysisCardWidget(QFrame):
         self.lbl_peak_r.setStyleSheet("color: #ef4444; font-size: 11px; font-weight: bold;")
         self.badge_peak_delta_r = QLabel("—")
         self.badge_peak_delta_r.setStyleSheet("background: #27272a; color: #71717a; border-radius: 3px; padding: 1px 4px; font-size: 9px;")
-        box_r = QHBoxLayout()
+        box_r = QVBoxLayout()
         box_r.addWidget(self.lbl_peak_r)
         box_r.addWidget(self.badge_peak_delta_r)
         box_r.addStretch()
