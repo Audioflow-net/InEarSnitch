@@ -1200,8 +1200,6 @@ class MainWindow(QMainWindow):
         self.populate_tips()
         self.tip_container.setVisible(config.is_prokit_unlocked())
         
-        chan_layout.addWidget(self.tip_container)
-        
         # --- MODULE 4: LIVE TOOLS (RTA / Depth) ---
         rta_widget = QWidget()
         rta_layout = QVBoxLayout(rta_widget)
@@ -1224,7 +1222,14 @@ class MainWindow(QMainWindow):
         self.btn_iec_guide.clicked.connect(self.on_rta_button_clicked)
         
         rta_layout.addWidget(self.btn_rta_raw, stretch=1)
-        rta_layout.addWidget(self.btn_iec_guide)
+        
+        # Depth + Tip selector in one horizontal row
+        depth_row = QHBoxLayout()
+        depth_row.setSpacing(4)
+        depth_row.setContentsMargins(0, 0, 0, 0)
+        depth_row.addWidget(self.tip_container)
+        depth_row.addWidget(self.btn_iec_guide)
+        rta_layout.addLayout(depth_row)
         
         # --- MODULE 5: CAPTURE BLOCK (RUN + Sweeps) ---
         mod_capture = QVBoxLayout()

@@ -175,3 +175,36 @@ Notes:
 
 Please update `database.py` seed data and re-run smoke tests. This is a data-only change, no structural modification needed.
 
+## 2026-09-23T10:44:09Z
+
+# Teamwork Project Prompt — Draft
+
+> Status: Launched
+> Goal: Craft prompt → get user approval → delegate to teamwork_preview
+> Requested team: [none — teamwork routes from the description]
+
+Entwurf und Implementierung von 3 neuen, hocheffizienten CAD-Varianten für ein Silikonform-Presssystem. Die neuen Designs müssen ein extrem schnelles Zusammenfügen/Spannen ermöglichen (bevor das Silikon aushärtet), Druck von allen Seiten aufbauen, praktikabel sein und Filament-Verschwendung minimieren. Die Agenten ermitteln selbstständig die drei mathematisch und praktisch besten Varianten.
+
+Working directory: ~/Desktop/InEarSnitch/press_v2
+Integrity mode: development
+
+## Requirements
+
+### R1. 3 Schnelle Press-Varianten
+Entwicklung von 3 komplett unterschiedlichen mechanischen Gehäusen/Press-Konzepten (z.B. Klappe, Keil, Gewinde, etc.), die ein fast sofortiges Schließen und starken, gleichmäßigen Rundum-Druck ermöglichen.
+
+### R2. Geometrische Integrität
+Die exakten inneren Kavitäten (V27, V29, V30, V31) müssen mathematisch zu 100% unangetastet bleiben und aus dem alten Code (`MASTER_Silikon_Formen.scad`) importiert/übernommen werden. Lediglich der äußere Block und Schließmechanismus wird ersetzt.
+
+### R3. Material-Effizienz
+Das Design muss so kompakt wie möglich sein, um signifikant Filament und Druckzeit gegenüber dem bisherigen massiven Block zu sparen.
+
+### R4. CLI Test-Umgebung
+Da der `openscad` Befehl auf diesem Mac oft nicht direkt im `$PATH` liegt, muss das Team den absoluten Pfad zur App (z.B. `/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD`) nutzen, um Test-Renders durchzuführen.
+
+## Acceptance Criteria
+
+### Verifikation & Testing
+- [ ] Es existieren 3 separate OpenSCAD-Dateien im Ordner `press_v2`.
+- [ ] Das Team hat per Kommandozeile erfolgreich verifiziert, dass alle 3 Varianten syntaktisch korrekt sind und sich ohne Fehler rendern lassen.
+- [ ] Jede Variante umschließt die originalen Kavitäten, weist aber ein völlig neues, schnelleres äußeres Schließkonzept auf.
