@@ -29,9 +29,8 @@ Section "InEar SNITCH (required)"
   CreateShortcut "$SMPROGRAMS\InEar SNITCH\Uninstall.lnk" "$INSTDIR\uninstall.exe"
 
   ; How to open guide
-  File "..\HOW_TO_OPEN_WINDOWS.txt"
-  Rename "$INSTDIR\HOW_TO_OPEN_WINDOWS.txt" "$INSTDIR\⚠️ HOW TO OPEN.txt"
-  CreateShortcut "$SMPROGRAMS\InEar SNITCH\⚠️ HOW TO OPEN.lnk" "$INSTDIR\⚠️ HOW TO OPEN.txt"
+  File "HOW_TO_OPEN_WINDOWS.txt"
+  CreateShortcut "$SMPROGRAMS\InEar SNITCH\HOW TO OPEN.lnk" "$INSTDIR\HOW_TO_OPEN_WINDOWS.txt"
 
   WriteUninstaller "uninstall.exe"
   WriteRegStr HKLM "Software\InEarSnitch" "Install_Dir" "$INSTDIR"
