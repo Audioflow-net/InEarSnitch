@@ -21,6 +21,21 @@ tailwind.config = {
 document.addEventListener('DOMContentLoaded', () => {
     console.log("InEar Snitch - Metrology Lab Initialized");
     
+    // Checkbox Validation for Checkout
+    const checkboxes = document.querySelectorAll('.legal-checkbox');
+    const buyBtn = document.getElementById('buy-btn');
+    
+    if (checkboxes.length > 0 && buyBtn) {
+        const validateCheckboxes = () => {
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            buyBtn.disabled = !allChecked;
+        };
+        
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', validateCheckboxes);
+        });
+    }
+    
     // Wir implementieren die Undo-Redo Funktionalitaet oder State-Mutationen später, 
     // aber als Vorbereitung für die Undo-Regel hier ein Platzhalter:
     // function pushUndo(state) { ... }
