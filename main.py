@@ -2320,12 +2320,12 @@ class MainWindow(QMainWindow):
                 "Please open Settings (top right) and select your Input and Output devices in the Routing tab before running Calibration.")
             return
 
-        # Auto-stop any running RTA/Depth to prevent two sd.Stream() instances
-        # fighting over the same audio device (causes hang)
-        rta_was_running = getattr(self, 'live_worker', None) and self.live_worker.isRunning()
-        if rta_was_running:
-            self.live_worker.stop()
-            self.live_worker.wait()
+        # Fully stop any running RTA/Depth — two sd.Stream() instances
+        # on the same device cause a hang
+        if getattr(self, 'live_worker', None) and self.live_worker.isRunning():
+            self.btn_rta_raw.setChecked(False)
+            self.btn_iec_guide.setChecked(False)
+            self.toggle_live_seal(False)
 
         self.btn_auto_cal.setEnabled(False)
         self.btn_auto_cal.setText("Calibrating...")
@@ -2512,12 +2512,6 @@ class MainWindow(QMainWindow):
                 f"Run a high-level sweep ({stress_amp:.3f} amplitude) to detect Rub & Buzz."
             )
 
-        # Restart RTA/Depth if it was running before calibration
-        if rta_was_running:
-            is_active = self.btn_rta_raw.isChecked() or self.btn_iec_guide.isChecked()
-            if is_active:
-                self.toggle_live_seal(True)
-
     def run_stress_test(self):
         """Run a high-amplitude sweep and extract HOHD for Rub & Buzz detection."""
         stress_amp = getattr(self.audio_engine, 'calibrated_stress_amp', None)
@@ -2535,10 +2529,11 @@ class MainWindow(QMainWindow):
                 "Please open Settings (top right) and select your Input and Output devices before running the Stress Test.")
             return
         
-        # Auto-stop any running RTA/Depth to prevent audio stream conflicts
+        # Fully stop any running RTA/Depth to prevent audio stream conflicts
         if getattr(self, 'live_worker', None) and self.live_worker.isRunning():
-            self.live_worker.stop()
-            self.live_worker.wait()
+            self.btn_rta_raw.setChecked(False)
+            self.btn_iec_guide.setChecked(False)
+            self.toggle_live_seal(False)
 
         # Confirmation
         reply = QMessageBox.question(
@@ -3681,10 +3676,11 @@ class MainWindow(QMainWindow):
             
         target_ch = "L" if self.get_current_channel() == "Left" else "R"
         
-        # Auto-stop any running RTA/Depth to prevent audio stream conflicts
+        # Fully stop any running RTA/Depth to prevent audio stream conflicts
         if getattr(self, 'live_worker', None) and self.live_worker.isRunning():
-            self.live_worker.stop()
-            self.live_worker.wait()
+            self.btn_rta_raw.setChecked(False)
+            self.btn_iec_guide.setChecked(False)
+            self.toggle_live_seal(False)
         
         # --- PREFLIGHT LEVEL CHECK ---
         # Compare current recording level against calibration reference.
