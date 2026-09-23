@@ -466,33 +466,21 @@ class AudioEngine:
             cal_interp = np.interp(freqs, mic_cal_freqs, mic_cal_mags)
             mag += cal_interp
         
-        # === DEBUG DUMP: Save all intermediate DSP results for diagnosis ===
-        try:
-            import os, time as _t
-            dump_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'debug_dumps')
-            os.makedirs(dump_dir, exist_ok=True)
-            stamp = _t.strftime('%Y%m%d_%H%M%S')
-            dump_path = os.path.join(dump_dir, f'measure_debug_{stamp}_{target_channel}.npz')
-            np.savez_compressed(dump_path,
-                rec_signal=rec_signal,
-                ir_raw=ir,
-                ir_windowed=ir_windowed,
-                ir_shifted=ir_shifted,
-                freqs=freqs,
-                mag_raw=mag,
-                peak_idx=peak_idx,
-                onset_idx=onset_idx,
-                w_start=w_start,
-                w_end=w_end,
-                latency_ms=latency_ms,
-                crest_factor=crest_factor,
-                peak_dbfs=peak_dbfs,
-                spl_offset_db=spl_offset_db,
-                sample_rate=self.sample_rate,
-            )
-            print(f"[DEBUG] Dump saved: {dump_path}")
-        except Exception as _e:
-            print(f"[DEBUG] Dump failed: {_e}")
+        # === DEBUG DUMP: Disabled for release. Uncomment for DSP diagnosis. ===
+        # try:
+        #     import os, time as _t
+        #     dump_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'debug_dumps')
+        #     os.makedirs(dump_dir, exist_ok=True)
+        #     stamp = _t.strftime('%Y%m%d_%H%M%S')
+        #     dump_path = os.path.join(dump_dir, f'measure_debug_{stamp}_{target_channel}.npz')
+        #     np.savez_compressed(dump_path, rec_signal=rec_signal, ir_raw=ir,
+        #         ir_windowed=ir_windowed, ir_shifted=ir_shifted, freqs=freqs, mag_raw=mag,
+        #         peak_idx=peak_idx, onset_idx=onset_idx, w_start=w_start, w_end=w_end,
+        #         latency_ms=latency_ms, crest_factor=crest_factor, peak_dbfs=peak_dbfs,
+        #         spl_offset_db=spl_offset_db, sample_rate=self.sample_rate)
+        #     print(f"[DEBUG] Dump saved: {dump_path}")
+        # except Exception as _e:
+        #     print(f"[DEBUG] Dump failed: {_e}")
         
         return freqs, mag, phase, ir, noise_ir
 
