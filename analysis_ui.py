@@ -197,33 +197,28 @@ class TipAnalysisCardWidget(QFrame):
         self.refresh_metrics()
 
     def _init_ui(self):
-        is_light = theme.is_light() if hasattr(theme, 'is_light') else False
-        bg_card = "#ffffff" if is_light else "#18181b"
-        border_card = "#e4e4e7" if is_light else "#27272a"
-        bg_sub = "#f4f4f5" if is_light else "#1f1f23"
-        fg_pri = "#18181c" if is_light else "#ffffff"
-        fg_sec = "#52525b" if is_light else "#888888"
-
-        self.setStyleSheet(f"""
-            QFrame#tip_analysis_card {{
-                background-color: {bg_card};
-                border: 1px solid {border_card};
-                border-radius: 8px;
-                margin: 2px 0px 6px 0px;
-            }}
+        self.setStyleSheet("""
+            QFrame#tip_analysis_card {
+                background-color: transparent;
+                border: none;
+                margin: 0px;
+                padding: 0px;
+            }
         """)
 
         card_layout = QVBoxLayout(self)
-        card_layout.setContentsMargins(8, 8, 8, 8)
-        card_layout.setSpacing(8)
+        card_layout.setContentsMargins(0, 0, 0, 0)
+        card_layout.setSpacing(4)
 
         # ── Header Row ──────────────────────────────────────────────
         hdr_layout = QVBoxLayout()
-        hdr_layout.setSpacing(6)
+        hdr_layout.setContentsMargins(0, 0, 0, 0)
+        hdr_layout.setSpacing(4)
 
         tag_lbl = QLabel("PROKIT")
-        tag_lbl.setStyleSheet("background: #0ea5e9; color: white; font-size: 9px; font-weight: 900; border-radius: 3px; padding: 2px 5px; letter-spacing: 1px;")
-        tag_container = QVBoxLayout()
+        tag_lbl.setStyleSheet("background: #1a3040; color: #5b8fa8; font-size: 8px; font-weight: bold; border-radius: 4px; padding: 2px 6px; letter-spacing: 1px;")
+        tag_container = QHBoxLayout()
+        tag_container.setContentsMargins(0, 0, 0, 0)
         tag_container.addWidget(tag_lbl)
         tag_container.addStretch()
         hdr_layout.addLayout(tag_container)
@@ -238,13 +233,13 @@ class TipAnalysisCardWidget(QFrame):
         # ── Section 1: Helmholtz Resonance Peak (6-10 kHz) ──────────
         sec1 = QFrame()
         sec1.setObjectName("sec_helmholtz")
-        sec1.setStyleSheet(f"QFrame#sec_helmholtz {{ background-color: {bg_sub}; border-left: 3px solid #06b6d4; border-radius: 6px; }}")
+        sec1.setStyleSheet("QFrame#sec_helmholtz { background-color: #1a1a1e; border: 1px solid #2a2a2e; border-left: 2px solid #5b8fa8; border-radius: 4px; }")
         s1_layout = QVBoxLayout(sec1)
         s1_layout.setContentsMargins(8, 8, 8, 8)
         s1_layout.setSpacing(4)
 
         s1_title = QLabel("HELMHOLTZ PEAK")
-        s1_title.setStyleSheet("color: #06b6d4; font-size: 10px; font-weight: 900; letter-spacing: 1px; background: transparent; border: none;")
+        s1_title.setStyleSheet("color: #5b8fa8; font-size: 10px; font-weight: 900; letter-spacing: 1px; background: transparent; border: none;")
         s1_layout.addWidget(s1_title)
 
         grid1 = QVBoxLayout()
@@ -253,10 +248,11 @@ class TipAnalysisCardWidget(QFrame):
         # Left Peak Box
         self.lbl_peak_l = QLabel("L: — Hz")
         self.lbl_peak_l.setObjectName("lbl_peak_l")
-        self.lbl_peak_l.setStyleSheet("color: #3b82f6; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+        self.lbl_peak_l.setStyleSheet("color: #ffffff; font-size: 11px; font-weight: bold; background: transparent; border: none;")
         self.badge_peak_delta_l = QLabel("—")
-        self.badge_peak_delta_l.setStyleSheet("background: #27272a; color: #71717a; border-radius: 3px; padding: 1px 4px; font-size: 9px;")
+        self.badge_peak_delta_l.setStyleSheet("background: #1a1a1e; color: #666666; border-radius: 3px; padding: 1px 4px; font-size: 9px;")
         box_l = QVBoxLayout()
+        box_l.setSpacing(2)
         box_l.addWidget(self.lbl_peak_l)
         box_l.addWidget(self.badge_peak_delta_l)
         grid1.addLayout(box_l)
@@ -264,10 +260,11 @@ class TipAnalysisCardWidget(QFrame):
         # Right Peak Box
         self.lbl_peak_r = QLabel("R: — Hz")
         self.lbl_peak_r.setObjectName("lbl_peak_r")
-        self.lbl_peak_r.setStyleSheet("color: #ef4444; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+        self.lbl_peak_r.setStyleSheet("color: #ffffff; font-size: 11px; font-weight: bold; background: transparent; border: none;")
         self.badge_peak_delta_r = QLabel("—")
-        self.badge_peak_delta_r.setStyleSheet("background: #27272a; color: #71717a; border-radius: 3px; padding: 1px 4px; font-size: 9px;")
+        self.badge_peak_delta_r.setStyleSheet("background: #1a1a1e; color: #666666; border-radius: 3px; padding: 1px 4px; font-size: 9px;")
         box_r = QVBoxLayout()
+        box_r.setSpacing(2)
         box_r.addWidget(self.lbl_peak_r)
         box_r.addWidget(self.badge_peak_delta_r)
         grid1.addLayout(box_r)
@@ -275,21 +272,22 @@ class TipAnalysisCardWidget(QFrame):
         s1_layout.addLayout(grid1)
 
         self.lbl_peak_target = QLabel("Target: 8,000 Hz")
-        self.lbl_peak_target.setStyleSheet(f"color: {fg_sec}; font-size: 9px; background: transparent; border: none;")
+        self.lbl_peak_target.setStyleSheet("color: #666666; font-size: 9px; background: transparent; border: none;")
         s1_layout.addWidget(self.lbl_peak_target)
         card_layout.addWidget(sec1)
 
         # ── Section 2: Reproducibility Score (20 Hz - 8 kHz) ────────
         sec2 = QFrame()
         sec2.setObjectName("sec_reproducibility")
-        sec2.setStyleSheet(f"QFrame#sec_reproducibility {{ background-color: {bg_sub}; border-left: 3px solid #10b981; border-radius: 6px; }}")
+        sec2.setStyleSheet("QFrame#sec_reproducibility { background-color: #1a1a1e; border: 1px solid #2a2a2e; border-left: 2px solid #6b9080; border-radius: 4px; }")
         s2_layout = QVBoxLayout(sec2)
         s2_layout.setContentsMargins(8, 8, 8, 8)
         s2_layout.setSpacing(4)
 
         s2_hdr = QVBoxLayout()
+        s2_hdr.setSpacing(2)
         s2_title = QLabel("REPRODUCIBILITY")
-        s2_title.setStyleSheet("color: #10b981; font-size: 10px; font-weight: 900; letter-spacing: 1px; background: transparent; border: none;")
+        s2_title.setStyleSheet("color: #6b9080; font-size: 10px; font-weight: 900; letter-spacing: 1px; background: transparent; border: none;")
         s2_hdr.addWidget(s2_title)
 
         self.badge_repro_status = QLabel("")
@@ -303,7 +301,7 @@ class TipAnalysisCardWidget(QFrame):
         self.lbl_repro_warning = QLabel("")
         self.lbl_repro_warning.setObjectName("lbl_repro_warning")
         self.lbl_repro_empty = self.lbl_repro_warning
-        self.lbl_repro_warning.setStyleSheet("background: #27200a; border: 1px dashed #d97706; border-radius: 4px; padding: 4px 8px; color: #fbbf24; font-size: 10px;")
+        self.lbl_repro_warning.setStyleSheet("background: transparent; border: 1px dashed #444444; border-radius: 4px; padding: 4px 8px; color: #555555; font-size: 9px;")
         self.lbl_repro_warning.hide()
         s2_layout.addWidget(self.lbl_repro_warning)
 
@@ -315,10 +313,10 @@ class TipAnalysisCardWidget(QFrame):
 
         self.lbl_score_l = QLabel("L: —")
         self.lbl_score_l.setObjectName("lbl_score_l")
-        self.lbl_score_l.setStyleSheet("color: #3b82f6; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+        self.lbl_score_l.setStyleSheet("color: #ffffff; font-size: 11px; font-weight: bold; background: transparent; border: none;")
         self.lbl_score_r = QLabel("R: —")
         self.lbl_score_r.setObjectName("lbl_score_r")
-        self.lbl_score_r.setStyleSheet("color: #ef4444; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+        self.lbl_score_r.setStyleSheet("color: #ffffff; font-size: 11px; font-weight: bold; background: transparent; border: none;")
 
         scores_layout.addWidget(self.lbl_score_l)
         scores_layout.addWidget(self.lbl_score_r)
@@ -328,22 +326,22 @@ class TipAnalysisCardWidget(QFrame):
         # ── Section 3: Acoustic Seal History (40 Hz vs 500 Hz) ──────
         sec3 = QFrame()
         sec3.setObjectName("sec_seal_history")
-        sec3.setStyleSheet(f"QFrame#sec_seal_history {{ background-color: {bg_sub}; border-left: 3px solid #a855f7; border-radius: 6px; }}")
+        sec3.setStyleSheet("QFrame#sec_seal_history { background-color: #1a1a1e; border: 1px solid #2a2a2e; border-left: 2px solid #8b7ba8; border-radius: 4px; }")
         s3_layout = QVBoxLayout(sec3)
         s3_layout.setContentsMargins(8, 8, 8, 8)
         s3_layout.setSpacing(4)
 
         s3_title = QLabel("SEAL HISTORY")
-        s3_title.setStyleSheet("color: #a855f7; font-size: 10px; font-weight: 900; letter-spacing: 1px; background: transparent; border: none;")
+        s3_title.setStyleSheet("color: #8b7ba8; font-size: 10px; font-weight: 900; letter-spacing: 1px; background: transparent; border: none;")
         s3_layout.addWidget(s3_title)
 
         seal_grid = QVBoxLayout()
         seal_grid.setSpacing(4)
 
         self.lbl_seal_summary_l = QLabel("L: —")
-        self.lbl_seal_summary_l.setStyleSheet("color: #3b82f6; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+        self.lbl_seal_summary_l.setStyleSheet("color: #ffffff; font-size: 11px; font-weight: bold; background: transparent; border: none;")
         self.lbl_seal_summary_r = QLabel("R: —")
-        self.lbl_seal_summary_r.setStyleSheet("color: #ef4444; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+        self.lbl_seal_summary_r.setStyleSheet("color: #ffffff; font-size: 11px; font-weight: bold; background: transparent; border: none;")
 
         seal_grid.addWidget(self.lbl_seal_summary_l)
         seal_grid.addWidget(self.lbl_seal_summary_r)
