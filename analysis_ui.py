@@ -1221,7 +1221,7 @@ class AnalysisWidget(QWidget):
                 card = QFrame()
                 card.setCursor(Qt.PointingHandCursor if band else Qt.ArrowCursor)
                 card.setStyleSheet(f"QFrame {{ background: {bg}; border-left: 3px solid {accent}; border-radius: 3px; padding: 3px 6px; margin: 1px 0; }}")
-                cl = QVL(card)
+                cl = QVBoxLayout(card)
                 cl.setContentsMargins(4, 2, 4, 2)
                 cl.setSpacing(0)
 
