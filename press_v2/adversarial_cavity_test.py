@@ -214,6 +214,11 @@ difference() {{
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--section", type=str, default="all", choices=["1", "2", "3", "all"], help="Section to run (1, 2, 3, or all)")
+    args = parser.parse_args()
+
     print("=" * 80)
     print(" InEarSnitch press_v2 - Adversarial Cavity & Mechanism Integrity Test")
     print(" Challenger: challenger_cad_1 (Empirical Challenger)")
@@ -229,9 +234,10 @@ def main():
         # ======================================================================
         # SECTION 1: CAVITY MATHEMATICAL FIDELITY (BOOLEAN DIFFERENCE)
         # ======================================================================
-        print("-" * 80)
-        print("SECTION 1: BOOLEAN DIFFERENCE TESTS (CAVITIES & TAMPERS)")
-        print("-" * 80)
+        if args.section in ("1", "all"):
+            print("-" * 80)
+            print("SECTION 1: BOOLEAN DIFFERENCE TESTS (CAVITIES & TAMPERS)")
+            print("-" * 80)
 
         cavity_tests = [
             ("CAV-V27", "Cavity V27 Classic", "outer_cavity_v27()", 'cavity("V27")'),
@@ -278,9 +284,10 @@ def main():
         # ======================================================================
         # SECTION 2: STRESS-TEST PARAMETER BOUNDARIES & INVALID INPUTS
         # ======================================================================
-        print("\n" + "-" * 80)
-        print("SECTION 2: PARAMETER BOUNDARY & ASSERTION STRESS TESTING")
-        print("-" * 80)
+        if args.section in ("2", "all"):
+            print("\n" + "-" * 80)
+            print("SECTION 2: PARAMETER BOUNDARY & ASSERTION STRESS TESTING")
+            print("-" * 80)
 
         stress_tests = [
             # shared_cavities.scad assertions
@@ -320,8 +327,9 @@ def main():
             # press_v2_wedge.scad parameters
             {
                 "id": "STRESS-WEDGE-1",
-                "desc": "press_v2_wedge tip_version='INVALID' in assembly",
-                "scad": f'use <{WEDGE_SCAD}>;\ntip_version="INVALID";\ninclude <{WEDGE_SCAD}>;',
+                "desc": "press_v2_wedge tip_version='INVALID' via CLI -D",
+                "target_file": WEDGE_SCAD,
+                "defines": {"tip_version": "INVALID"},
                 "expect_error": True,
                 "expected_msg": "Invalid tip_version 'INVALID'",
             },
@@ -334,53 +342,61 @@ def main():
             {
                 "id": "STRESS-WEDGE-3",
                 "desc": "press_v2_wedge extreme wedge_travel = -2.5 (over-retracted)",
-                "scad": f'wedge_travel=-2.5;\ninclude <{WEDGE_SCAD}>;',
+                "target_file": WEDGE_SCAD,
+                "defines": {"wedge_travel": -2.5},
                 "expect_error": False,
             },
             {
                 "id": "STRESS-WEDGE-4",
                 "desc": "press_v2_wedge extreme tolerance = -1.0 (inverted geometry stress)",
-                "scad": f'tolerance=-1.0;\ninclude <{WEDGE_SCAD}>;',
+                "target_file": WEDGE_SCAD,
+                "defines": {"tolerance": -1.0},
                 "expect_error": False,
             },
             # press_v2_cam.scad parameters
             {
                 "id": "STRESS-CAM-1",
-                "desc": "press_v2_cam tip_version='BAD_TIP' in assembly",
-                "scad": f'tip_version="BAD_TIP";\ninclude <{CAM_SCAD}>;',
+                "desc": "press_v2_cam tip_version='BAD_TIP' via CLI -D",
+                "target_file": CAM_SCAD,
+                "defines": {"tip_version": "BAD_TIP"},
                 "expect_error": True,
                 "expected_msg": "Invalid tip_version 'BAD_TIP'",
             },
             {
                 "id": "STRESS-CAM-2",
                 "desc": "press_v2_cam cam_angle = 180 (full rotation beyond detent)",
-                "scad": f'cam_angle=180;\ninclude <{CAM_SCAD}>;',
+                "target_file": CAM_SCAD,
+                "defines": {"cam_angle": 180},
                 "expect_error": False,
             },
             {
                 "id": "STRESS-CAM-3",
                 "desc": "press_v2_cam cam_angle = -45 (negative angle stress)",
-                "scad": f'cam_angle=-45;\ninclude <{CAM_SCAD}>;',
+                "target_file": CAM_SCAD,
+                "defines": {"cam_angle": -45},
                 "expect_error": False,
             },
             # press_v2_bayonet.scad parameters
             {
                 "id": "STRESS-BAYO-1",
-                "desc": "press_v2_bayonet tip_version='NON_EXISTENT' in assembly",
-                "scad": f'tip_version="NON_EXISTENT";\ninclude <{BAYONET_SCAD}>;',
+                "desc": "press_v2_bayonet tip_version='NON_EXISTENT' via CLI -D",
+                "target_file": BAYONET_SCAD,
+                "defines": {"tip_version": "NON_EXISTENT"},
                 "expect_error": True,
                 "expected_msg": "Invalid tip_version 'NON_EXISTENT'",
             },
             {
                 "id": "STRESS-BAYO-2",
                 "desc": "press_v2_bayonet twist_deg = 180 (over-twisted bayonet collar)",
-                "scad": f'twist_deg=180;\ninclude <{BAYONET_SCAD}>;',
+                "target_file": BAYONET_SCAD,
+                "defines": {"twist_deg": 180},
                 "expect_error": False,
             },
             {
                 "id": "STRESS-BAYO-3",
                 "desc": "press_v2_bayonet twist_deg = -30 (reverse twist beyond stop)",
-                "scad": f'twist_deg=-30;\ninclude <{BAYONET_SCAD}>;',
+                "target_file": BAYONET_SCAD,
+                "defines": {"twist_deg": -30},
                 "expect_error": False,
             },
         ]
@@ -388,12 +404,23 @@ def main():
         stress_results = []
         for st in stress_tests:
             print(f"Running {st['id']:15} [{st['desc']}] ...", end="", flush=True)
-            scad_path = os.path.join(tmpdir, f"{st['id']}.scad")
             out_csg = os.path.join(tmpdir, f"{st['id']}.csg")
-            with open(scad_path, "w") as f:
-                f.write(st["scad"])
+            
+            if "target_file" in st:
+                scad_path = st["target_file"]
+            else:
+                scad_path = os.path.join(tmpdir, f"{st['id']}.scad")
+                with open(scad_path, "w") as f:
+                    f.write(st["scad"])
 
             cmd = [OPENSCAD_BIN, scad_path, "-o", out_csg, "--check-parameters", "true"]
+            if "defines" in st:
+                for k, v in st["defines"].items():
+                    if isinstance(v, str):
+                        cmd.extend(["-D", f'{k}="{v}"'])
+                    else:
+                        cmd.extend(["-D", f'{k}={v}'])
+
             rc, out, err, dt = run_cmd(cmd)
 
             has_error = (rc != 0) or ("ERROR:" in err)
@@ -415,6 +442,13 @@ def main():
                 else:
                     status = f"FAIL (Unexpected error: {err.strip()})"
                     passed = False
+            else:
+                if not has_error:
+                    status = "PASS (RENDERED CLEANLY)"
+                    passed = True
+                else:
+                    status = f"FAIL (Unexpected error: {err.strip()})"
+                    passed = False
 
             print(f" [{passed and 'PASS' or 'FAIL'}] ({dt:.1f}s) - {status}")
             stress_results.append({
@@ -428,9 +462,10 @@ def main():
         # ======================================================================
         # SECTION 3: FULL VARIANT RENDERS (PNG PREVIEW & STL PRINT_PLATE)
         # ======================================================================
-        print("\n" + "-" * 80)
-        print("SECTION 3: FULL VARIANT RENDERS (PNG & STL EXPORT)")
-        print("-" * 80)
+        if args.section in ("3", "all"):
+            print("\n" + "-" * 80)
+            print("SECTION 3: FULL VARIANT RENDERS (PNG & STL EXPORT)")
+            print("-" * 80)
 
         variant_renders = [
             ("RENDER-WEDGE-ASM", WEDGE_SCAD, "assembly", "V27", "png"),
