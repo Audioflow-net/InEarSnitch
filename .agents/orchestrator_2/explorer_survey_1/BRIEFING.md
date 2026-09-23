@@ -1,4 +1,4 @@
-# BRIEFING — 2026-09-23T10:46:45Z
+# BRIEFING — 2026-09-23T10:54:30Z
 
 ## Mission
 Extract exact mathematical definitions and dimensions for silicone mold cavities V27, V29, V30, and V31 from MASTER_Silikon_Formen.scad, analyze current mold block specs, and determine clean isolation strategy for press_v2.
@@ -21,12 +21,24 @@ Extract exact mathematical definitions and dimensions for silicone mold cavities
 - Updated: not yet
 
 ## Investigation State
-- **Explored paths**: none yet
-- **Key findings**: none yet
-- **Unexplored areas**: MASTER_Silikon_Formen.scad, cavity modules, mold block geometry, stamps, dimensions
+- **Explored paths**:
+  - `MASTER_Silikon_Formen.scad` (lines 1–308)
+  - `Universal_Keil_Presse.scad` (lines 1–106)
+  - `V27_MASTER_COLLECTION.scad` (lines 1–452)
+  - `dimensions.json`
+  - `CHANGELOG.md`
+  - `/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD`
+- **Key findings**:
+  - Full mathematical equations and Z-profiles extracted for V27 (upright), V29, V30, V31 (upside-down).
+  - Mold block dimensions: 34 x 34 x 22.1 mm, split at X=0, self-centering conical pins (0.2 mm radial play).
+  - OpenSCAD `use` variable pitfall identified (`mold_size` evaluates to undef unless encapsulated).
+  - Existing V3 Keilpresse system volume is 158.33 cm3 (196.3 g PLA solid), with 85.8% consumed by external sleeve and wedge.
+- **Unexplored areas**: None within scope. All 4 objectives completed.
 
 ## Key Decisions Made
-- Initialized briefing and plan
+- Analyzed and verified all dimensions and volumes analytically and via OpenSCAD CLI.
+- Formulated the clean isolation architecture `silicone_cavities.scad` for `press_v2`.
+- Compiled detailed report in `report.md` and 5-component handoff in `handoff.md`.
 
 ## Artifact Index
 - DISPATCH.md — Dispatch log
