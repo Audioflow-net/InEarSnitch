@@ -135,6 +135,7 @@ jobs:
           # Staging-Ordner für DMG-Inhalt
           mkdir -p dmg_staging
           cp -R dist/InEarSnitch.app dmg_staging/
+          cp HOW_TO_OPEN_MAC.txt dmg_staging/"⚠️ HOW TO OPEN.txt"
 
           # Symlink zu /Applications für Drag-Drop-Install
           ln -s /Applications dmg_staging/Applications

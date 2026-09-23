@@ -28,14 +28,17 @@ Section "InEar SNITCH (required)"
   CreateShortcut "$SMPROGRAMS\InEar SNITCH\InEar SNITCH.lnk" "$INSTDIR\${APP_EXE}"
   CreateShortcut "$SMPROGRAMS\InEar SNITCH\Uninstall.lnk" "$INSTDIR\uninstall.exe"
 
-  ; Registry
+  ; How to open guide
+  File "..\HOW_TO_OPEN_WINDOWS.txt"
+  Rename "$INSTDIR\HOW_TO_OPEN_WINDOWS.txt" "$INSTDIR\⚠️ HOW TO OPEN.txt"
+  CreateShortcut "$SMPROGRAMS\InEar SNITCH\⚠️ HOW TO OPEN.lnk" "$INSTDIR\⚠️ HOW TO OPEN.txt"
+
+  WriteUninstaller "uninstall.exe"
   WriteRegStr HKLM "Software\InEarSnitch" "Install_Dir" "$INSTDIR"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\InEarSnitch" "DisplayName" "InEar SNITCH"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\InEarSnitch" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\InEarSnitch" "DisplayVersion" "${APP_VERSION}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\InEarSnitch" "Publisher" "InEar SNITCH"
-
-  WriteUninstaller "uninstall.exe"
 SectionEnd
 
 Section "Uninstall"

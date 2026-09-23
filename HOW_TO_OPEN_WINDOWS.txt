@@ -1,0 +1,43 @@
+InEar SNITCH – How to Open on Windows
+=======================================
+
+Windows SmartScreen may block the installer because InEar SNITCH
+is not yet digitally signed. Here's how to install it anyway:
+
+──────────────────────────────────────────────────
+STEP 1 – If Windows SmartScreen appears (blue screen)
+──────────────────────────────────────────────────
+→ Click "More info"
+→ Then click "Run anyway"
+→ The installer will start normally.
+
+──────────────────────────────────────────────────
+STEP 2 – If Windows blocks the downloaded file
+──────────────────────────────────────────────────
+1. Right-click the .exe installer file
+2. Select "Properties"
+3. At the bottom, check the box next to "Unblock"
+4. Click OK
+5. Double-click the installer – it will now run normally.
+
+──────────────────────────────────────────────────
+AUDIO SETUP (important for first measurement!)
+──────────────────────────────────────────────────
+Before running your first measurement, make sure your
+microphone and headphone output use the SAME sample rate:
+
+1. Right-click the speaker icon in the taskbar → Sound settings
+2. Go to your output device → Properties → Advanced
+3. Set the format (e.g. "24-bit, 48000 Hz")
+4. Do the same for your input/microphone device
+→ Both must match exactly!
+
+──────────────────────────────────────────────────
+WHY DOES THIS HAPPEN?
+──────────────────────────────────────────────────
+InEar SNITCH is in early beta and not yet signed with
+a Windows code signing certificate. This does NOT mean
+the app is dangerous – Windows simply doesn't recognize
+the developer yet.
+
+Questions? → audioflow.net

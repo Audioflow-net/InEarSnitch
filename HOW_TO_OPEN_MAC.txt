@@ -1,0 +1,34 @@
+InEar SNITCH – How to Open on macOS
+=====================================
+
+macOS blocks apps from unknown developers by default.
+Here's how to open InEar SNITCH in 30 seconds:
+
+──────────────────────────────────────────────────
+METHOD 1 – Quick (Right-Click)
+──────────────────────────────────────────────────
+1. Drag InEarSnitch.app into your Applications folder
+2. RIGHT-CLICK the app icon → select "Open"
+3. Click "Open" in the dialog that appears
+→ Done! The app opens normally every time after this.
+
+──────────────────────────────────────────────────
+METHOD 2 – Via System Settings
+──────────────────────────────────────────────────
+1. Drag InEarSnitch.app into your Applications folder
+2. Double-click the app (you'll see a warning – that's ok)
+3. Open: Apple Menu → System Settings → Privacy & Security
+4. Scroll down until you see:
+   "InEarSnitch was blocked..."
+5. Click "Open Anyway" → confirm
+→ Done! The app opens normally every time after this.
+
+──────────────────────────────────────────────────
+WHY DOES THIS HAPPEN?
+──────────────────────────────────────────────────
+InEar SNITCH is in early beta and not yet signed with
+an official Apple Developer certificate. This does NOT
+mean the app is dangerous – it simply means Apple has
+not yet verified the developer identity.
+
+Questions? → audioflow.net
