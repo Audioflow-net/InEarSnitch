@@ -697,6 +697,11 @@ module assembly() {
     if (show_tpu_sleeve) {
         color("OrangeRed") tpu_tower_sleeve();
     }
+    if (show_nameplate) {
+        // Platziere das Schild exakt in seiner Mulde!
+        translate([105.0, 38.0, depth + flange_t - 2.0])
+            color("Cyan", 1.0) nameplate_badge();
+    }
     if (show_dummy_mic) {
         translate([108, 40, 44]) rotate([0, 180, 0]) dummy_coupler();
     }
@@ -754,8 +759,6 @@ if (show_test_print) {
     if (show_dummy_mic) {
         translate([108, 40, 44]) rotate([0, 180, 0]) dummy_coupler();
     }
-} else if (show_nameplate) {
-    color("Cyan", 1.0) nameplate_badge();
 } else if (show_cross_section) {
     difference() {
         assembly();

@@ -1,6 +1,103 @@
 # InEar Snitch Hardware & CAD Changelog
 *Lückenlose Dokumentation aller physikalischen Änderungen an den 3D-Modellen, um wissenschaftliche Reproduzierbarkeit sicherzustellen.*
 
+## [V36.7 File Unification] - 2026-09-23
+**Fokus:** Zusammenführung aller Geometrien in eine einzige Master-Datei.
+
+### Geändert (MASTER_Silikon_Formen.scad)
+1. **Version / Datum:** V36.7 - 2026-09-23
+2. **Das betroffene Bauteil:** Alle Dateien (`MASTER_Silikon_Formen.scad` & `V27_MASTER_COLLECTION.scad`)
+3. **Maße (Alt vs. Neu):** n/a (Code-Struktur)
+4. **Formen-Änderung:** Die Module `sleeve()` sowie alle TPU-Tips (`tip_universal`, `tip_collet_chuck`, `tip_true_cone`, `tip_bristle_pad`, `tip_tiny_cap`, `tip_acoustic_base`, `tip_iris_valve`, `tip_membrane`) aus der alten V27 Collection wurden in die `MASTER_Silikon_Formen.scad` importiert. Die redundante alte Datei wurde gelöscht.
+5. **Die Idee / Der Grund:** Es gibt jetzt nur noch **eine einzige, ultimative `MASTER_Silikon_Formen.scad`** (Single Source of Truth), die alle Formen, alle Tamper, die Hülse und alle TPU-Aufsätze enthält und komplett über das saubere `drucke_vXX` Schaltsystem (Booleans) gesteuert wird.
+
+
+## [V36.6 Master Collection Port] - 2026-09-23
+**Fokus:** Übertragung der Anti-Twist Architektur auf die V27_MASTER_COLLECTION.
+
+### Geändert (V27_MASTER_COLLECTION.scad)
+1. **Version / Datum:** V36.6 - 2026-09-23
+2. **Das betroffene Bauteil:** Alle Formblöcke (`form_left`, `form_right`) und Tamper (`piston`) der V27_MASTER_COLLECTION.
+3. **Maße (Alt vs. Neu):** Identisch zu V36.2 bis V36.5.
+4. **Formen-Änderung:** Die `mold_block` Architektur (3mm quadratisches Nest, Überström-Fenster) und alle Tamper-Deckel (29x29mm) sowie die konischen Kegel-Pömpel (`d2=4.9`) wurden identisch in die Datei `V27_MASTER_COLLECTION.scad` portiert.
+5. **Die Idee / Der Grund:** Sicherstellung, dass auch die alte Master-Datei von der exakten Trennebenen-Passung, der Rotationssicherung und dem hydraulischen Druckabbau profitiert.
+
+
+## [V36.5 Silicone Flash Windows] - 2026-09-23
+**Fokus:** Hydraulische Entlastung des quadratischen Tamper-Nests.
+
+### Geändert (MASTER_Silikon_Formen.scad)
+1. **Version / Datum:** V36.5 - 2026-09-23
+2. **Das betroffene Bauteil:** Silikon-Gussformen (alle V27-V31) `mold_block`
+3. **Maße (Alt vs. Neu):** Seitenwände des Nests (Breite 20mm, Höhe 4mm) entfernt.
+4. **Formen-Änderung:** Aus den Wänden des neuen Nests wurden an allen 4 Seiten jeweils 20 mm breite Überström-Fenster bündig zur Z=14.1 Bodenebene gefräst. Es stehen nun exakt nur noch die 4 Ecken als L-förmige Säulen (7x7 mm Schenkel) zur Führung.
+5. **Die Idee / Der Grund:** Ein komplett geschlossenes quadratisches Nest würde wie ein Kolbenzylinder wirken und das überschüssige Silikon beim Pressen einsperren (hydraulischer Block). Durch die offenen Flanken (Fenster) kann der "Micro-Flash" nun völlig ungehindert in alle 4 Himmelsrichtungen wegschießen, während die Ecken den Tamper weiterhin perfekt zentrieren und arretieren.
+
+
+## [V36.4 Anti-Twist Tamper Nest] - 2026-09-23
+**Fokus:** Elimination von Tamper-Rotation und blindem Einfädeln ("Mulden stechen") durch quadratische Zwangsführung.
+
+### Geändert (MASTER_Silikon_Formen.scad)
+1. **Version / Datum:** V36.4 - 2026-09-23
+2. **Das betroffene Bauteil:** Silikon-Gussformen (alle V27-V31) `mold_block` & Tamper `piston_vXX`
+3. **Maße (Alt vs. Neu):** 
+   - `mold_block` Gesamthöhe von Z=14.1 auf Z=17.1 erhöht.
+   - Tamper-Deckel von Zylinder (`d=33.8`) auf Quadrat (`29x29 mm`) umgebaut.
+4. **Formen-Änderung:** Die `mold_block` Basis wurde bis Z=17.1 hochgezogen (bündig mit Deckel), aber in der Mitte ein `29.4 x 29.4 mm` Nest abgezogen. Die Tamper haben jetzt einen `29x29 mm` Deckel, der exakt in dieses Nest fällt.
+5. **Die Idee / Der Grund:** Da die Nadel des Tampers blind ins Silikon geführt werden musste, gab es Kratzer/Mulden. Durch das quadratische 3mm tiefe Nest (2.5mm dicke Wände) wird der Deckel *sofort* zentriert und verdrehsicher arretiert. Er fällt perfekt bündig in die Form, wodurch der Anpressdruck beim Klemmen der Hülse ideal auf Deckel und Formblock gleichzeitig wirkt.
+
+
+## [V36.3 Pömpel Fit Fix] - 2026-09-23
+**Fokus:** Korrektur des Durchmessers der Kegel-Pömpel zur Vermeidung von Spiel in der Trennebene.
+
+### Geändert (MASTER_Silikon_Formen.scad)
+1. **Version / Datum:** V36.3 - 2026-09-23
+2. **Das betroffene Bauteil:** Silikon-Gussformen (V27, V29, V30, V31) `form_right_vXX`
+3. **Maße (Alt vs. Neu):** Kegel-Basisdurchmesser `d2` von 4.1 mm auf 4.9 mm vergrößert.
+4. **Formen-Änderung:** In allen `form_right_vXX` Modulen wurde der Zylinder für die Pömpel von `d2=4.1` auf `d2=4.9` aktualisiert.
+5. **Die Idee / Der Grund:** Durch `center=true` und Länge `4` liegt die Formtrennebene bei der exakten Hälfte des Pömpels. Bei `d1=1.5` und `d2=4.1` ergab sich ein Trennebenen-Durchmesser von nur 2.8 mm. In einem 3.2 mm Aufnahmeloch führte dies zu fatalen 0.4 mm Spiel (Wackeln). Mit `d2=4.9` beträgt der Durchmesser exakt an der Trennebene `(1.5 + 4.9) / 2 = 3.2 mm`, was einen spielfreien, strammen Press-Fit garantiert.
+
+## [V36.2 Press V2 - Mechanical & Geometric Remediation] - 2026-09-23
+**Fokus:** Beseitigung aller mechanischen Kollisionen, Wand-Durchbrüche, Nicht-Manifold-Volumina und Stack-Up-Fehler der Iteration 1.
+
+### Geändert (press_v2_wedge, press_v2_cam, press_v2_bayonet, shared_cavities)
+1. **Version / Datum:** V36.2 - 2026-09-23
+2. **Das betroffene Bauteil:** 
+   - `press_v2_wedge.scad`: Hülse (`wedge_sleeve`), Keil (`sliding_wedge`), geführte Druckplatte (`pressure_pad`).
+   - `press_v2_cam.scad`: Rahmen (`cam_frame`), Hebel (`cam_lever`), Stempel (`plunger`), Achse (`cam_pivot_pin`).
+   - `press_v2_bayonet.scad`: Basis (`bayonet_base`), Bajonettring (`bayonet_collar`), Gleitdruckplatte (`floating_thrust_plate`).
+   - `shared_cavities.scad`: Silikon-Kavitäten `outer_cavity_v27` und `outer_cavity_v31`.
+3. **Maße (Alt vs. Neu):**
+   - **Wedge:**
+     - Hülse: Unzentrierter 34.5x34.5 mm Fehlschnitt entfernt; Sleeve-Wand wieder 100% geschlossen (`Volumes: 2` single solid).
+     - Collet-Taper: Von Dummy-Konstante auf echten 7.0°-Trichter an den X-Wänden per `hull()` implementiert.
+     - Druckplatte: Unterseiten-Tasche von 1.5 mm auf 3.2 mm vertieft (0.2 mm Spiel zum 3.0 mm Tamper-Deckel); Gesamthöhe 6.0 mm (Z=24.6 bis 30.6 mm).
+     - Keil: Dicke am Verriegelungspunkt von 12.2 mm auf 8.9 mm optimiert; gleitet tangential bei Z=30.6 mm unter der Slot-Decke Z=39.5 mm (0.0 mm³ Kollision).
+     - Druckplatte (Print Plate): Keil flach auf Seitenfläche gedreht, Zugschlaufe liegt bei $Z \ge 0$ ($Z_{\min} = 0.0000$ mm).
+   - **Cam:**
+     - Vertikaler Stack-Up: Rahmen-Säulenhöhe von 48.0 mm auf 56.0 mm erhöht; Achsenhöhe `PIVOT_Z` von 38.0 mm auf 46.0 mm angehoben. Plunger-Höhe 5.9 mm mit 3.2 mm Tasche.
+     - Nockenprofil: Tangential abrollendes Profil in YZ-Ebene; $R=12.0$ mm bei 0° (aufrecht, 3.5 mm Hubweg zum Formeinlegen) zu $R=15.5$ mm bei 92° Verriegelung (Over-Center Rastflachstelle, Z=30.5 mm, 0.0 mm³ Kollision mit Plunger).
+     - Hebel-Kinematik: Invertiert auf `rotate([90 - cam_angle, 0, 0])` (0° = vertikal geöffnet zum Einlegen, 92° = horizontal verriegelt).
+     - Achsenspiel: Beidseitige 4.0 mm Anschlag-Bünde am Hebel angefügt, 9.0 mm axiales Spiel im 34.5 mm U-Rahmen eliminiert.
+     - Textbeschriftung: Von vergrabenen Hohlkammern (10 Hohlräume) auf Außenflächen-Gravur (Z=6.0 mm) verlegt (`Volumes: 2` single solid).
+     - Druckplatte (Print Plate): Achsstift stehend angeordnet ($Z_{\min} = 0.0000$ mm).
+   - **Bayonet:**
+     - Bajonettring: Außendurchmesser `COLLAR_OD` von 52.0 mm auf 66.0 mm vergrößert (>3 mm Vollmaterial hinter den Wendelnuten).
+     - Konus: 14°-Spannzange auf $Z_{\text{local}} = 14.0 - 21.0$ mm ($Z_{\text{world}} = 18.0 - 25.0$ mm) abgesenkt; kontaktiert direkt die Formblock-Ecken bei $d=48.08$ mm (Z=20.1 mm).
+     - Basis: Zylinderhöhe `BASE_H` von 22.0 mm auf 18.0 mm angepasst (eliminiert Konus-Kollision bei Z=18-22 mm).
+     - Nocken & Nuten: 45°-Stützfasen an den 3 Basis-Nocken und identisches Nut-Profil im Ring integriert (100% supportfreier FDM-Druck, 0.0 mm³ Kollision).
+     - Floating Thrust Plate: 0.1 mm Überlappung am Gleitring, 41.5 mm Bohrungs-Freigang im Ring (0.0 mm³ Festkörper-Kollision, Trennebenen-Kontakt $dz = 0.0000$ mm).
+     - Druckplatte (Print Plate): Alle Bauteile plan auf $Z=0$ ($Z_{\min} = 0.0000$ mm).
+   - **Shared Cavities:**
+     - `outer_cavity_v27` und `outer_cavity_v31`: Manuell hinzugefügte `text("V27")` und `text("V31")` auf der Silikon-Kavitätenwand restlos entfernt. Mathematische und geometrische Identität zu `MASTER_Silikon_Formen.scad` zu 100.000% wiederhergestellt.
+4. **Formen-Änderung:** 
+   - Sämtliche 10 gedruckten Bauteile bilden in CGAL fehlerfreie, einfach zusammenhängende Mannigfaltigkeiten (`Simple: yes, Volumes: 2` im Nef-Polyeder-Format: 1 Festkörper + 1 Außenraum; 0 getrennte Inseln, 0 vergrabene Hohlräume).
+   - Reale kinematische Passungen ohne Durchdringung (0.0 mm³ Kollisionsvolumen bei allen 3 Mechanismen im verriegelten Zustand).
+   - Print-Plate-Modi für alle 3 Varianten mit $Z_{\min} \ge 0.0000$ mm auf das Druckbett ausgerichtet.
+5. **Die Idee / Der Grund:** 
+   - Die erste Iteration wies massive geometrische Schnitte, Nichteinhaltung des vertikalen Stack-Ups und unbrauchbare Druckbett-Positionen auf. 
+   - Durch die mathematische Rekalibrierung aller kinematischen Kontaktflächen, Führungen und Verriegelungsrampen erfüllen nun alle 3 Systeme in der physikalischen Realität ihre Funktion: spielfreie, kraftvolle Schließung unter vollständiger Beibehaltung der 100.000%igen Kavitäten-Präzision.
+
 ## [V36.1 Silikon-Formen Cleanup] - 2026-09-23
 **Fokus:** Beseitigung aller den Guss störenden Textmarkierungen und Standardisierung der Kegel-Pömpel.
 
