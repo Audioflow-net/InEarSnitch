@@ -1100,8 +1100,10 @@ class AnalysisWidget(QWidget):
             self.hLine.hide()
             self.crosshair_label.hide()
         
-    def update_analysis(self, freqs, mag_l, mag_r, ref_mag_l=None, ref_mag_r=None, tgt_freqs=None, tgt_mags=None, thd_data=None, csd_data=None, ir_l=None, ir_r=None, sweep_count="1x", smoothing_pts=240):
+    def update_analysis(self, freqs, mag_l, mag_r, ref_mag_l=None, ref_mag_r=None, tgt_freqs=None, tgt_mags=None, thd_data=None, csd_data=None, ir_l=None, ir_r=None, sweep_count="1x", smoothing_pts=240, noise_freqs=None, noise_floor_db=None):
         self._last_data = (freqs, mag_l, mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data, ir_l, ir_r, sweep_count, smoothing_pts)
+        self._noise_freqs = noise_freqs
+        self._noise_floor_db = noise_floor_db
         
         # Auto-switch to the channel that actually has data
         if mag_l is None and mag_r is not None:
@@ -1232,6 +1234,29 @@ class AnalysisWidget(QWidget):
 
                 self.report_layout.addWidget(card)
                 
+        if hasattr(self, '_noise_freqs') and self._noise_freqs is not None and getattr(self, '_noise_floor_db', None) is not None:
+            nf = self._noise_freqs
+            ndb = self._noise_floor_db
+            mask = (nf >= 500) & (nf <= 2000)
+            if np.any(mask):
+                noise_avg = np.mean(ndb[mask])
+                if noise_avg < -45:
+                    n_status = 'OK'
+                    n_title = "Room Noise: Quiet ✅"
+                elif noise_avg < -35:
+                    n_status = 'WARN'
+                    n_title = "Background noise detected"
+                else:
+                    n_status = 'FAIL'
+                    n_title = "Too noisy for accurate THD"
+                
+                render_group([{
+                    'status': n_status,
+                    'title': n_title,
+                    'desc': f"Average noise floor: {noise_avg:.1f} dBFS (500-2kHz)",
+                    'category': 'ENV'
+                }], "ENVIRONMENT", "#a855f7")
+
         render_group(left_items, "LEFT EAR", "#3b82f6")
         render_group(right_items, "RIGHT EAR", "#ef4444")
         render_group(gen_items, "STEREO / GENERAL", "#10b981")

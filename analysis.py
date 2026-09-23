@@ -226,23 +226,26 @@ class Analyzer:
             avg_thd_mid = np.clip(np.mean(thd_percentage[idx_mid]), 0, 100)
             max_thd_mid = np.clip(np.max(thd_percentage[idx_mid]), 0, 100)
             
-            if max_thd_mid > 8.0 or avg_thd_mid > 3.0:
+            # OLD: max_thd_mid > 8.0 or avg_thd_mid > 3.0
+            if max_thd_mid > 3.0 or avg_thd_mid > 1.0:
                 report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'FAIL', 'desc': f'High distortion in mid-range (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%). Possible driver damage.\n💡 Ensure the room is quiet and measure again to rule out background noise.', 'band': (500, 2000), 'category': 'THD'})
-            elif max_thd_mid > 4.0 or avg_thd_mid > 1.5:
+            # OLD: max_thd_mid > 4.0 or avg_thd_mid > 1.5
+            elif max_thd_mid > 1.5 or avg_thd_mid > 0.5:
                 report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated distortion in mid-range (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%).\n💡 Measure again in a quiet room to confirm.', 'band': (500, 2000), 'category': 'THD'})
             else:
                 report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'OK', 'desc': f'Mid-range THD within normal limits (Avg: {avg_thd_mid:.1f}%).', 'band': (500, 2000), 'category': 'THD'})
                 
         # Check bass THD (50Hz - 200Hz)
-        # NOTE: Lenient thresholds — no noise-floor subtraction yet.
         idx_bass = np.where((freqs >= 50) & (freqs <= 200))[0]
         if len(idx_bass) > 0:
             avg_thd_bass = np.clip(np.mean(thd_percentage[idx_bass]), 0, 100)
             max_thd_bass = np.clip(np.max(thd_percentage[idx_bass]), 0, 100)
             
-            if max_thd_bass > 15.0 or avg_thd_bass > 8.0:
+            # OLD: max_thd_bass > 15.0 or avg_thd_bass > 8.0
+            if max_thd_bass > 10.0 or avg_thd_bass > 5.0:
                 report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'FAIL', 'desc': f'Severe distortion in bass (Max: {max_thd_bass:.1f}%, Avg: {avg_thd_bass:.1f}%). Check seal and driver.\n💡 Ensure no vibrations nearby (footsteps, HVAC). Re-seat IEM and measure again.', 'band': (50, 200), 'category': 'THD'})
-            elif max_thd_bass > 8.0 or avg_thd_bass > 4.0:
+            # OLD: max_thd_bass > 8.0 or avg_thd_bass > 4.0
+            elif max_thd_bass > 5.0 or avg_thd_bass > 2.5:
                 report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated bass distortion (Max: {max_thd_bass:.1f}%, Avg: {avg_thd_bass:.1f}%). BA drivers naturally have higher bass THD.\n💡 Measure again in a quiet, vibration-free environment to confirm.', 'band': (50, 200), 'category': 'THD'})
             else:
                 report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'OK', 'desc': f'Bass THD acceptable (Avg: {avg_thd_bass:.1f}%).', 'band': (50, 200), 'category': 'THD'})
@@ -254,9 +257,11 @@ class Analyzer:
             avg_thd_treble = np.clip(np.mean(thd_percentage[idx_treble]), 0, 100)
             max_thd_treble = np.clip(np.max(thd_percentage[idx_treble]), 0, 100)
             
-            if max_thd_treble > 10.0 or avg_thd_treble > 5.0:
+            # OLD: max_thd_treble > 10.0 or avg_thd_treble > 5.0
+            if max_thd_treble > 8.0 or avg_thd_treble > 3.0:
                 report.append({'title': f'{channel} Treble Distortion (THD)', 'status': 'FAIL', 'desc': f'High distortion in treble (Max: {max_thd_treble:.1f}%, Avg: {avg_thd_treble:.1f}%).', 'band': (8000, 20000), 'category': 'THD'})
-            elif max_thd_treble > 5.0 or avg_thd_treble > 2.5:
+            # OLD: max_thd_treble > 5.0 or avg_thd_treble > 2.5
+            elif max_thd_treble > 4.0 or avg_thd_treble > 1.5:
                 report.append({'title': f'{channel} Treble Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated distortion in treble (Max: {max_thd_treble:.1f}%, Avg: {avg_thd_treble:.1f}%).', 'band': (8000, 20000), 'category': 'THD'})
             else:
                 report.append({'title': f'{channel} Treble Distortion (THD)', 'status': 'OK', 'desc': f'Treble THD acceptable (Avg: {avg_thd_treble:.1f}%).', 'band': (8000, 20000), 'category': 'THD'})

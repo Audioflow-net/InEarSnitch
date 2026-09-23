@@ -583,7 +583,7 @@ class LiveSealWorker(QThread):
         self.running = False
 
 class MeasurementWorker(QThread):
-    finished = Signal(object, object, object, object, str, object)
+    finished = Signal(object, object, object, object, str, object, object, object)
     error = Signal(str)
     progress = Signal(str)
     sweep_progress = Signal(float, int)
@@ -605,6 +605,14 @@ class MeasurementWorker(QThread):
             import time
             mags, phases, irs, noises = [], [], [], []
             freqs = None
+            
+            self.progress.emit("Status: 🎤 Listening to room noise...")
+            try:
+                noise_f, noise_m = self.audio_engine.measure_noise_floor(self.in_idx, duration=0.5)
+            except Exception as e:
+                print(f"[NOISE] Floor measurement failed: {e}")
+                noise_f, noise_m = None, None
+                
             for i in range(self.sweeps):
                 self.progress.emit(f"Status: MEASURING {self.target_channel}... ({i+1}/{self.sweeps})")
                 res = self.audio_engine.measure(self.in_idx, self.out_idx, 
@@ -628,12 +636,13 @@ class MeasurementWorker(QThread):
             avg_ir = np.mean(irs, axis=0)
             avg_noise = np.mean(noises, axis=0)
             
-            self.finished.emit(freqs, avg_mag, avg_phase, avg_ir, self.target_channel, avg_noise)
+            self.finished.emit(freqs, avg_mag, avg_phase, avg_ir, self.target_channel, avg_noise, noise_f, noise_m)
         except Exception as e:
             import traceback
             traceback.print_exc()
             self.error.emit(str(e))  # Prints to stderr, which LogStream catches!
             self.error.emit(str(e))
+
 
 
 class LogoTripleClickFilter(QObject):
@@ -3803,10 +3812,12 @@ class MainWindow(QMainWindow):
             ir_l=ir_l,
             ir_r=ir_r,
             sweep_count=self.get_current_sweeps(),
-            smoothing_pts=pts
+            smoothing_pts=pts,
+            noise_freqs=getattr(self, 'temp_noise_f_l', getattr(self, 'temp_noise_f_r', None)),
+            noise_floor_db=getattr(self, 'temp_noise_m_l', getattr(self, 'temp_noise_m_r', None))
         )
 
-    def on_measurement_finished(self, freqs, mag, phase, ir, channel, noise=None):
+    def on_measurement_finished(self, freqs, mag, phase, ir, channel, noise=None, noise_freqs=None, noise_mag_db=None):
         self.is_measuring = False   # UI Hardening: release lock
         self.meas_overlay.stop()
         self.btn_capture.setEnabled(True)
@@ -3833,11 +3844,15 @@ class MainWindow(QMainWindow):
             self.temp_phase_l = phase
             self.temp_ir_l = ir
             self.temp_noise_l = noise
+            self.temp_noise_f_l = noise_freqs
+            self.temp_noise_m_l = noise_mag_db
         else:
             self.temp_mag_r = mag
             self.temp_phase_r = phase
             self.temp_ir_r = ir
             self.temp_noise_r = noise
+            self.temp_noise_f_r = noise_freqs
+            self.temp_noise_m_r = noise_mag_db
             
         self.low_vol_warning = low_vol_warning
             
@@ -3873,12 +3888,16 @@ class MainWindow(QMainWindow):
             # Left THD
             if getattr(self, 'temp_ir_l', None) is not None:
                 noise_l = getattr(self, 'temp_noise_l', None)
-                thd_f_raw, thd_l_raw = self.audio_engine.extract_thd(self.temp_ir_l, 1.0, noise_floor=noise_l)
+                noise_f_l = getattr(self, 'temp_noise_f_l', None)
+                noise_m_l = getattr(self, 'temp_noise_m_l', None)
+                thd_f_raw, thd_l_raw = self.audio_engine.extract_thd(self.temp_ir_l, 1.0, noise_floor=noise_l, noise_freqs=noise_f_l, noise_floor_db=noise_m_l)
                 thd_freqs, thd_l, _ = self.audio_engine.smooth_spectrum(thd_f_raw, thd_l_raw, points=300)
             # Right THD
             if getattr(self, 'temp_ir_r', None) is not None:
                 noise_r = getattr(self, 'temp_noise_r', None)
-                thd_f_raw, thd_r_raw = self.audio_engine.extract_thd(self.temp_ir_r, 1.0, noise_floor=noise_r)
+                noise_f_r = getattr(self, 'temp_noise_f_r', None)
+                noise_m_r = getattr(self, 'temp_noise_m_r', None)
+                thd_f_raw, thd_r_raw = self.audio_engine.extract_thd(self.temp_ir_r, 1.0, noise_floor=noise_r, noise_freqs=noise_f_r, noise_floor_db=noise_m_r)
                 thd_freqs, thd_r, _ = self.audio_engine.smooth_spectrum(thd_f_raw, thd_r_raw, points=300)
                 
             if thd_freqs is not None:

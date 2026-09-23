@@ -158,6 +158,44 @@ class AudioEngine:
         
         return True, peak_dbfs, f"Level OK ({peak_dbfs:.0f} dBFS)"
 
+    def measure_noise_floor(self, input_device_idx, duration=0.5, sample_rate=None):
+        """Measures the room noise floor in dBFS per frequency bin."""
+        import threading
+        sr = sample_rate or self.sample_rate
+        n_frames = int(sr * duration)
+        
+        def run_stream(in_channels):
+            rec_buf = np.zeros((n_frames, in_channels))
+            in_pos = [0]
+            done_event = threading.Event()
+            
+            def callback(indata, frames, time_info, status):
+                r_chunk = min(frames, n_frames - in_pos[0])
+                if r_chunk > 0:
+                    rec_buf[in_pos[0]:in_pos[0]+r_chunk] = indata[:r_chunk]
+                    in_pos[0] += r_chunk
+                if in_pos[0] >= n_frames:
+                    done_event.set()
+                    raise sd.CallbackStop
+            
+            with sd.InputStream(device=input_device_idx,
+                           samplerate=sr, channels=in_channels,
+                           callback=callback):
+                done_event.wait(timeout=duration + 2.0)
+            return rec_buf[:, 0]
+        
+        try:
+            recording = run_stream(1)
+        except sd.PortAudioError:
+            in_ch = sd.query_devices(input_device_idx)['max_input_channels']
+            recording = run_stream(in_ch)
+        
+        spectrum = np.fft.rfft(recording * np.hanning(len(recording)))
+        freqs = np.fft.rfftfreq(len(recording), 1.0 / sr)
+        magnitude_db = 20 * np.log10(np.abs(spectrum) / len(recording) + 1e-12)
+        
+        return freqs, magnitude_db
+
     def measure(self, input_device_idx, output_device_idx, target_channel='L', duration=1.0, f_start=5.0, f_end=24000.0, mic_cal_freqs=None, mic_cal_mags=None, spl_offset_db=0.0, progress_callback=None, amplitude=None):
         """
         Executes a single-ear sweep measurement.
@@ -490,7 +528,7 @@ class AudioEngine:
             
         return f_log, m_smooth, p_smooth
 
-    def extract_thd(self, ir, duration, f_start=20.0, f_end=20000.0, harmonics=[2, 3, 4], noise_floor=None):
+    def extract_thd(self, ir, duration, f_start=20.0, f_end=20000.0, harmonics=[2, 3, 4], noise_floor=None, noise_freqs=None, noise_floor_db=None):
         """
         Extracts Total Harmonic Distortion (THD) from the impulse response using Farina's Log Sine Sweep method.
         The harmonic impulses appear before the main fundamental impulse.
@@ -502,6 +540,8 @@ class AudioEngine:
             f_end (float): The end frequency of the sweep.
             harmonics (list): List of harmonic orders to extract (e.g., [2, 3, 4]).
             noise_floor (np.ndarray): Optional noise floor recording array (deconvolved).
+            noise_freqs (np.ndarray): Optional noise floor frequencies.
+            noise_floor_db (np.ndarray): Optional room noise floor in dBFS per bin.
             
         Returns:
             tuple: (freqs, thd_percentage)
@@ -567,6 +607,15 @@ class AudioEngine:
                 noise_mag = np.abs(rfft(n_ir)) + 1e-12
                 valid_mask = h_mag >= (noise_mag * 1.995)
                 h_mag = h_mag * valid_mask
+                
+            if noise_floor_db is not None and noise_freqs is not None:
+                from scipy.interpolate import interp1d
+                nf_interp = interp1d(noise_freqs, noise_floor_db, bounds_error=False, fill_value=-120)
+                harmonic_freqs = freqs * n
+                noise_at_freqs = nf_interp(harmonic_freqs)
+                h_level = 20 * np.log10(h_mag + 1e-12)
+                valid_mask_nf = h_level >= (noise_at_freqs + 6.0)
+                h_mag = h_mag * valid_mask_nf
             
             harmonic_energy += h_mag ** 2
             
@@ -575,7 +624,7 @@ class AudioEngine:
         
         return freqs, thd_percentage
 
-    def extract_hohd(self, ir, duration, f_start=20.0, f_end=20000.0, noise_floor=None):
+    def extract_hohd(self, ir, duration, f_start=20.0, f_end=20000.0, noise_floor=None, noise_freqs=None, noise_floor_db=None):
         """Extract High-Order Harmonic Distortion for Rub & Buzz detection.
         
         Uses the Farina method to extract harmonics 10-20 from the impulse response.
@@ -587,6 +636,8 @@ class AudioEngine:
             f_start: Sweep start frequency.
             f_end: Sweep end frequency.
             noise_floor: Optional noise floor recording array (deconvolved).
+            noise_freqs (np.ndarray): Optional noise floor frequencies.
+            noise_floor_db (np.ndarray): Optional room noise floor in dBFS per bin.
             
         Returns:
             tuple: (freqs, hohd_db) — frequencies and HOHD in dB relative to fundamental.
@@ -648,6 +699,15 @@ class AudioEngine:
                 noise_mag = np.abs(rfft(n_ir)) + 1e-12
                 valid_mask = h_mag >= (noise_mag * 1.995)
                 h_mag = h_mag * valid_mask
+                
+            if noise_floor_db is not None and noise_freqs is not None:
+                from scipy.interpolate import interp1d
+                nf_interp = interp1d(noise_freqs, noise_floor_db, bounds_error=False, fill_value=-120)
+                harmonic_freqs = freqs * n
+                noise_at_freqs = nf_interp(harmonic_freqs)
+                h_level = 20 * np.log10(h_mag + 1e-12)
+                valid_mask_nf = h_level >= (noise_at_freqs + 6.0)
+                h_mag = h_mag * valid_mask_nf
             
             if n in range(3, 6):
                 thd_hf_energy = np.maximum(thd_hf_energy, h_mag)
