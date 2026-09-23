@@ -1,0 +1,372 @@
+diff --git a/analysis.py b/analysis.py
+index 6778e93..1611fd3 100644
+--- a/analysis.py
++++ b/analysis.py
+@@ -218,31 +218,46 @@ class Analyzer:
+         """
+         report = []
+         
+-        # Check mid-band THD (500Hz - 2000Hz)
+-        idx_mid = np.where((freqs >= 500) & (freqs <= 2000))[0]
++        # Check mid-band THD (1kHz - 8kHz)
++        # Old values: 500-2000Hz, FAIL max > 8.0 or avg > 3.0, WARN max > 4.0 or avg > 1.5
++        idx_mid = np.where((freqs >= 1000) & (freqs <= 8000))[0]
+         if len(idx_mid) > 0:
+             avg_thd_mid = np.clip(np.mean(thd_percentage[idx_mid]), 0, 100)
+             max_thd_mid = np.clip(np.max(thd_percentage[idx_mid]), 0, 100)
+             
+-            if max_thd_mid > 8.0 or avg_thd_mid > 3.0:
+-                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'FAIL', 'desc': f'High distortion in mid-range (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%). Possible driver damage.\n💡 Ensure the room is quiet and measure again to rule out background noise.', 'band': (500, 2000), 'category': 'THD'})
+-            elif max_thd_mid > 4.0 or avg_thd_mid > 1.5:
+-                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated distortion in mid-range (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%).\n💡 Measure again in a quiet room to confirm.', 'band': (500, 2000), 'category': 'THD'})
++            if max_thd_mid > 3.0 or avg_thd_mid > 1.0:
++                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'FAIL', 'desc': f'High distortion in mid-range (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%). Possible driver damage.\n💡 Ensure the room is quiet and measure again to rule out background noise.', 'band': (1000, 8000), 'category': 'THD'})
++            elif max_thd_mid > 1.0 or avg_thd_mid > 0.5:
++                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated distortion in mid-range (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%).\n💡 Measure again in a quiet room to confirm.', 'band': (1000, 8000), 'category': 'THD'})
+             else:
+-                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'OK', 'desc': f'Mid-range THD within normal limits (Avg: {avg_thd_mid:.1f}%).', 'band': (500, 2000), 'category': 'THD'})
++                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'OK', 'desc': f'Mid-range THD within normal limits (Avg: {avg_thd_mid:.1f}%).', 'band': (1000, 8000), 'category': 'THD'})
+                 
+-        # Check bass THD (50Hz - 200Hz) — skip sub-50Hz where BA drivers always show high THD
+-        idx_bass = np.where((freqs >= 50) & (freqs <= 200))[0]
++        # Check bass THD (20Hz - 200Hz)
++        # Old values: 50-200Hz, FAIL max > 15.0 or avg > 8.0, WARN max > 8.0 or avg > 4.0
++        idx_bass = np.where((freqs >= 20) & (freqs <= 200))[0]
+         if len(idx_bass) > 0:
+             avg_thd_bass = np.clip(np.mean(thd_percentage[idx_bass]), 0, 100)
+             max_thd_bass = np.clip(np.max(thd_percentage[idx_bass]), 0, 100)
+             
+-            if max_thd_bass > 15.0 or avg_thd_bass > 8.0:
+-                report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'FAIL', 'desc': f'Severe distortion in bass (Max: {max_thd_bass:.1f}%, Avg: {avg_thd_bass:.1f}%). Check seal and driver.\n💡 Ensure no vibrations nearby (footsteps, HVAC). Re-seat IEM and measure again.', 'band': (50, 200), 'category': 'THD'})
+-            elif max_thd_bass > 8.0 or avg_thd_bass > 4.0:
+-                report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated bass distortion (Max: {max_thd_bass:.1f}%, Avg: {avg_thd_bass:.1f}%). BA drivers naturally have higher bass THD.\n💡 Measure again in a quiet, vibration-free environment to confirm.', 'band': (50, 200), 'category': 'THD'})
++            if max_thd_bass > 8.0 or avg_thd_bass > 4.0:
++                report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'FAIL', 'desc': f'Severe distortion in bass (Max: {max_thd_bass:.1f}%, Avg: {avg_thd_bass:.1f}%). Check seal and driver.\n💡 Ensure no vibrations nearby (footsteps, HVAC). Re-seat IEM and measure again.', 'band': (20, 200), 'category': 'THD'})
++            elif max_thd_bass > 3.0 or avg_thd_bass > 1.5:
++                report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated bass distortion (Max: {max_thd_bass:.1f}%, Avg: {avg_thd_bass:.1f}%). BA drivers naturally have higher bass THD.\n💡 Measure again in a quiet, vibration-free environment to confirm.', 'band': (20, 200), 'category': 'THD'})
+             else:
+-                report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'OK', 'desc': f'Bass THD acceptable (Avg: {avg_thd_bass:.1f}%).', 'band': (50, 200), 'category': 'THD'})
++                report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'OK', 'desc': f'Bass THD acceptable (Avg: {avg_thd_bass:.1f}%).', 'band': (20, 200), 'category': 'THD'})
++                
++        # Check treble THD (8kHz - 20kHz)
++        idx_treble = np.where((freqs >= 8000) & (freqs <= 20000))[0]
++        if len(idx_treble) > 0:
++            avg_thd_treble = np.clip(np.mean(thd_percentage[idx_treble]), 0, 100)
++            max_thd_treble = np.clip(np.max(thd_percentage[idx_treble]), 0, 100)
++            
++            if max_thd_treble > 5.0 or avg_thd_treble > 2.5:
++                report.append({'title': f'{channel} Treble Distortion (THD)', 'status': 'FAIL', 'desc': f'High distortion in treble (Max: {max_thd_treble:.1f}%, Avg: {avg_thd_treble:.1f}%).', 'band': (8000, 20000), 'category': 'THD'})
++            elif max_thd_treble > 2.0 or avg_thd_treble > 1.0:
++                report.append({'title': f'{channel} Treble Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated distortion in treble (Max: {max_thd_treble:.1f}%, Avg: {avg_thd_treble:.1f}%).', 'band': (8000, 20000), 'category': 'THD'})
++            else:
++                report.append({'title': f'{channel} Treble Distortion (THD)', 'status': 'OK', 'desc': f'Treble THD acceptable (Avg: {avg_thd_treble:.1f}%).', 'band': (8000, 20000), 'category': 'THD'})
+ 
+         return report
+ 
+diff --git a/audio_engine.py b/audio_engine.py
+index 577c68a..b8885ec 100644
+--- a/audio_engine.py
++++ b/audio_engine.py
+@@ -172,11 +172,12 @@ class AudioEngine:
+         # (which sit at the very end of the sweep) haven't reached the microphone yet! 
+         # This truncates the HF and causes the graph to drop off a cliff above 10kHz.
+         padding_samples = int(0.5 * self.sample_rate)
+-        sweep_stereo = np.zeros((len(sweep) + padding_samples, 2))
++        silence_samples = int(0.5 * self.sample_rate)
++        sweep_stereo = np.zeros((silence_samples + len(sweep) + padding_samples, 2))
+         if target_channel == 'L':
+-            sweep_stereo[:len(sweep), 0] = sweep
++            sweep_stereo[silence_samples:silence_samples+len(sweep), 0] = sweep
+         else:
+-            sweep_stereo[:len(sweep), 1] = sweep
++            sweep_stereo[silence_samples:silence_samples+len(sweep), 1] = sweep
+         
+         import time
+         # Dynamically adopt the output device's native sample rate if it differs
+@@ -188,11 +189,12 @@ class AudioEngine:
+                 sweep, _ = self.generate_sweep(duration, f_start, f_end)
+                 inv_sweep = self.get_inverse_filter(sweep, duration, f_start, f_end)
+                 padding_samples = int(0.5 * self.sample_rate)
+-                sweep_stereo = np.zeros((len(sweep) + padding_samples, 2))
++                silence_samples = int(0.5 * self.sample_rate)
++                sweep_stereo = np.zeros((silence_samples + len(sweep) + padding_samples, 2))
+                 if target_channel == 'L':
+-                    sweep_stereo[:len(sweep), 0] = sweep
++                    sweep_stereo[silence_samples:silence_samples+len(sweep), 0] = sweep
+                 else:
+-                    sweep_stereo[:len(sweep), 1] = sweep
++                    sweep_stereo[silence_samples:silence_samples+len(sweep), 1] = sweep
+         except Exception:
+             pass
+ 
+@@ -285,7 +287,10 @@ class AudioEngine:
+                 f"Technical detail: {str(e)}"
+             )
+ 
+-        rec_signal = rec_signal
++        rec_signal_full = rec_signal
++        silence_samples = int(0.5 * self.sample_rate)
++        noise_audio = rec_signal_full[:silence_samples]
++        rec_signal = rec_signal_full[silence_samples:]
+ 
+         peak_amp = np.max(np.abs(rec_signal))
+         peak_dbfs = 20 * np.log10(peak_amp + 1e-12)
+@@ -442,7 +447,7 @@ class AudioEngine:
+         except Exception as _e:
+             print(f"[DEBUG] Dump failed: {_e}")
+         
+-        return freqs, mag, phase, ir
++        return freqs, mag, phase, ir, noise_audio
+ 
+     @staticmethod
+     def smooth_spectrum(freqs, mag, phase=None, points=500):
+@@ -477,7 +482,7 @@ class AudioEngine:
+             
+         return f_log, m_smooth, p_smooth
+ 
+-    def extract_thd(self, ir, duration, f_start=20.0, f_end=20000.0, harmonics=[2, 3, 4]):
++    def extract_thd(self, ir, duration, f_start=20.0, f_end=20000.0, harmonics=[2, 3, 4], noise_floor=None):
+         """
+         Extracts Total Harmonic Distortion (THD) from the impulse response using Farina's Log Sine Sweep method.
+         The harmonic impulses appear before the main fundamental impulse.
+@@ -488,6 +493,7 @@ class AudioEngine:
+             f_start (float): The start frequency of the sweep.
+             f_end (float): The end frequency of the sweep.
+             harmonics (list): List of harmonic orders to extract (e.g., [2, 3, 4]).
++            noise_floor (np.ndarray): Optional noise floor recording array.
+             
+         Returns:
+             tuple: (freqs, thd_percentage)
+@@ -510,6 +516,16 @@ class AudioEngine:
+         fund_fft = rfft(fund_ir)
+         fund_mag = np.abs(fund_fft) + 1e-12
+         
++        noise_threshold = None
++        if noise_floor is not None:
++            noise_len = len(noise_floor)
++            win_size = fund_end - fund_start
++            chunk = min(noise_len, win_size)
++            n_ir = np.zeros_like(ir)
++            n_ir[:chunk] = noise_floor[:chunk] * hann(chunk)
++            noise_mag = np.abs(rfft(n_ir)) + 1e-12
++            noise_threshold = noise_mag * 1.995  # 6 dB
++        
+         harmonic_energy = np.zeros_like(fund_mag)
+         win_len = int(0.05 * self.sample_rate)
+         half_win = win_len // 2
+@@ -545,6 +561,10 @@ class AudioEngine:
+             h_fft = rfft(h_ir)
+             h_mag = np.abs(h_fft)
+             
++            if noise_threshold is not None:
++                valid_mask = h_mag >= noise_threshold
++                h_mag = h_mag * valid_mask
++            
+             harmonic_energy += h_mag ** 2
+             
+         thd = np.sqrt(harmonic_energy) / fund_mag
+@@ -552,7 +572,7 @@ class AudioEngine:
+         
+         return freqs, thd_percentage
+ 
+-    def extract_hohd(self, ir, duration, f_start=20.0, f_end=20000.0):
++    def extract_hohd(self, ir, duration, f_start=20.0, f_end=20000.0, noise_floor=None):
+         """Extract High-Order Harmonic Distortion for Rub & Buzz detection.
+         
+         Uses the Farina method to extract harmonics 10-20 from the impulse response.
+@@ -563,6 +583,7 @@ class AudioEngine:
+             duration: Sweep duration in seconds.
+             f_start: Sweep start frequency.
+             f_end: Sweep end frequency.
++            noise_floor: Optional noise floor recording array.
+             
+         Returns:
+             tuple: (freqs, hohd_db) — frequencies and HOHD in dB relative to fundamental.
+@@ -582,12 +603,27 @@ class AudioEngine:
+         fund_ir[fund_start:fund_end] = ir[fund_start:fund_end] * hann(fund_end - fund_start)
+         fund_mag = np.abs(rfft(fund_ir)) + 1e-12
+         
+-        # Extract harmonics 10 through 20
++        noise_threshold = None
++        if noise_floor is not None:
++            noise_len = len(noise_floor)
++            win_size = fund_end - fund_start
++            chunk = min(noise_len, win_size)
++            n_ir = np.zeros_like(ir)
++            n_ir[:chunk] = noise_floor[:chunk] * hann(chunk)
++            noise_mag = np.abs(rfft(n_ir)) + 1e-12
++            noise_threshold = noise_mag * 1.995  # 6 dB
++        
+         hohd_energy = np.zeros_like(fund_mag)
++        thd_hf_energy = np.zeros_like(fund_mag)
++        
+         win_len = int(0.03 * self.sample_rate)  # Shorter window for high-order harmonics
+         half_win = win_len // 2
++        nyquist = self.sample_rate / 2.0
+         
+-        for n in range(10, 21):
++        for n in range(3, 21):
++            if n > 5 and n < 10:
++                continue
++                
+             delta_t = duration * np.log(n) / np.log(f_end / f_start)
+             offset_samples = int(delta_t * self.sample_rate)
+             h_idx = peak_idx - offset_samples
+@@ -611,11 +647,22 @@ class AudioEngine:
+             h_ir[h_start:h_end] = ir[h_start:h_end] * hann(h_end - h_start)
+             h_mag = np.abs(rfft(h_ir))
+             
+-            # Use PEAK (not sum) per KLIPPEL — worst-case harmonic at each freq
+-            hohd_energy = np.maximum(hohd_energy, h_mag)
++            if noise_threshold is not None:
++                valid_mask = h_mag >= noise_threshold
++                h_mag = h_mag * valid_mask
++            
++            if n in range(3, 6):
++                thd_hf_energy = np.maximum(thd_hf_energy, h_mag)
++            elif n in range(10, 21):
++                valid_nyquist = (n * freqs) < nyquist
++                h_mag_valid = h_mag * valid_nyquist
++                hohd_energy = np.maximum(hohd_energy, h_mag_valid)
++        
++        hf_mask = freqs >= 2400.0
++        final_energy = np.where(hf_mask, thd_hf_energy, hohd_energy)
+         
+         # Convert to dB relative to fundamental
+-        hohd_db = 20 * np.log10(hohd_energy / fund_mag + 1e-12)
++        hohd_db = 20 * np.log10(final_energy / fund_mag + 1e-12)
+         
+         return freqs, hohd_db
+ 
+diff --git a/main.py b/main.py
+index b80778b..d07b64c 100644
+--- a/main.py
++++ b/main.py
+@@ -583,7 +583,7 @@ class LiveSealWorker(QThread):
+         self.running = False
+ 
+ class MeasurementWorker(QThread):
+-    finished = Signal(object, object, object, object, str)
++    finished = Signal(object, object, object, object, str, object)
+     error = Signal(str)
+     progress = Signal(str)
+     sweep_progress = Signal(float, int)
+@@ -603,7 +603,7 @@ class MeasurementWorker(QThread):
+         try:
+             import numpy as np
+             import time
+-            mags, phases, irs = [], [], []
++            mags, phases, irs, noises = [], [], [], []
+             freqs = None
+             for i in range(self.sweeps):
+                 self.progress.emit(f"Status: MEASURING {self.target_channel}... ({i+1}/{self.sweeps})")
+@@ -618,6 +618,7 @@ class MeasurementWorker(QThread):
+                 mags.append(res[1])
+                 phases.append(res[2])
+                 irs.append(res[3])
++                noises.append(res[4])
+                 if self.sweeps > 1 and i < self.sweeps - 1:
+                     self.sweep_progress.emit(1.1, i+1) # Hide bar during sleep
+                     time.sleep(1.0) # safely let PortAudio tear down the previous stream
+@@ -625,8 +626,9 @@ class MeasurementWorker(QThread):
+             avg_mag = np.mean(mags, axis=0)
+             avg_phase = np.mean(phases, axis=0)
+             avg_ir = np.mean(irs, axis=0)
++            avg_noise = np.mean(noises, axis=0)
+             
+-            self.finished.emit(freqs, avg_mag, avg_phase, avg_ir, self.target_channel)
++            self.finished.emit(freqs, avg_mag, avg_phase, avg_ir, self.target_channel, avg_noise)
+         except Exception as e:
+             import traceback
+             traceback.print_exc()
+@@ -2602,12 +2604,12 @@ class MainWindow(QMainWindow):
+             
+             def run(self):
+                 try:
+-                    f, m, p, ir = self.engine.measure(
++                    f, m, p, ir, noise = self.engine.measure(
+                         self.in_idx, self.out_idx, self.ch,
+                         duration=1.0, f_start=20.0, f_end=20000.0,
+                         amplitude=self.amp,
+                         progress_callback=lambda t: self.sweep_progress.emit(t, 1))
+-                    hohd_f, hohd_db = self.engine.extract_hohd(ir, duration=1.0)
++                    hohd_f, hohd_db = self.engine.extract_hohd(ir, duration=1.0, noise_floor=noise)
+                     self.finished.emit(hohd_f, hohd_db)
+                 except Exception as e:
+                     self.error.emit(str(e))
+@@ -2626,28 +2628,25 @@ class MainWindow(QMainWindow):
+         self.page_ana.btn_stress_test.setEnabled(True)
+         self.stress_overlay.stop()
+         
+-        # Smooth the HOHD for display
+-        from scipy.stats import binned_statistic
++        # Do NOT smooth the HOHD for display (sharp peaks are the signal)
+         valid = (hohd_f > 20) & (hohd_f < 10000)
+         if np.any(valid):
+-            bins = np.logspace(np.log10(20), np.log10(10000), 200)
+-            hohd_smooth, edges, _ = binned_statistic(hohd_f[valid], hohd_db[valid], statistic='mean', bins=bins)
+-            f_centers = np.sqrt(edges[:-1] * edges[1:])
+-            mask = ~np.isnan(hohd_smooth)
++            f_centers = hohd_f[valid]
++            hohd_raw = hohd_db[valid]
+             
+             # Map HOHD (dB) directly to THD (%) scale for accurate reading on the Y-axis
+             # Formula: 10^(dB/20) * 100
+-            hohd_display = np.clip(10 ** (hohd_smooth[mask] / 20) * 100, 0, 10)
+-            self.page_ana.hohd_line.setData(np.log10(f_centers[mask]), hohd_display)
++            hohd_display = np.clip(10 ** (hohd_raw / 20) * 100, 0, 10)
++            self.page_ana.hohd_line.setData(np.log10(f_centers), hohd_display)
+             self.page_ana.hohd_line.show()
+             
+-            if not np.any(mask):
++            if len(f_centers) == 0:
+                 self.sub_lbl.setText("Stress Test complete — no usable signal detected. Try reseating the IEM in the coupler.")
+                 return
+                 
+-            peak_idx = np.argmax(hohd_smooth[mask])
+-            peak_hohd = hohd_smooth[mask][peak_idx]
+-            peak_freq = f_centers[mask][peak_idx]
++            peak_idx = np.argmax(hohd_raw)
++            peak_hohd = hohd_raw[peak_idx]
++            peak_freq = f_centers[peak_idx]
+             
+             # Relaxed thresholds for live concert environments (ambient noise tolerant)
+             if peak_hohd > -30:
+@@ -3805,7 +3804,7 @@ class MainWindow(QMainWindow):
+             smoothing_pts=pts
+         )
+ 
+-    def on_measurement_finished(self, freqs, mag, phase, ir, channel):
++    def on_measurement_finished(self, freqs, mag, phase, ir, channel, noise=None):
+         self.is_measuring = False   # UI Hardening: release lock
+         self.meas_overlay.stop()
+         self.btn_capture.setEnabled(True)
+@@ -3831,10 +3830,12 @@ class MainWindow(QMainWindow):
+             self.temp_mag_l = mag
+             self.temp_phase_l = phase
+             self.temp_ir_l = ir
++            self.temp_noise_l = noise
+         else:
+             self.temp_mag_r = mag
+             self.temp_phase_r = phase
+             self.temp_ir_r = ir
++            self.temp_noise_r = noise
+             
+         self.low_vol_warning = low_vol_warning
+             
+@@ -3869,11 +3870,13 @@ class MainWindow(QMainWindow):
+             thd_l, thd_r, thd_freqs = None, None, None
+             # Left THD
+             if getattr(self, 'temp_ir_l', None) is not None:
+-                thd_f_raw, thd_l_raw = self.audio_engine.extract_thd(self.temp_ir_l, 1.0)
++                noise_l = getattr(self, 'temp_noise_l', None)
++                thd_f_raw, thd_l_raw = self.audio_engine.extract_thd(self.temp_ir_l, 1.0, noise_floor=noise_l)
+                 thd_freqs, thd_l, _ = self.audio_engine.smooth_spectrum(thd_f_raw, thd_l_raw, points=300)
+             # Right THD
+             if getattr(self, 'temp_ir_r', None) is not None:
+-                thd_f_raw, thd_r_raw = self.audio_engine.extract_thd(self.temp_ir_r, 1.0)
++                noise_r = getattr(self, 'temp_noise_r', None)
++                thd_f_raw, thd_r_raw = self.audio_engine.extract_thd(self.temp_ir_r, 1.0, noise_floor=noise_r)
+                 thd_freqs, thd_r, _ = self.audio_engine.smooth_spectrum(thd_f_raw, thd_r_raw, points=300)
+                 
+             if thd_freqs is not None:
