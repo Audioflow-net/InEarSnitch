@@ -172,11 +172,12 @@ class AudioEngine:
         # (which sit at the very end of the sweep) haven't reached the microphone yet! 
         # This truncates the HF and causes the graph to drop off a cliff above 10kHz.
         padding_samples = int(0.5 * self.sample_rate)
-        sweep_stereo = np.zeros((len(sweep) + padding_samples, 2))
+        silence_samples = int(0.5 * self.sample_rate)
+        sweep_stereo = np.zeros((silence_samples + len(sweep) + padding_samples, 2))
         if target_channel == 'L':
-            sweep_stereo[:len(sweep), 0] = sweep
+            sweep_stereo[silence_samples:silence_samples+len(sweep), 0] = sweep
         else:
-            sweep_stereo[:len(sweep), 1] = sweep
+            sweep_stereo[silence_samples:silence_samples+len(sweep), 1] = sweep
         
         import time
         # Dynamically adopt the output device's native sample rate if it differs
@@ -188,11 +189,12 @@ class AudioEngine:
                 sweep, _ = self.generate_sweep(duration, f_start, f_end)
                 inv_sweep = self.get_inverse_filter(sweep, duration, f_start, f_end)
                 padding_samples = int(0.5 * self.sample_rate)
-                sweep_stereo = np.zeros((len(sweep) + padding_samples, 2))
+                silence_samples = int(0.5 * self.sample_rate)
+                sweep_stereo = np.zeros((silence_samples + len(sweep) + padding_samples, 2))
                 if target_channel == 'L':
-                    sweep_stereo[:len(sweep), 0] = sweep
+                    sweep_stereo[silence_samples:silence_samples+len(sweep), 0] = sweep
                 else:
-                    sweep_stereo[:len(sweep), 1] = sweep
+                    sweep_stereo[silence_samples:silence_samples+len(sweep), 1] = sweep
         except Exception:
             pass
 
@@ -285,7 +287,18 @@ class AudioEngine:
                 f"Technical detail: {str(e)}"
             )
 
-        rec_signal = rec_signal
+        rec_signal_full = rec_signal
+        silence_samples = int(0.5 * self.sample_rate)
+        noise_audio = rec_signal_full[:silence_samples]
+        rec_signal = rec_signal_full[silence_samples:]
+        
+        # Deconvolve the noise floor into the IR domain
+        noise_padded = np.zeros(len(inv_sweep))
+        if len(noise_audio) > len(inv_sweep):
+            noise_padded = noise_audio[:len(inv_sweep)]
+        else:
+            noise_padded[:len(noise_audio)] = noise_audio
+        noise_ir = fftconvolve(noise_padded, inv_sweep, mode='same')
 
         peak_amp = np.max(np.abs(rec_signal))
         peak_dbfs = 20 * np.log10(peak_amp + 1e-12)
@@ -442,7 +455,7 @@ class AudioEngine:
         except Exception as _e:
             print(f"[DEBUG] Dump failed: {_e}")
         
-        return freqs, mag, phase, ir
+        return freqs, mag, phase, ir, noise_ir
 
     @staticmethod
     def smooth_spectrum(freqs, mag, phase=None, points=500):
@@ -477,7 +490,7 @@ class AudioEngine:
             
         return f_log, m_smooth, p_smooth
 
-    def extract_thd(self, ir, duration, f_start=20.0, f_end=20000.0, harmonics=[2, 3, 4]):
+    def extract_thd(self, ir, duration, f_start=20.0, f_end=20000.0, harmonics=[2, 3, 4], noise_floor=None):
         """
         Extracts Total Harmonic Distortion (THD) from the impulse response using Farina's Log Sine Sweep method.
         The harmonic impulses appear before the main fundamental impulse.
@@ -488,6 +501,7 @@ class AudioEngine:
             f_start (float): The start frequency of the sweep.
             f_end (float): The end frequency of the sweep.
             harmonics (list): List of harmonic orders to extract (e.g., [2, 3, 4]).
+            noise_floor (np.ndarray): Optional noise floor recording array (deconvolved).
             
         Returns:
             tuple: (freqs, thd_percentage)
@@ -545,6 +559,15 @@ class AudioEngine:
             h_fft = rfft(h_ir)
             h_mag = np.abs(h_fft)
             
+            if noise_floor is not None:
+                n_chunk_len = h_end - h_start
+                mid = len(noise_floor) // 2
+                n_ir = np.zeros_like(ir)
+                n_ir[h_start:h_end] = noise_floor[mid - n_chunk_len//2 : mid - n_chunk_len//2 + n_chunk_len] * hann(n_chunk_len)
+                noise_mag = np.abs(rfft(n_ir)) + 1e-12
+                valid_mask = h_mag >= (noise_mag * 1.995)
+                h_mag = h_mag * valid_mask
+            
             harmonic_energy += h_mag ** 2
             
         thd = np.sqrt(harmonic_energy) / fund_mag
@@ -552,7 +575,7 @@ class AudioEngine:
         
         return freqs, thd_percentage
 
-    def extract_hohd(self, ir, duration, f_start=20.0, f_end=20000.0):
+    def extract_hohd(self, ir, duration, f_start=20.0, f_end=20000.0, noise_floor=None):
         """Extract High-Order Harmonic Distortion for Rub & Buzz detection.
         
         Uses the Farina method to extract harmonics 10-20 from the impulse response.
@@ -563,6 +586,7 @@ class AudioEngine:
             duration: Sweep duration in seconds.
             f_start: Sweep start frequency.
             f_end: Sweep end frequency.
+            noise_floor: Optional noise floor recording array (deconvolved).
             
         Returns:
             tuple: (freqs, hohd_db) — frequencies and HOHD in dB relative to fundamental.
@@ -582,12 +606,17 @@ class AudioEngine:
         fund_ir[fund_start:fund_end] = ir[fund_start:fund_end] * hann(fund_end - fund_start)
         fund_mag = np.abs(rfft(fund_ir)) + 1e-12
         
-        # Extract harmonics 10 through 20
         hohd_energy = np.zeros_like(fund_mag)
+        thd_hf_energy = np.zeros_like(fund_mag)
+        
         win_len = int(0.03 * self.sample_rate)  # Shorter window for high-order harmonics
         half_win = win_len // 2
+        nyquist = self.sample_rate / 2.0
         
-        for n in range(10, 21):
+        for n in range(3, 21):
+            if n > 5 and n < 10:
+                continue
+                
             delta_t = duration * np.log(n) / np.log(f_end / f_start)
             offset_samples = int(delta_t * self.sample_rate)
             h_idx = peak_idx - offset_samples
@@ -611,11 +640,27 @@ class AudioEngine:
             h_ir[h_start:h_end] = ir[h_start:h_end] * hann(h_end - h_start)
             h_mag = np.abs(rfft(h_ir))
             
-            # Use PEAK (not sum) per KLIPPEL — worst-case harmonic at each freq
-            hohd_energy = np.maximum(hohd_energy, h_mag)
+            if noise_floor is not None:
+                n_chunk_len = h_end - h_start
+                mid = len(noise_floor) // 2
+                n_ir = np.zeros_like(ir)
+                n_ir[h_start:h_end] = noise_floor[mid - n_chunk_len//2 : mid - n_chunk_len//2 + n_chunk_len] * hann(n_chunk_len)
+                noise_mag = np.abs(rfft(n_ir)) + 1e-12
+                valid_mask = h_mag >= (noise_mag * 1.995)
+                h_mag = h_mag * valid_mask
+            
+            if n in range(3, 6):
+                thd_hf_energy = np.maximum(thd_hf_energy, h_mag)
+            elif n in range(10, 21):
+                valid_nyquist = (n * freqs) < nyquist
+                h_mag_valid = h_mag * valid_nyquist
+                hohd_energy = np.maximum(hohd_energy, h_mag_valid)
+        
+        hf_mask = freqs >= 2400.0
+        final_energy = np.where(hf_mask, thd_hf_energy, hohd_energy)
         
         # Convert to dB relative to fundamental
-        hohd_db = 20 * np.log10(hohd_energy / fund_mag + 1e-12)
+        hohd_db = 20 * np.log10(final_energy / fund_mag + 1e-12)
         
         return freqs, hohd_db
 

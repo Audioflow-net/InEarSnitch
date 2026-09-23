@@ -583,7 +583,7 @@ class LiveSealWorker(QThread):
         self.running = False
 
 class MeasurementWorker(QThread):
-    finished = Signal(object, object, object, object, str)
+    finished = Signal(object, object, object, object, str, object)
     error = Signal(str)
     progress = Signal(str)
     sweep_progress = Signal(float, int)
@@ -603,7 +603,7 @@ class MeasurementWorker(QThread):
         try:
             import numpy as np
             import time
-            mags, phases, irs = [], [], []
+            mags, phases, irs, noises = [], [], [], []
             freqs = None
             for i in range(self.sweeps):
                 self.progress.emit(f"Status: MEASURING {self.target_channel}... ({i+1}/{self.sweeps})")
@@ -618,6 +618,7 @@ class MeasurementWorker(QThread):
                 mags.append(res[1])
                 phases.append(res[2])
                 irs.append(res[3])
+                noises.append(res[4])
                 if self.sweeps > 1 and i < self.sweeps - 1:
                     self.sweep_progress.emit(1.1, i+1) # Hide bar during sleep
                     time.sleep(1.0) # safely let PortAudio tear down the previous stream
@@ -625,8 +626,9 @@ class MeasurementWorker(QThread):
             avg_mag = np.mean(mags, axis=0)
             avg_phase = np.mean(phases, axis=0)
             avg_ir = np.mean(irs, axis=0)
+            avg_noise = np.mean(noises, axis=0)
             
-            self.finished.emit(freqs, avg_mag, avg_phase, avg_ir, self.target_channel)
+            self.finished.emit(freqs, avg_mag, avg_phase, avg_ir, self.target_channel, avg_noise)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -2602,12 +2604,12 @@ class MainWindow(QMainWindow):
             
             def run(self):
                 try:
-                    f, m, p, ir = self.engine.measure(
+                    f, m, p, ir, noise = self.engine.measure(
                         self.in_idx, self.out_idx, self.ch,
                         duration=1.0, f_start=20.0, f_end=20000.0,
                         amplitude=self.amp,
                         progress_callback=lambda t: self.sweep_progress.emit(t, 1))
-                    hohd_f, hohd_db = self.engine.extract_hohd(ir, duration=1.0)
+                    hohd_f, hohd_db = self.engine.extract_hohd(ir, duration=1.0, noise_floor=noise)
                     self.finished.emit(hohd_f, hohd_db)
                 except Exception as e:
                     self.error.emit(str(e))
@@ -2626,28 +2628,25 @@ class MainWindow(QMainWindow):
         self.page_ana.btn_stress_test.setEnabled(True)
         self.stress_overlay.stop()
         
-        # Smooth the HOHD for display
-        from scipy.stats import binned_statistic
+        # Do NOT smooth the HOHD for display (sharp peaks are the signal)
         valid = (hohd_f > 20) & (hohd_f < 10000)
         if np.any(valid):
-            bins = np.logspace(np.log10(20), np.log10(10000), 200)
-            hohd_smooth, edges, _ = binned_statistic(hohd_f[valid], hohd_db[valid], statistic='mean', bins=bins)
-            f_centers = np.sqrt(edges[:-1] * edges[1:])
-            mask = ~np.isnan(hohd_smooth)
+            f_centers = hohd_f[valid]
+            hohd_raw = hohd_db[valid]
             
             # Map HOHD (dB) directly to THD (%) scale for accurate reading on the Y-axis
             # Formula: 10^(dB/20) * 100
-            hohd_display = np.clip(10 ** (hohd_smooth[mask] / 20) * 100, 0, 10)
-            self.page_ana.hohd_line.setData(np.log10(f_centers[mask]), hohd_display)
+            hohd_display = np.clip(10 ** (hohd_raw / 20) * 100, 0, 10)
+            self.page_ana.hohd_line.setData(np.log10(f_centers), hohd_display)
             self.page_ana.hohd_line.show()
             
-            if not np.any(mask):
+            if len(f_centers) == 0:
                 self.sub_lbl.setText("Stress Test complete — no usable signal detected. Try reseating the IEM in the coupler.")
                 return
                 
-            peak_idx = np.argmax(hohd_smooth[mask])
-            peak_hohd = hohd_smooth[mask][peak_idx]
-            peak_freq = f_centers[mask][peak_idx]
+            peak_idx = np.argmax(hohd_raw)
+            peak_hohd = hohd_raw[peak_idx]
+            peak_freq = f_centers[peak_idx]
             
             # Relaxed thresholds for live concert environments (ambient noise tolerant)
             if peak_hohd > -30:
@@ -3478,7 +3477,9 @@ class MainWindow(QMainWindow):
         else:
             if hasattr(self, 'live_worker'):
                 self.live_worker.stop()
-                self.live_worker.wait()
+                if not self.live_worker.wait(2000):  # 2s timeout
+                    self.live_worker.terminate()
+                    self.live_worker.wait(1000)
             if hasattr(self, 'rta_big_lbl'):
                 self.rta_big_lbl.hide()
             if hasattr(self, 'live_rta_line') and self.live_rta_line is not None:
@@ -3805,7 +3806,7 @@ class MainWindow(QMainWindow):
             smoothing_pts=pts
         )
 
-    def on_measurement_finished(self, freqs, mag, phase, ir, channel):
+    def on_measurement_finished(self, freqs, mag, phase, ir, channel, noise=None):
         self.is_measuring = False   # UI Hardening: release lock
         self.meas_overlay.stop()
         self.btn_capture.setEnabled(True)
@@ -3831,10 +3832,12 @@ class MainWindow(QMainWindow):
             self.temp_mag_l = mag
             self.temp_phase_l = phase
             self.temp_ir_l = ir
+            self.temp_noise_l = noise
         else:
             self.temp_mag_r = mag
             self.temp_phase_r = phase
             self.temp_ir_r = ir
+            self.temp_noise_r = noise
             
         self.low_vol_warning = low_vol_warning
             
@@ -3869,11 +3872,13 @@ class MainWindow(QMainWindow):
             thd_l, thd_r, thd_freqs = None, None, None
             # Left THD
             if getattr(self, 'temp_ir_l', None) is not None:
-                thd_f_raw, thd_l_raw = self.audio_engine.extract_thd(self.temp_ir_l, 1.0)
+                noise_l = getattr(self, 'temp_noise_l', None)
+                thd_f_raw, thd_l_raw = self.audio_engine.extract_thd(self.temp_ir_l, 1.0, noise_floor=noise_l)
                 thd_freqs, thd_l, _ = self.audio_engine.smooth_spectrum(thd_f_raw, thd_l_raw, points=300)
             # Right THD
             if getattr(self, 'temp_ir_r', None) is not None:
-                thd_f_raw, thd_r_raw = self.audio_engine.extract_thd(self.temp_ir_r, 1.0)
+                noise_r = getattr(self, 'temp_noise_r', None)
+                thd_f_raw, thd_r_raw = self.audio_engine.extract_thd(self.temp_ir_r, 1.0, noise_floor=noise_r)
                 thd_freqs, thd_r, _ = self.audio_engine.smooth_spectrum(thd_f_raw, thd_r_raw, points=300)
                 
             if thd_freqs is not None:
