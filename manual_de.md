@@ -204,26 +204,26 @@ Das Einstellungsmenü (Settings) verfügt nun über einen **Database Management*
 
 Die Target- und History-Comboboxen (Dropdown-Menüs) in der gesamten Anwendung sind nun vollständig durchsuchbar. Sie können einen beliebigen Teil des Namens (z.B. "v7") eingeben, um schnell die passenden Einträge zu finden (z.B. "Vision Ears v7").
 
-## 9. Live RTA & IEC Guide (Einstecktiefe)
+## 9. Live Position Guide (RTA & Depth)
 
-Unten rechts in der Hauptansicht finden Sie den **RTA (Real-Time Analyzer)** Button. Dieser Modus spielt "Pink Noise" ab und zeigt das gemessene Frequenzspektrum in Echtzeit an. Er dient dazu, den In-Ear perfekt im Messkuppler zu positionieren, *bevor* die eigentliche Messung (Sweep) gestartet wird.
+Unten rechts in der Hauptansicht finden Sie den **RTA (Real-Time Analyzer)** sowie den **Depth** Button. Dieser Modus spielt "Pink Noise" ab und zeigt das gemessene Frequenzspektrum in Echtzeit an. Er dient dazu, den In-Ear perfekt im Messkuppler zu positionieren, *bevor* die eigentliche Messung (Sweep) gestartet wird.
 
-Direkt unter dem RTA-Button befindet sich die Checkbox **"IEC Guide"** (früher "8k Helper").
+Wenn Sie den **Depth** Button aktivieren, führt Sie die App in Echtzeit durch zwei kritische physikalische Eigenschaften der Messung: **Dichtigkeit (Seal)** und **Einstecktiefe (Insertion Depth)**.
 
-### Wie funktioniert der IEC Guide?
-Wenn der In-Ear in das Messrohr (IEC 711 Kuppler) eingeführt wird, entsteht ein kleiner Hohlraum zwischen dem In-Ear und dem Mikrofon. Die Luft in diesem Hohlraum resoniert physikalisch bei einer ganz bestimmten Frequenz – der sogenannten "Kuppler-Resonanz" (Coupler Resonance). 
+### 1. Dichtigkeit (Bass Seal / 40 Hz Linie)
+Wenn der In-Ear Monitor nicht 100% luftdicht mit dem Kuppler abschließt, entweicht Druck und der Bass fällt massiv ab. 
+- **Grüne 40 Hz Linie (Bass Seal OK):** Der Hörer dichtet perfekt ab.
+- **Rote 40 Hz Linie (Bass Leak!):** Luft entweicht. Drücken Sie den In-Ear gerader in den Kuppler oder nutzen Sie einen anderen Schaumstoff/Silikon-Tip.
 
-Der IEC 711 Standard wurde in den 80er Jahren exakt so entworfen, dass diese Resonanz den menschlichen Gehörgang simuliert. Für eine vergleichbare Messung (z.B. mit Datenbanken von Crinacle oder Super*Review) MUSS der In-Ear so tief eingesteckt werden, dass diese physikalische Resonanz genau im Bereich von **7.000 Hz bis 8.600 Hz** (klassisch ~8 kHz) liegt.
-
-Der *IEC Guide* blendet eine grüne Zielzone (7 - 8.6 kHz) und ein Fadenkreuz ein, das die aktuelle Resonanz in Echtzeit verfolgt.
-- Rote Schrift ("Push Deeper"): Resonanz liegt unter 7 kHz -> Den In-Ear weiter in das Rohr schieben.
-- Rote Schrift ("Pull Out Slightly"): Resonanz liegt über 8.6 kHz -> Den In-Ear ein kleines Stück herausziehen.
-- Grüne Schrift ("Depth OK"): Perfekte Einstecktiefe erreicht!
+### 2. Einstecktiefe (IEC Guide / 8 kHz Linie)
+Wenn der In-Ear in das Messrohr (IEC 711 Kuppler) eingeführt wird, entsteht ein kleiner Hohlraum, der bei einer bestimmten Frequenz resoniert. Für normgerechte Messungen muss der In-Ear exakt so tief eingesteckt werden, dass diese Resonanz in der grünen Zielzone zwischen **7.000 Hz und 8.600 Hz** liegt.
+- **Gelber Text ("Push Deeper"):** Resonanz liegt unter 7 kHz -> Den In-Ear weiter in das Rohr schieben.
+- **Gelber Text ("Pull Out Slightly"):** Resonanz liegt über 8.6 kHz -> Den In-Ear ein kleines Stück herausziehen.
+- **Grüner Text ("Depth OK"):** Perfekte Einstecktiefe erreicht!
 
 ### Warum immer 8 kHz – selbst bei anderen Kalibrierungen?
-Oft wird gefragt, warum der Guide *immer* auf 8 kHz zielt, selbst wenn man komplett unterschiedliche Mikrofon-Kalibrierungsdateien (Calibration Profiles) geladen hat.
-Die Antwort liegt in der **Physik**: Eine Kalibrierungsdatei (egal ob Dayton, Sonarworks oder "Fake 711") korrigiert nur die internen Schwankungen der winzigen Mikrofonkapsel selbst (z.B. wenn das Mikrofon von Natur aus bei 10kHz etwas zu leise aufnimmt). 
-Das physische Metall-Rohr des Kupplers bleibt aber immer gleich lang. Daher verschiebt eine Software-Kalibrierung niemals die physikalische Luft-Resonanz von 8 kHz. Der Guide zeigt Ihnen also immer den akustisch korrekten physikalischen Sitz an, unabhängig von der gewählten Datei.
+Oft wird gefragt, warum der Guide *immer* auf 8 kHz zielt, selbst wenn man unterschiedliche Mikrofon-Kalibrierungsdateien geladen hat.
+Die Antwort liegt in der **Physik**: Eine Kalibrierungsdatei korrigiert nur interne Schwankungen der Mikrofonkapsel. Das physische Metall-Rohr des Kupplers bleibt aber immer gleich lang. Daher verschiebt eine Kalibrierung niemals die physikalische Luft-Resonanz. Der Guide zeigt Ihnen also immer den akustisch korrekten physikalischen Sitz an, unabhängig von der gewählten Datei.
 
 ## 10. Health & Safety Disclaimer (EULA)
 

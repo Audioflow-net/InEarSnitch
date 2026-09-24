@@ -215,8 +215,8 @@ class TourManager(QWidget):
                 "setup": lambda: self._close_settings_and_go(0)
             },
             {
-                "title": "IEC Insertion Depth",
-                "text": "Before you capture a sweep, you must set the physical insertion depth!<br><br>Turn on the <b>Depth</b> guide (RTA). Carefully push the IEM into the coupler until the resonance peak lands accurately in the green target zone (<b>7,000 Hz - 8,600 Hz</b>).",
+                "title": "Live Position Guide",
+                "text": "Before capturing a sweep, the IEM must be positioned correctly in the coupler.<br><br>Turn on the <b>Depth</b> guide (RTA) and watch the two green lines:<br>1. <b>Bass Seal (40 Hz):</b> Must be <span style='color:#10b981;font-weight:bold;'>GREEN</span>. If it's red, air is leaking out.<br>2. <b>Insertion Depth (8 kHz):</b> Push the IEM in until the treble resonance lands in the green target zone.",
                 "get_target": lambda: self.main_window.btn_iec_guide if hasattr(self.main_window, 'btn_iec_guide') else self.main_window.btn_capture,
                 "setup": lambda: self._close_settings_and_go(1)
             },

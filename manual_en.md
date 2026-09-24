@@ -202,26 +202,26 @@ The Settings menu now has a **Database Management** section where you can Backup
 
 The Target and History comboboxes across the application are fully searchable. You can type any part of the name (e.g., "v7") into the dropdown to quickly find matching entries (e.g., "Vision Ears v7").
 
-## 9. Live RTA & IEC Guide (Insertion Depth)
+## 9. Live Position Guide (RTA & Depth)
 
-At the bottom right of the main interface, you will find the **RTA (Real-Time Analyzer)** button. This mode plays "Pink Noise" and displays the measured frequency spectrum in real-time. It is used to position the IEM perfectly in the measurement coupler *before* starting the actual measurement sweep.
+At the bottom right of the main interface, you will find the **RTA (Real-Time Analyzer)** and the **Depth** button. This mode plays "Pink Noise" and displays the measured frequency spectrum in real-time. It is used to position the IEM perfectly in the measurement coupler *before* starting the actual measurement sweep.
 
-Directly below the RTA button is the **"IEC Guide"** checkbox (formerly "8k Helper").
+When you activate the **Depth** button, the app guides you in real-time through two critical physical properties of the measurement: **Air-Tightness (Seal)** and **Insertion Depth**.
 
-### How does the IEC Guide work?
-When the IEM is inserted into the measurement tube (IEC 711 coupler), a small cavity is formed between the IEM and the microphone. The air in this cavity physically resonates at a very specific frequency – the "Coupler Resonance". 
+### 1. Air-Tightness (Bass Seal / 40 Hz Line)
+If the In-Ear Monitor does not form a 100% air-tight seal with the coupler, pressure escapes and the bass drops massively.
+- **Green 40 Hz Line (Bass Seal OK):** The IEM is perfectly sealed.
+- **Red 40 Hz Line (Bass Leak!):** Air is escaping. Push the IEM in straighter or use a different foam/silicone tip.
 
-The IEC 711 standard was specifically designed in the 1980s so that this resonance simulates the human ear canal. For a comparable measurement (e.g., against databases from Crinacle or Super*Review), the IEM MUST be inserted to a depth where this physical resonance occurs exactly in the range of **7,000 Hz to 8,600 Hz** (classically ~8 kHz).
-
-The *IEC Guide* displays a green target zone (7 - 8.6 kHz) and a crosshair that tracks the current resonance peak in real-time.
-- Red Text ("Push Deeper"): Resonance is below 7 kHz -> Push the IEM further into the tube.
-- Red Text ("Pull Out Slightly"): Resonance is above 8.6 kHz -> Pull the IEM out a tiny bit.
-- Green Text ("Depth OK"): Perfect insertion depth achieved!
+### 2. Insertion Depth (IEC Guide / 8 kHz Line)
+When the IEM is inserted into the measurement tube (IEC 711 coupler), a small cavity is formed that resonates at a specific frequency. For standardized measurements, the IEM must be inserted exactly to a depth where this resonance lands in the green target zone between **7,000 Hz and 8,600 Hz**.
+- **Yellow Text ("Push Deeper"):** Resonance is below 7 kHz -> Push the IEM further into the tube.
+- **Yellow Text ("Pull Out Slightly"):** Resonance is above 8.6 kHz -> Pull the IEM out a tiny bit.
+- **Green Text ("Depth OK"):** Perfect insertion depth achieved!
 
 ### Why always 8 kHz – even with different calibrations?
-A common question is why the guide *always* aims for 8 kHz, even if completely different microphone calibration profiles are loaded.
-The answer lies in **physics**: A calibration file (whether Dayton, Sonarworks, or "Fake 711") only corrects the internal flaws of the tiny microphone capsule itself (e.g., if the microphone naturally records slightly too quiet at 10kHz). 
-However, the physical metal tube of the coupler remains exactly the same length. Therefore, a software calibration never shifts the physical 8 kHz air resonance. The guide will thus always show you the acoustically correct physical insertion depth, completely independent of the selected calibration file.
+A common question is why the depth guide *always* aims for 8 kHz, even if different microphone calibration profiles are loaded.
+The answer lies in **physics**: A calibration file only corrects internal frequency flaws of the microphone capsule. The physical metal tube of the coupler, however, remains exactly the same length. Therefore, a software calibration never shifts the physical air resonance. The guide will always show you the acoustically correct physical position, independent of the selected calibration file.
 
 ## 10. Health & Safety Disclaimer (EULA)
 
