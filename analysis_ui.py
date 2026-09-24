@@ -425,6 +425,26 @@ class TipAnalysisCardWidget(QFrame):
                 self.cb_tip_selector.blockSignals(False)
             self.refresh_metrics()
 
+    def update_theme(self):
+        bg = theme.get_color("bg_panel")
+        border = theme.get_color("border")
+        fg = theme.get_color("text_primary")
+        
+        self.setStyleSheet(f"QFrame#tip_card {{ background-color: {bg}; border: 1px solid {border}; border-radius: 6px; }}")
+        if hasattr(self, 'lbl_title'):
+            self.lbl_title.setStyleSheet(f"color: {fg}; font-weight: bold; font-size: 13px; background: transparent; border: none;")
+        
+        # We find children by object name instead of keeping references
+        from PySide6.QtWidgets import QFrame
+        sec1 = self.findChild(QFrame, "sec_helmholtz")
+        if sec1: sec1.setStyleSheet(f"QFrame#sec_helmholtz {{ background-color: {theme.get_color('bg_main')}; border: 1px solid {border}; border-left: 2px solid #0ea5e9; border-radius: 4px; }}")
+        
+        sec2 = self.findChild(QFrame, "sec_reproducibility")
+        if sec2: sec2.setStyleSheet(f"QFrame#sec_reproducibility {{ background-color: {theme.get_color('bg_main')}; border: 1px solid {border}; border-left: 2px solid #10b981; border-radius: 4px; }}")
+        
+        sec3 = self.findChild(QFrame, "sec_seal_history")
+        if sec3: sec3.setStyleSheet(f"QFrame#sec_seal_history {{ background-color: {theme.get_color('bg_main')}; border: 1px solid {border}; border-left: 2px solid #8b5cf6; border-radius: 4px; }}")
+
     def update_data(self, iem_id=None, tip_id=None, freqs=None, mag_l=None, mag_r=None):
         if iem_id is not None:
             self.iem_id = int(iem_id)
