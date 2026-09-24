@@ -1,17 +1,10 @@
-import sys
+import re
 
-with open('analysis_ui.py', 'r') as f:
+with open('Peli1020_TPU_Insert_V31.scad', 'r') as f:
     content = f.read()
 
-old_align = """            meas_val = mag_l[idx_1k] if mag_l is not None else (mag_r[idx_1k] if mag_r is not None else 80)
-            tgt_val = interp_tgt[idx_1k]"""
+# Update X coordinate to 15.65
+content = content.replace('[18.15, 80.75,', '[15.65, 80.75,')
 
-new_align = """            meas_val = mag_l[idx_1k] if mag_l is not None else (mag_r[idx_1k] if mag_r is not None else 80)
-            if meas_val < 30 or meas_val > 140:
-                meas_val = 80  # Prevent aligning target to silence or garbage
-            tgt_val = interp_tgt[idx_1k]"""
-
-content = content.replace(old_align, new_align)
-
-with open('analysis_ui.py', 'w') as f:
+with open('Peli1020_TPU_Insert_V31.scad', 'w') as f:
     f.write(content)

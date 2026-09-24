@@ -2764,9 +2764,10 @@ class MainWindow(QMainWindow):
         self._stress_worker = StressWorker(
             self.audio_engine, self.selected_in_idx, self.selected_out_idx,
             target_ch, stress_amp)
-        self._stress_worker.stress_finished.connect(self._on_stress_done)
-        self._stress_worker.stress_error.connect(self._on_stress_error)
-        self._stress_worker.sweep_progress.connect(self.stress_overlay.update_anim_sync)
+        from PySide6.QtCore import Qt
+        self._stress_worker.stress_finished.connect(self._on_stress_done, Qt.QueuedConnection)
+        self._stress_worker.stress_error.connect(self._on_stress_error, Qt.QueuedConnection)
+        self._stress_worker.sweep_progress.connect(self.stress_overlay.update_anim_sync, Qt.QueuedConnection)
         self._stress_worker.start()
 
     def _on_stress_done(self, hohd_f, hohd_db):
@@ -3751,8 +3752,9 @@ class MainWindow(QMainWindow):
             # Pass calibrated amplitude so pink noise matches calibrated sweep level
             cal_amp = getattr(self.audio_engine, 'calibrated_sweep_amp', 0.15)
             self.live_worker._cal_amp = cal_amp
-            self.live_worker.update_signal.connect(self.update_live_rta)
-            self.live_worker.error.connect(self.on_measurement_error)
+            from PySide6.QtCore import Qt
+            self.live_worker.update_signal.connect(self.update_live_rta, Qt.QueuedConnection)
+            self.live_worker.error.connect(self.on_measurement_error, Qt.QueuedConnection)
             self.live_worker.start()
         else:
             if hasattr(self, 'live_worker'):
@@ -4039,12 +4041,13 @@ class MainWindow(QMainWindow):
         # Store stress test flag to reveal HOHD later
         self._last_measurement_was_stress = is_stress_test
         
-        self.worker.finished.connect(self.on_measurement_finished)
-        self.worker.error.connect(self.on_measurement_error)
+        from PySide6.QtCore import Qt
+        self.worker.meas_finished.connect(self.on_measurement_finished, Qt.QueuedConnection)
+        self.worker.error.connect(self.on_measurement_error, Qt.QueuedConnection)
         self.meas_overlay.start(sweeps)
         
-        self.worker.progress.connect(self._on_meas_progress)
-        self.worker.sweep_progress.connect(self.meas_overlay.update_anim_sync)
+        self.worker.progress.connect(self._on_meas_progress, Qt.QueuedConnection)
+        self.worker.sweep_progress.connect(self.meas_overlay.update_anim_sync, Qt.QueuedConnection)
         self.worker.start()
 
     def _on_meas_progress(self, txt):

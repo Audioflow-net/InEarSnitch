@@ -211,22 +211,33 @@ class IEMCardWidget(QFrame):
         self.pic_widget.set_image(self.pic_path)
         self.avatar_layout.addWidget(self.pic_widget, alignment=Qt.AlignCenter)
         
+        # Group the text in a fixed-height container so it doesn't push the avatar up
+        self.text_container = QWidget()
+        self.text_container.setFixedHeight(60) # Fixed height ensures the layout centers exactly the same way across all cards
+        self.text_container.setStyleSheet("background: transparent; border: none;")
+        self.text_layout = QVBoxLayout(self.text_container)
+        self.text_layout.setContentsMargins(0, 0, 0, 0)
+        self.text_layout.setSpacing(2)
+        self.text_layout.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
+        
         self.lbl_title = QLabel(self.custom_name if self.custom_name else (model_name or "Unknown IEM"))
         self.lbl_title.setMinimumWidth(120)
         self.lbl_title.setMaximumWidth(140)
-        self.lbl_title.setAlignment(Qt.AlignCenter)
-        self.lbl_title.setStyleSheet("background-color: transparent; color: white; font-weight: bold; font-size: 14px; margin-top: 12px; border: none; outline: none;")
+        self.lbl_title.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
+        self.lbl_title.setStyleSheet("color: white; font-weight: bold; font-size: 13px; margin-top: 8px;")
         self.lbl_title.setWordWrap(True)
-        self.avatar_layout.addWidget(self.lbl_title)
+        self.text_layout.addWidget(self.lbl_title)
         
         self.lbl_model = QLabel(f"[{model_name}]")
         self.lbl_model.setMinimumWidth(120)
         self.lbl_model.setMaximumWidth(140)
-        self.lbl_model.setAlignment(Qt.AlignCenter)
-        self.lbl_model.setStyleSheet("background-color: transparent; color: #9ca3af; font-size: 11px; font-weight: normal; margin-top: 4px; border: none; outline: none;")
+        self.lbl_model.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        self.lbl_model.setStyleSheet("color: #9ca3af; font-size: 11px; font-weight: normal;")
         self.lbl_model.setWordWrap(True)
         self.lbl_model.setVisible(bool(self.custom_name))
-        self.avatar_layout.addWidget(self.lbl_model)
+        self.text_layout.addWidget(self.lbl_model)
+        
+        self.avatar_layout.addWidget(self.text_container)
         
         self.pic_widget.delete_clicked.connect(self.remove_pic)
         self.pic_widget.color_clicked.connect(self.choose_color)

@@ -461,17 +461,17 @@ module cutouts() {
     
             // 5. DAS INTEGRIERTE LOGO (Top Left)
     // A) Der massive Turm-Ausschnitt (von Z=2.0 bis Z=21.12)
-    translate([18.15, 80.75, 2.0 - eps])
+    translate([15.65, 80.75, 2.0 - eps])
         linear_extrude(height=19.12 + eps)
             offset(r=0.2) logo_tower_2d(); // 0.2mm Toleranz
             
         // B) Die filigranen Logo-Löcher (Hat, Face, Ear)
-    translate([18.15, 80.75, 21.12 - eps])
+    translate([15.65, 80.75, 21.12 - eps])
         linear_extrude(height=depth + flange_t - 21.12 + 2*eps)
             offset(r=0.2) custom_logo_2d();
             
     // C) Der Ausschnitt im TPU für den massiven Wellen-Block!
-    translate([18.15, 80.75, 21.12 - eps])
+    translate([15.65, 80.75, 21.12 - eps])
         linear_extrude(height=depth + flange_t - 21.12 + 2*eps)
             offset(r=0.2) waves_block();
 }
@@ -494,19 +494,19 @@ module petg_chassis(tol=0) {
             
                         // 3. DIE LOGO-STELZEN & TURM (Top Left Corner)
             // A) Der massive Basis-Turm (Z=2.0 bis Z=21.12)
-            translate([18.15, 80.75, 2.0 - eps])
+            translate([15.65, 80.75, 2.0 - eps])
                 linear_extrude(height=19.12 + eps)
                     logo_tower_2d();
                     
                         // B) Die filigranen Logo-Details (Hut, Gesicht, Ohr, Wellen)
-            translate([18.15, 80.75, 21.12 - eps])
+            translate([15.65, 80.75, 21.12 - eps])
                 color("darkturquoise")
                 linear_extrude(height=depth + flange_t - 21.12 + eps)
                     custom_logo_2d();
                     
             // C) NEU: Der massive Block unter den Wellen (verhindert Abbrechen!)
             // Geht nur bis Z=24.12, sodass die Wellen oben 1mm erhaben herausstechen!
-            translate([18.15, 80.75, 21.12 - eps])
+            translate([15.65, 80.75, 21.12 - eps])
                 color("darkturquoise")
                 linear_extrude(height=3.0)
                     waves_block();
@@ -641,7 +641,8 @@ module petg_support_blocks(tol = 0) {
             translate([11.0, 11.0, 0]) petg_alignment_peg(15.0, 6.0, tol);
             
             // Ecke Oben Links (Neben dem Mikrofon-Schacht)
-            translate([11.0, 77.0, 0]) petg_alignment_peg(15.0, 6.0, tol);
+            // GELÖSCHT: Der neue Logo-Turm bei X=15.65 übernimmt jetzt exakt diese Funktion 
+            // und dient als massiver Anker-Stift für die obere linke Ecke!
             
             // Ecke Oben Rechts (Neben dem Mikrofon-Kopf)
             translate([122.0, 77.0, 0]) petg_alignment_peg(15.0, 6.0, tol);
