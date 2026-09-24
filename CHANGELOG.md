@@ -1,6 +1,17 @@
 # InEar Snitch Hardware & CAD Changelog
 *Lückenlose Dokumentation aller physikalischen Änderungen an den 3D-Modellen, um wissenschaftliche Reproduzierbarkeit sicherzustellen.*
 
+## [V37.7 CIEM 1.8mm Wall Target] - 2026-09-24
+**Fokus:** Mathematische Definition der exakten Ziel-Wandstärke (1.8 mm) für CIEMs.
+
+### Geändert (CIEM_XL_Adapter_Molds.scad)
+1. **Version / Datum:** V37.7 - 2026-09-24
+2. **Das betroffene Bauteil:** `CIEM_XL_Adapter_Molds.scad` (Tamper)
+3. **Maße (Alt vs. Neu):** Wandstärke experimentell auf exakt 1.8 mm festgelegt. Daraus resultiert ein Tamper-Innendurchmesser von 9.4 mm.
+4. **Formen-Änderung:** Dem Layout wurde ein `V27-9.4` Tamper hinzugefügt.
+5. **Die Idee / Der Grund:** 1.0 mm Wandstärke erschien dem User als zu dünn und reißanfällig, da V27 bisher mit extrem robusten 3.0 mm bis 4.0 mm dicken Wänden operierte. 1.8 mm ist der mathematische Sweet-Spot: 13.0 mm Außen (Messkammer-Limit) minus 2x 1.8 mm = 9.4 mm Innenloch. Dies liefert einen perfekten Mix aus massivem Grip, hoher Reißfestigkeit und ausreichend Dehn-Volumen für XL-CIEMs.
+
+
 ## [V37.6 CIEM V27 Flare] - 2026-09-24
 **Fokus:** Back to the Roots. Eine stumpfe, simple V27-Geometrie, nur mit einem "Anti-Tear" Kragen.
 
