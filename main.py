@@ -3685,6 +3685,14 @@ class MainWindow(QMainWindow):
                 except Exception:
                     pass
                 self.rta_peak_line = None
+                
+            if hasattr(self, 'rta_bass_line') and self.rta_bass_line is not None:
+                try:
+                    target = self.page_ana.plot_widget if hasattr(self, 'page_ana') else self.plot_widget
+                    target.removeItem(self.rta_bass_line)
+                except Exception:
+                    pass
+                self.rta_bass_line = None
             self.sub_lbl.setText("Status: Ready to measure.")
             self.sub_lbl.setStyleSheet("color: #00FF99; font-size: 13px;")
             self.btn_capture.setEnabled(True)
@@ -3794,18 +3802,27 @@ class MainWindow(QMainWindow):
                         self.rta_peak_line.hide()
     
                 # --- Status Check: Low Frequency Roll-off (Bass leak) ---
-                # Added debug info to show raw `current_mean` dBFS so we can determine the correct silence threshold.
                 mask_40 = (freqs >= 35) & (freqs <= 45)
                 mask_500 = (freqs >= 450) & (freqs <= 550)
                 if np.any(mask_40) and np.any(mask_500):
                     val_40 = np.mean(mag_db[mask_40])
                     val_500 = np.mean(mag_db[mask_500])
                     if val_40 < val_500 - 12:
-                        seal_html = f"<span style='color: #ef4444; font-weight: bold;'>🔴 SEAL LEAK!</span> <span style='color: gray; font-size: 14px;'>[{current_mean:.1f} dBFS]</span>"
+                        seal_html = f"<span style='color: #ef4444; font-weight: bold;'>🔴 Bass Leak!</span> <span style='color: gray; font-size: 14px;'>[{current_mean:.1f} dB]</span>"
+                        if hasattr(self, 'rta_bass_line') and self.rta_bass_line is not None:
+                            import pyqtgraph as pg
+                            self.rta_bass_line.setPen(pg.mkPen('#ef4444', width=4))
+                            if self.btn_iec_guide.isChecked(): self.rta_bass_line.show()
                     else:
-                        seal_html = f"<span style='color: #10b981; font-weight: bold;'>🟢 SEAL OK</span> <span style='color: gray; font-size: 14px;'>[{current_mean:.1f} dBFS]</span>"
+                        seal_html = f"<span style='color: #10b981; font-weight: bold;'>🟢 Bass Seal OK</span> <span style='color: gray; font-size: 14px;'>[{current_mean:.1f} dB]</span>"
+                        if hasattr(self, 'rta_bass_line') and self.rta_bass_line is not None:
+                            import pyqtgraph as pg
+                            self.rta_bass_line.setPen(pg.mkPen('#10b981', width=4))
+                            if self.btn_iec_guide.isChecked(): self.rta_bass_line.show()
                 else:
-                    seal_html = f"<span style='color: gray; font-size: 14px;'>[{current_mean:.1f} dBFS]</span>"
+                    seal_html = f"<span style='color: gray; font-size: 14px;'>[{current_mean:.1f} dB]</span>"
+                    if hasattr(self, 'rta_bass_line') and self.rta_bass_line is not None:
+                        self.rta_bass_line.hide()
             
             self.sub_lbl.setText(f"Live RTA | {seal_html} | {depth_html}")
             
