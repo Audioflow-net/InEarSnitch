@@ -825,7 +825,7 @@ class MainWindow(QMainWindow):
         from PySide6.QtCore import Qt
         
         logo_img = QLabel()
-        logo_path = os.path.join(os.path.dirname(__file__), "Final_Logo_Spy_Cleaned.svg")
+        logo_path = os.path.join(os.path.dirname(__file__), "Final Logo InEar Snitch.png")
         if os.path.exists(logo_path):
             pix = QPixmap(logo_path)
             if not pix.isNull():
