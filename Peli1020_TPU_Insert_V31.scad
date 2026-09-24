@@ -323,14 +323,26 @@ module retaining_lip_y(x, y, z, on_front, length, protrusion, thickness) {
 // DEIN INDIVIDUELLES LOGO (Option "Base-Through")
 // ==========================================
 module custom_logo_2d() {
-    // Hier kannst du später dein SVG (das Spy-Logo) importieren!
-    // Lösche dann einfach den text()-Befehl und entkommentiere import().
-    // Wichtig: Das SVG muss zentriert sein!
-    // import("spy_logo.svg");
-    
-    // Platzhalter, bis du das SVG einfügst:
-    text("InEar Snitch", size=7.0, font="Arial:style=Black", halign="center", valign="center");
+    // Das zentrierte und skalierte Spy-Logo!
+    translate([-11.05, -7.28]) 
+        scale([0.0645, 0.0645]) 
+            import("Final_Logo_Spy_Cleaned.svg");
 }
+
+module waves_block() {
+    // Ein solider Block, der exakt die feinen Soundwellen umschließt
+    translate([6.6, -0.5])
+        square([6.2, 7.5], center=true);
+}
+
+module logo_tower_2d() {
+    // Ein massiver ovaler Turm (20x15mm), der das filigrane Logo trägt
+    hull() {
+        translate([-2.5, 0]) circle(r=7.5);
+        translate([2.5, 0]) circle(r=7.5);
+    }
+}
+
 
 module cutouts() {
     // 1. THE HARMONIOUS L-SHAPE CABLE TRENCH
@@ -440,12 +452,21 @@ module cutouts() {
         }
     }
     
-        // 5. DAS INTEGRIERTE LOGO (Lücken im TPU)
-    // Wir stanzen das Logo als Löcher durch das gesamte TPU bis zum Chassis runter (Z=2.0).
-    // offset(r=0.2) gibt dem harten PETG etwas "Luft", damit es sauber reinrutscht!
-    translate([50.0, 80.0, 2.0 - eps])
-        linear_extrude(height=depth + flange_t - 2.0 + 2*eps)
+            // 5. DAS INTEGRIERTE LOGO (Top Left)
+    // A) Der massive Turm-Ausschnitt (von Z=2.0 bis Z=21.12)
+    translate([20.0, 80.8, 2.0 - eps])
+        linear_extrude(height=19.12 + eps)
+            offset(r=0.2) logo_tower_2d(); // 0.2mm Toleranz
+            
+        // B) Die filigranen Logo-Löcher (Hat, Face, Ear)
+    translate([20.0, 80.8, 21.12 - eps])
+        linear_extrude(height=depth + flange_t - 21.12 + 2*eps)
             offset(r=0.2) custom_logo_2d();
+            
+    // C) Der Ausschnitt im TPU für den massiven Wellen-Block!
+    translate([20.0, 80.8, 21.12 - eps])
+        linear_extrude(height=depth + flange_t - 21.12 + 2*eps)
+            offset(r=0.2) waves_block();
 }
 
 // ==========================================
@@ -461,12 +482,29 @@ module petg_chassis(tol=0) {
             translate([base_dx + 3.0, base_dx + 3.0, 0])
                 rounded_rect(base_x - 6.0, base_y - 6.0, 2.0, base_r - 3.0);
                 
+            // NEU: Support-Fuß für den Logo-Turm, damit er nicht in der Luft hängt!
+            // Da der Turm Y=88.3 erreicht, die Bodenplatte aber bei 87.0 aufhört.
+            translate([20.0, 80.8, 0])
+                linear_extrude(height=2.0)
+                    logo_tower_2d();
+                
             
-            // 3. DIE LOGO-STELZEN (Dein Wunsch: Wachsen aus der Base durchs TPU!)
-            // Extrudieren exakt von der Bodenplatte (Z=2.0) bis bündig zur TPU-Oberfläche.
-            translate([50.0, 80.0, 2.0 - eps])
-                linear_extrude(height=depth + flange_t - 2.0 + eps)
+                        // 3. DIE LOGO-STELZEN & TURM (Top Left Corner)
+            // A) Der massive Basis-Turm (Z=2.0 bis Z=21.12)
+            translate([20.0, 80.8, 2.0 - eps])
+                linear_extrude(height=19.12 + eps)
+                    logo_tower_2d();
+                    
+                        // B) Die filigranen Logo-Details (Hut, Gesicht, Ohr, Wellen)
+            translate([20.0, 80.8, 21.12 - eps])
+                linear_extrude(height=depth + flange_t - 21.12 + eps)
                     custom_logo_2d();
+                    
+            // C) NEU: Der massive Block unter den Wellen (verhindert Abbrechen!)
+            // Geht nur bis Z=24.12, sodass die Wellen oben 1mm erhaben herausstechen!
+            translate([20.0, 80.8, 21.12 - eps])
+                linear_extrude(height=3.0)
+                    waves_block();
             
             // Main PETG Tube (OD: 22mm)
             // GEKÜRZT AUF 41.5mm! (Absolute Decke der Peli-Kiste ist bei 42.42mm).

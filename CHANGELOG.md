@@ -1,6 +1,31 @@
 # InEar Snitch Hardware & CAD Changelog
 *Lückenlose Dokumentation aller physikalischen Änderungen an den 3D-Modellen, um wissenschaftliche Reproduzierbarkeit sicherzustellen.*
 
+## [V37.1 CIEM The 3 Concepts] - 2026-09-24
+**Fokus:** Integration aller 3 XL-CIEM Konzepte (Thin-Wall, Step-Down, V-Bowl) in das Projekt.
+
+### Geändert (CIEM_XL_Adapter_Molds.scad)
+1. **Version / Datum:** V37.1 - 2026-09-24
+2. **Das betroffene Bauteil:** `CIEM_XL_Adapter_Molds.scad`
+3. **Maße (Alt vs. Neu):** Alle drei Konzepte teilen sich nun exakt denselben 13.0 mm (Außen) / 11.0 mm (Innen) Neck, der durch die Überwurfmutter des IEC711-Couplers passt.
+4. **Formen-Änderung:** Die Datei enthält nun drei separate Geometrien, die bequem über Booleans an- und ausgeschaltet werden können: 
+   - `THIN`: Der dehnbare Schlauch mit Anti-Tear Wulst.
+   - `STEP`: Ein massiver Hard-Stop-Zylinder (14 mm innen), der abrupt auf 11 mm abfällt, damit der CIEM nie das Mikrofon berühren kann.
+   - `BOWL`: Ein V-förmiger Trichter (fließend von 17 mm auf 11 mm), der CIEMs jeder Form zentriert und verkeilt.
+5. **Die Idee / Der Grund:** Um die perfekte CIEM-Seal-Tiefe experimentell zu ermitteln, stehen nun alle drei akustischen Forschungs-Konzepte als sofort druckfertige Modelle zur Verfügung. Sie lassen sich in OpenSCAD komfortabel im Layout vergleichen.
+
+
+## [V37.0 CIEM XL Stretch Sleeve] - 2026-09-24
+**Fokus:** Neue Form für gigantische CIEMs zur Erreichung der 7-8kHz Half-Wave Resonanz.
+
+### Geändert (CIEM_XL_Adapter_Molds.scad)
+1. **Version / Datum:** V37.0 - 2026-09-24
+2. **Das betroffene Bauteil:** Komplett neues Projekt (`CIEM_XL_Adapter_Molds.scad`) für CIEM-Spezialformen.
+3. **Maße (Alt vs. Neu):** Innerer Lochdurchmesser (Core) extrem auf 13.0 mm geweitet. Wandstärke auf 1.25 mm verdünnt. Neuer 3.5 mm dicker Anti-Tear Wulstring (Torus) am Tip-Ende (Z=-5.0).
+4. **Formen-Änderung:** Die Form erzeugt keinen massiven Konus mehr, sondern einen extrem dünnwandigen Schlauch, der sich wie ein Ballon um massive Acryl-CIEMs spannen lässt. Ein dicker Wulstring an der Eintrittsöffnung (die in der Form ganz unten liegt, da Upside-Down-Guss) verhindert, dass das extrem dünne Silikon beim Spannen über den IEM einreißt.
+5. **Die Idee / Der Grund:** XL-CIEMs blieben in massiven Formen zu früh stecken. Dies vergrößerte das Residualvolumen im Coupler und ließ die Resonanz auf 5-6 kHz abstürzen. Der dünne Schlauch erlaubt maximales (nahezu widerstandsloses) Einsinken bis kurz vor das Mikrofon, wodurch die 7-8 kHz Seal Depth physikalisch wieder erreicht wird.
+
+
 ## [V36.9 V27 Torus Gap Fix] - 2026-09-23
 **Fokus:** Korrektur des 2mm Spalts zwischen V27-Schaft und der abgerundeten Spitze.
 

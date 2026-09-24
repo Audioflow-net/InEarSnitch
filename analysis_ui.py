@@ -23,6 +23,36 @@ class FreqAxisItem(pg.AxisItem):
                 strings.append(f"{hz}")
         return strings
 
+class RelativeDial(QDial):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._dragging = False
+        self._last_y = 0
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._dragging = True
+            self._last_y = event.pos().y()
+        else:
+            super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._dragging:
+            delta = self._last_y - event.pos().y()
+            self._last_y = event.pos().y()
+            # Sensitivity: 1 pixel = 2 steps (out of 1000)
+            # This makes a full sweep take ~500 pixels of vertical drag
+            new_val = self.value() + delta * 3
+            self.setValue(new_val)
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._dragging = False
+        else:
+            super().mouseReleaseEvent(event)
+
 class FloatKnob(QWidget):
     valueChanged = Signal(float)
     def __init__(self, title, min_val, max_val, default_val, scale='linear', suffix=""):
@@ -39,7 +69,7 @@ class FloatKnob(QWidget):
         self.lbl_title.setStyleSheet("font-size: 8px; color: #888; font-weight: bold; border: none; background: transparent;")
         layout.addWidget(self.lbl_title)
         
-        self.dial = QDial()
+        self.dial = RelativeDial()
         self.dial.wheelEvent = lambda event: event.ignore()
         self.dial.setMinimum(0)
         self.dial.setMaximum(self.steps)
