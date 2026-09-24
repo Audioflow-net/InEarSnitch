@@ -1712,6 +1712,14 @@ class AnalysisWidget(QWidget):
         
         # Update Channel Buttons
         btn_bg = theme.get_color('bg_main')
+
+        if hasattr(self, 'btn_stress_test'):
+            stress_bg = theme.get_color('stress')
+            stress_hover = theme.get_color('stress_hover')
+            stress_text = theme.get_color('stress_text')
+            btn_bg_disabled = theme.get_color('bg_hover')
+            self.btn_stress_test.setStyleSheet(f"QPushButton {{ background-color: {stress_bg}; color: {stress_text}; border: none; border-radius: 4px; font-weight: bold; padding: 8px; }} QPushButton:disabled {{ background-color: {btn_bg_disabled}; color: {text_sec}; }} QPushButton:hover {{ background-color: {stress_hover}; }}")
+
         if hasattr(self, 'btn_chan_l'):
             self.btn_chan_l.setStyleSheet(f"QPushButton {{ background-color: {btn_bg}; color: {text_sec}; border: 1px solid {border}; border-top-left-radius: 4px; border-bottom-left-radius: 4px; border-right: none; padding: 4px 10px; font-weight: bold; font-size: 11px; }} QPushButton:checked {{ background-color: #0ea5e9; color: white; border-color: #0ea5e9; }}")
         if hasattr(self, 'btn_chan_r'):
