@@ -463,14 +463,14 @@ class IEMCardWidget(QFrame):
             self.anim.setEndValue(480)
             self.set_title_active(True)
             pass
-            self.pic_widget.overlay.setText("Change")
+
         else:
             self.anim.setStartValue(self.form_container.width())
             self.anim.setEndValue(0)
             self.anim.finished.connect(self.hide_form_after_anim)
             self.set_title_active(False)
             pass
-            self.pic_widget.overlay.setText("Expand")
+
             
         self.anim.start()
         self.expanded_state_changed.emit()

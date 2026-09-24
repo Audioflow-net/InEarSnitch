@@ -510,7 +510,7 @@ class LiveSealWorker(QThread):
         self.target_channel = target_channel
         self.running = True
         self.fs = 48000
-        self.blocksize = 8192
+        self.blocksize = 65536
 
     def set_target_channel(self, target_channel):
         self.target_channel = target_channel
@@ -552,6 +552,9 @@ class LiveSealWorker(QThread):
             else:
                 idx = np.argmin(np.abs(freqs - f_center))
                 M[i, idx] = 1.0
+                
+        from scipy import sparse
+        M_sparse = sparse.csr_matrix(M)
                 
         cal_offset = np.zeros_like(log_freqs)
         if self.cal_f is not None and self.cal_m is not None:
@@ -615,7 +618,7 @@ class LiveSealWorker(QThread):
                 mag = np.abs(np.fft.rfft(sig_w)) / (N_sig / 2.0)
                 
                 # Fast fractional octave log-binning
-                mag_smooth = M @ mag
+                mag_smooth = M_sparse @ mag
                 
                 mag_db = 20 * np.log10(mag_smooth + 1e-12)
                 mag_db += cal_offset
