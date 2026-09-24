@@ -3630,6 +3630,12 @@ class MainWindow(QMainWindow):
                 self.rta_peak_line.setZValue(20)
                 target_plot.addItem(self.rta_peak_line)
             self.rta_peak_line.hide()
+
+            if not hasattr(self, 'rta_bass_line') or self.rta_bass_line is None:
+                self.rta_bass_line = pg.InfiniteLine(pos=np.log10(40.0), angle=90, movable=False)
+                self.rta_bass_line.setZValue(20)
+                target_plot.addItem(self.rta_bass_line)
+            self.rta_bass_line.hide()
             self.switch_workspace_tab(2)
             if hasattr(self, 'page_ana') and hasattr(self.page_ana, 'graph_tabs'):
                 self.page_ana.graph_tabs.setCurrentIndex(0)

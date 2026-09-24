@@ -366,7 +366,7 @@ class TourManager(QWidget):
             hole.addRoundedRect(r, 8, 8)
             path = path.subtracted(hole)
             
-            painter.fillPath(path, QColor(0, 0, 0, 190))
+            painter.fillPath(path, QColor(0, 0, 0, 120))
             
             # Draw pulsing highlight ring
             pulse = (math.sin(time.time() * 5) + 1) / 2 # 0.0 to 1.0
@@ -382,7 +382,7 @@ class TourManager(QWidget):
             painter.drawRoundedRect(r, 8, 8)
             
         else:
-            painter.fillPath(path, QColor(0, 0, 0, 190))
+            painter.fillPath(path, QColor(0, 0, 0, 120))
         
     def mousePressEvent(self, event):
         # Block clicks outside the coach mark to force user to use Next/Close
