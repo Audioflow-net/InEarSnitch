@@ -601,15 +601,16 @@ class AudioEngine:
                 if len(n_chunk) < n_chunk_len:
                     n_chunk = np.pad(n_chunk, (0, n_chunk_len - len(n_chunk)))
                 n_ir[h_start:h_end] = n_chunk * tukey(n_chunk_len, alpha=0.5)
-                noise_mag = np.abs(rfft(n_ir)) + 1e-12
-                valid_mask = h_mag >= (noise_mag * 1.995)
-                h_mag = h_mag * valid_mask
+                noise_mag = np.abs(rfft(n_ir))
+                # Spectral power subtraction instead of a hard jagged gate
+                h_mag = np.sqrt(np.maximum(0, h_mag**2 - noise_mag**2))
                 
             # Broken dBFS vs Deconvolved IR scale mismatch check removed.
             
             harmonic_energy += h_mag ** 2
             
-        thd = np.sqrt(harmonic_energy) / fund_mag
+        # Use THD-R formulation so it mathematically cannot exceed 100%
+        thd = np.sqrt(harmonic_energy) / np.sqrt(fund_mag**2 + harmonic_energy)
         thd_percentage = thd * 100.0
         
         return freqs, thd_percentage
@@ -695,9 +696,9 @@ class AudioEngine:
                 if len(n_chunk) < n_chunk_len:
                     n_chunk = np.pad(n_chunk, (0, n_chunk_len - len(n_chunk)))
                 n_ir[h_start:h_end] = n_chunk * tukey(n_chunk_len, alpha=0.5)
-                noise_mag = np.abs(rfft(n_ir)) + 1e-12
-                valid_mask = h_mag >= (noise_mag * 1.995)
-                h_mag = h_mag * valid_mask
+                noise_mag = np.abs(rfft(n_ir))
+                # Spectral power subtraction instead of a hard jagged gate
+                h_mag = np.sqrt(np.maximum(0, h_mag**2 - noise_mag**2))
                 
             # Broken dBFS vs Deconvolved IR scale mismatch check removed.
             
