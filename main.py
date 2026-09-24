@@ -3083,6 +3083,85 @@ class MainWindow(QMainWindow):
         if hasattr(self, 'search_input'):
             input_bg = theme.get_color('bg_main')
             self.search_input.setStyleSheet(f"background-color: {input_bg}; color: {fg}; border: 1px solid {border}; padding: 5px; border-radius: 4px;")
+            
+
+        input_bg = theme.get_color('bg_main')
+        active_bg = theme.get_color('accent')
+        fg = theme.get_color('text_primary')
+        border = theme.get_color('border')
+        
+        combo_qss = f"""
+            QComboBox {{
+                background-color: {input_bg};
+                color: {fg};
+                font-weight: bold;
+                font-size: 11px;
+                border: 1px solid {border};
+                border-radius: 4px;
+                padding: 4px 8px;
+            }}
+            QComboBox:hover {{
+                border-color: {active_bg};
+            }}
+            QComboBox::drop-down {{
+                border: none;
+                width: 18px;
+            }}
+            QComboBox QAbstractItemView {{
+                background-color: {input_bg};
+                color: {fg};
+                selection-background-color: {active_bg};
+                selection-color: white;
+                border: 1px solid {border};
+            }}
+        """
+        
+        if hasattr(self, 'combo_tip'):
+            self.combo_tip.setStyleSheet(combo_qss)
+        if hasattr(self, 'cb_smooth'):
+            self.cb_smooth.setStyleSheet(combo_qss)
+        if hasattr(self, 'cb_meas_target'):
+            self.cb_meas_target.setStyleSheet(combo_qss)
+        if hasattr(self, 'cb_meas_history'):
+            self.cb_meas_history.setStyleSheet(combo_qss)
+        if hasattr(self, 'in_combo'):
+            self.in_combo.setStyleSheet(combo_qss)
+        if hasattr(self, 'out_combo'):
+            self.out_combo.setStyleSheet(combo_qss)
+        if hasattr(self, 'mic_cal_combo'):
+            self.mic_cal_combo.setStyleSheet(combo_qss)
+            
+
+        if hasattr(self, 'btn_reset_view'):
+            self.btn_reset_view.setStyleSheet(f"QPushButton {{ background-color: {input_bg}; color: {fg}; border: 1px solid {border}; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px; }} QPushButton:hover {{ background-color: {active_bg}; color: white; border-color: {active_bg}; }}")
+            
+        # Update Bottom Controls
+        btn_bg = theme.get_color('bg_main')
+        text_sec = theme.get_color('text_secondary')
+        
+        if hasattr(self, 'btn_l'):
+            self.btn_l.setStyleSheet(f"QPushButton {{ background-color: {btn_bg}; color: {text_sec}; border: 1px solid {border}; border-top-left-radius: 6px; border-bottom-left-radius: 6px; border-right: none; padding: 12px 28px; font-weight: bold; font-size: 14px; }} QPushButton:checked {{ background-color: #16a34a; color: white; border-color: #16a34a; }}")
+        if hasattr(self, 'btn_r'):
+            self.btn_r.setStyleSheet(f"QPushButton {{ background-color: {btn_bg}; color: {text_sec}; border: 1px solid {border}; border-top-right-radius: 6px; border-bottom-right-radius: 6px; padding: 12px 28px; font-weight: bold; font-size: 14px; }} QPushButton:checked {{ background-color: #dc2626; color: white; border-color: #dc2626; }}")
+            
+        if hasattr(self, 'btn_trace'):
+            self.btn_trace.setStyleSheet(f"QPushButton {{ background-color: {btn_bg}; color: {text_sec}; font-weight: bold; padding: 6px 0px; border-radius: 4px; border: 1px solid {border}; font-size: 11px;}} QPushButton:disabled {{ color: #555; border-color: {border}; }} QPushButton:hover {{ color: #ef4444; border-color: #ef4444; background-color: {active_bg}; }}")
+        if hasattr(self, 'btn_save_db'):
+            self.btn_save_db.setStyleSheet(f"QPushButton {{ background-color: {btn_bg}; color: {text_sec}; font-weight: bold; padding: 6px 0px; border-radius: 4px; border: 1px solid {border}; font-size: 11px;}} QPushButton:disabled {{ color: #555; border-color: {border}; }} QPushButton:hover {{ color: #10b981; border-color: #10b981; background-color: {active_bg}; }}")
+            
+        if hasattr(self, 'btn_rta_raw'):
+            self.btn_rta_raw.setStyleSheet(f"QPushButton {{ background-color: {btn_bg}; color: {fg}; font-weight: bold; font-size: 13px; border-radius: 4px; border: 1px solid {border}; padding: 6px 0px;}} QPushButton:hover {{ background-color: {active_bg}; }} QPushButton:checked {{ background-color: #0ea5e9; color: white; border: 1px solid #0ea5e9; padding: 6px 0px;}}")
+        if hasattr(self, 'btn_iec_guide'):
+            self.btn_iec_guide.setStyleSheet(f"QPushButton {{ background-color: {btn_bg}; color: {fg}; font-weight: bold; font-size: 13px; border-radius: 4px; border: 1px solid {border}; padding: 6px 0px;}} QPushButton:hover {{ background-color: {active_bg}; }} QPushButton:checked {{ background-color: #10b981; color: white; border: 1px solid #10b981; padding: 6px 0px;}}")
+            
+        if hasattr(self, 'btn_1x'):
+            sweeps_style = f"QPushButton {{ background-color: {btn_bg}; color: {text_sec}; border: 1px solid {border}; padding: 6px 10px; font-weight: bold; font-size: 13px; }} QPushButton:checked {{ background-color: {active_bg}; color: {fg}; border-color: {border}; }}"
+            self.btn_1x.setStyleSheet(sweeps_style + " QPushButton { border-top-left-radius: 4px; border-bottom-left-radius: 4px; border-right: none; }")
+            self.btn_3x.setStyleSheet(sweeps_style + " QPushButton { border-right: none; }")
+            self.btn_5x.setStyleSheet(sweeps_style + " QPushButton { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }")
+
+
+
         
         # Update Scrollbars dynamically
         sb_bg = "#f4f4f5" if theme.is_light() else "#111"

@@ -1705,6 +1705,14 @@ class AnalysisWidget(QWidget):
         active = theme.get_color('bg_hover')
         text_sec = theme.get_color('text_secondary')
         
+        
+        # Update Channel Buttons
+        btn_bg = theme.get_color('bg_main')
+        if hasattr(self, 'btn_chan_l'):
+            self.btn_chan_l.setStyleSheet(f"QPushButton {{ background-color: {btn_bg}; color: {text_sec}; border: 1px solid {border}; border-top-left-radius: 4px; border-bottom-left-radius: 4px; border-right: none; padding: 4px 10px; font-weight: bold; font-size: 11px; }} QPushButton:checked {{ background-color: #0ea5e9; color: white; border-color: #0ea5e9; }}")
+        if hasattr(self, 'btn_chan_r'):
+            self.btn_chan_r.setStyleSheet(f"QPushButton {{ background-color: {btn_bg}; color: {text_sec}; border: 1px solid {border}; border-top-right-radius: 4px; border-bottom-right-radius: 4px; padding: 4px 10px; font-weight: bold; font-size: 11px; }} QPushButton:checked {{ background-color: #ef4444; color: white; border-color: #ef4444; }}")
+        
         # Update Tabs
         self.graph_tabs.setStyleSheet(f"QTabWidget::tab-bar {{ left: 0px; alignment: left; }} QTabWidget::pane {{ border: 1px solid {border}; border-radius: 4px; }} QTabBar::tab {{ background: {bg}; color: {text_sec}; padding: 4px 10px; min-width: 80px; border: 1px solid {border}; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: bold; font-size: 11px; }} QTabBar::tab:selected {{ background: {active}; color: {fg}; }}")
         if hasattr(self, 'tools_tabs'):
