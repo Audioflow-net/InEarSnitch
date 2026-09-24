@@ -641,7 +641,7 @@ class LiveSealWorker(QThread):
         self.running = False
 
 class MeasurementWorker(QThread):
-    finished = Signal(object, object, object, object, str, object, object, object)
+    meas_finished = Signal(object, object, object, object, str, object, object, object)
     error = Signal(str)
     progress = Signal(str)
     sweep_progress = Signal(float, int)
@@ -2737,8 +2737,8 @@ class MainWindow(QMainWindow):
         
         # Run measurement in a thread
         class StressWorker(QThread):
-            finished = Signal(object, object)
-            error = Signal(str)
+            stress_finished = Signal(object, object)
+            stress_error = Signal(str)
             sweep_progress = Signal(float, int)
             
             def __init__(self, engine, in_idx, out_idx, ch, amp):
@@ -2757,15 +2757,15 @@ class MainWindow(QMainWindow):
                         amplitude=self.amp,
                         progress_callback=lambda t: self.sweep_progress.emit(t, 1))
                     hohd_f, hohd_db = self.engine.extract_hohd(ir, duration=3.0, noise_floor=noise)
-                    self.finished.emit(hohd_f, hohd_db)
+                    self.stress_finished.emit(hohd_f, hohd_db)
                 except Exception as e:
-                    self.error.emit(str(e))
+                    self.stress_error.emit(str(e))
         
         self._stress_worker = StressWorker(
             self.audio_engine, self.selected_in_idx, self.selected_out_idx,
             target_ch, stress_amp)
-        self._stress_worker.finished.connect(self._on_stress_done)
-        self._stress_worker.error.connect(self._on_stress_error)
+        self._stress_worker.stress_finished.connect(self._on_stress_done)
+        self._stress_worker.stress_error.connect(self._on_stress_error)
         self._stress_worker.sweep_progress.connect(self.stress_overlay.update_anim_sync)
         self._stress_worker.start()
 
