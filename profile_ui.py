@@ -199,7 +199,7 @@ class IEMCardWidget(QFrame):
         # --- LEFT: Avatar ---
         self.avatar_container = QFrame()
         self.avatar_container.setStyleSheet("background-color: transparent; border: none;")
-        self.avatar_container.setMinimumWidth(150)
+        self.avatar_container.setFixedWidth(160)
         self.avatar_container.setCursor(Qt.PointingHandCursor)
         self.avatar_container.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
         self.avatar_layout = QVBoxLayout(self.avatar_container)
@@ -213,6 +213,8 @@ class IEMCardWidget(QFrame):
         
         display_name = f"{self.custom_name}\n[{model_name}]" if self.custom_name else (model_name or "Unknown IEM")
         self.lbl_title = QLabel(display_name)
+        self.lbl_title.setMinimumWidth(120)
+        self.lbl_title.setMaximumWidth(140)
         self.lbl_title.setAlignment(Qt.AlignCenter)
         self.lbl_title.setStyleSheet("background-color: transparent; color: white; font-weight: bold; font-size: 14px; margin-top: 5px; border: none; outline: none;")
         self.lbl_title.setWordWrap(True)
@@ -279,6 +281,7 @@ class IEMCardWidget(QFrame):
         l_name = QLabel("Name:"); l_name.setStyleSheet(lbl_style)
         from PySide6.QtWidgets import QLineEdit
         self.custom_name_input = QLineEdit(self.custom_name)
+        self.custom_name_input.setMaxLength(25)
         self.custom_name_input.setPlaceholderText("e.g. Ben's Main IEM")
         self.custom_name_input.setStyleSheet(f"background: transparent; border: none; border-bottom: 1px solid {bc}; color: {tc}; font-size: 14px; padding-bottom: 4px;")
         self.custom_name_input.textChanged.connect(self.sync_title)
@@ -513,7 +516,7 @@ class AddIEMCardWidget(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setProperty("class", "iem-card")
-        self.setFixedSize(140, 260)
+        self.setFixedSize(160, 260)
         self.setStyleSheet("QFrame.iem-card { background-color: transparent; border: 2px dashed #34d399; border-radius: 12px; } QFrame.iem-card:hover { background-color: rgba(52, 211, 153, 0.1); }")
         
         self.main_layout = QVBoxLayout(self)

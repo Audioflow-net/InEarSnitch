@@ -323,30 +323,30 @@ module retaining_lip_y(x, y, z, on_front, length, protrusion, thickness) {
 // DEIN INDIVIDUELLES LOGO (Option "Base-Through")
 // ==========================================
 module custom_logo_2d() {
-    // Das zentrierte und leicht geschrumpfte Spy-Logo!
-    translate([-10.28, -6.77]) 
-        scale([0.060, 0.060]) 
+    // Das zentrierte und NOCHMALS leicht geschrumpfte Spy-Logo (0.055)!
+    translate([-9.42, -6.21]) 
+        scale([0.055, 0.055]) 
             import("Final_Logo_Spy_Cleaned.svg");
 }
 
 module waves_only() {
     intersection() {
         custom_logo_2d();
-        translate([6.1, -0.4])
-            square([5.8, 7.0], center=true);
+        translate([5.6, -0.3])
+            square([5.4, 6.5], center=true);
     }
 }
 
 module waves_block() {
     // Ein Block, der exakt die Außenkante der Wellenform übernimmt!
-    offset(r=0.4) offset(r=-0.1) waves_only();
+    offset(r=0.35) offset(r=-0.1) waves_only();
 }
 
 module logo_tower_2d() {
-    // Ein massiver ovaler Turm, der das filigrane Logo trägt
+    // Ein massiver ovaler Turm, der das filigrane Logo trägt (jetzt schmaler: r=6.0)
     hull() {
-        translate([-2.0, 0]) circle(r=6.75);
-        translate([3.5, 0]) circle(r=6.75);
+        translate([-2.5, 0]) circle(r=6.0);
+        translate([3.5, 0]) circle(r=6.0);
     }
 }
 
@@ -461,17 +461,17 @@ module cutouts() {
     
             // 5. DAS INTEGRIERTE LOGO (Top Left)
     // A) Der massive Turm-Ausschnitt (von Z=2.0 bis Z=21.12)
-    translate([18.15, 80.15, 2.0 - eps])
+    translate([18.15, 80.75, 2.0 - eps])
         linear_extrude(height=19.12 + eps)
             offset(r=0.2) logo_tower_2d(); // 0.2mm Toleranz
             
         // B) Die filigranen Logo-Löcher (Hat, Face, Ear)
-    translate([18.15, 80.15, 21.12 - eps])
+    translate([18.15, 80.75, 21.12 - eps])
         linear_extrude(height=depth + flange_t - 21.12 + 2*eps)
             offset(r=0.2) custom_logo_2d();
             
     // C) Der Ausschnitt im TPU für den massiven Wellen-Block!
-    translate([18.15, 80.15, 21.12 - eps])
+    translate([18.15, 80.75, 21.12 - eps])
         linear_extrude(height=depth + flange_t - 21.12 + 2*eps)
             offset(r=0.2) waves_block();
 }
@@ -494,19 +494,19 @@ module petg_chassis(tol=0) {
             
                         // 3. DIE LOGO-STELZEN & TURM (Top Left Corner)
             // A) Der massive Basis-Turm (Z=2.0 bis Z=21.12)
-            translate([18.15, 80.15, 2.0 - eps])
+            translate([18.15, 80.75, 2.0 - eps])
                 linear_extrude(height=19.12 + eps)
                     logo_tower_2d();
                     
                         // B) Die filigranen Logo-Details (Hut, Gesicht, Ohr, Wellen)
-            translate([18.15, 80.15, 21.12 - eps])
+            translate([18.15, 80.75, 21.12 - eps])
                 color("darkturquoise")
                 linear_extrude(height=depth + flange_t - 21.12 + eps)
                     custom_logo_2d();
                     
             // C) NEU: Der massive Block unter den Wellen (verhindert Abbrechen!)
             // Geht nur bis Z=24.12, sodass die Wellen oben 1mm erhaben herausstechen!
-            translate([18.15, 80.15, 21.12 - eps])
+            translate([18.15, 80.75, 21.12 - eps])
                 color("darkturquoise")
                 linear_extrude(height=3.0)
                     waves_block();
