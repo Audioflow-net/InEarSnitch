@@ -1,6 +1,39 @@
 # InEar Snitch Hardware & CAD Changelog
 *Lückenlose Dokumentation aller physikalischen Änderungen an den 3D-Modellen, um wissenschaftliche Reproduzierbarkeit sicherzustellen.*
 
+## [V37.4 CIEM V27-Tamper Sync] - 2026-09-24
+**Fokus:** Mathematische Synchronisierung der neuen CIEM-Form mit den existierenden V27-Tampern für maximale Modularität.
+
+### Geändert (CIEM_XL_Adapter_Molds.scad)
+1. **Version / Datum:** V37.4 - 2026-09-24
+2. **Das betroffene Bauteil:** `CIEM_XL_Adapter_Molds.scad` und Tamper.
+3. **Maße (Alt vs. Neu):** Die absolute Tiefe der CIEM-Gussform (`z_tip`) ist nun mathematisch exakt an die Schaftlänge des V27-Tampers gekoppelt (`9.6 - (7.61 + extra_v27_length) - 2.0`). Der dedizierte `piston_straight` wurde gelöscht.
+4. **Formen-Änderung:** Die Gussform endet nun genau an der Stelle, an der die Spitze der V27-Tamper aufschlägt.
+5. **Die Idee / Der Grund:** Der User muss für das neue TUBE-Konzept keine eigenen Tamper mehr drucken! Wenn ein 7mm Loch gewünscht ist, wird einfach der bereits gedruckte `V27-7` Tamper in diese neue Form gesteckt. Braucht der User ein 6mm oder 5mm Loch, kann er einfach seine existierenden `V27-6` oder `V27-5` Tamper verwenden. Dadurch entsteht ein hochmodulares Wechselsystem.
+
+
+## [V37.3 CIEM 7mm Grip Tube] - 2026-09-24
+**Fokus:** Verkleinerung des Innenlochs für massiven Grip am CIEM.
+
+### Geändert (CIEM_XL_Adapter_Molds.scad)
+1. **Version / Datum:** V37.3 - 2026-09-24
+2. **Das betroffene Bauteil:** `CIEM_XL_Adapter_Molds.scad` (Straight Stretch Tube)
+3. **Maße (Alt vs. Neu):** Innerer Durchmesser (`tube_inner`) von 11.0 mm auf 7.0 mm verkleinert.
+4. **Formen-Änderung:** Das gerade Rohr hat außen weiterhin 13.0 mm (für den perfekten Sitz in der IEC711 Mutter), das innere Loch ist jedoch auf 7.0 mm geschrumpft. Dadurch erhöht sich die Wandstärke des Silikons von 1.0 mm auf massive 3.0 mm.
+5. **Die Idee / Der Grund:** Ein 11mm Loch war zu groß und hätte bei manchen CIEM-Nozzles (die oft nur 6-8mm dick sind) vielleicht zu wenig Halt geboten. Mit einem 7.0 mm Loch muss das Silikon beim Einführen stärker aufgedehnt werden, was durch die 3mm Wandstärke einen gewaltigen mechanischen Grip erzeugt, sodass der CIEM in der Tiefe (am 8kHz Seal-Point) fest verankert bleibt.
+
+
+## [V37.2 CIEM Straight Stretch Tube] - 2026-09-24
+**Fokus:** Extreme Vereinfachung der CIEM-Form für bessere Gießbarkeit (mit Keilpresse) und maximalen Grip.
+
+### Geändert (CIEM_XL_Adapter_Molds.scad)
+1. **Version / Datum:** V37.2 - 2026-09-24
+2. **Das betroffene Bauteil:** `CIEM_XL_Adapter_Molds.scad`
+3. **Maße (Alt vs. Neu):** Die extremen 18mm Balloon- und Trichterformen wurden komplett entfernt. Die Form ist jetzt ein absolut gerades Rohr mit exakt 13.0 mm Außendurchmesser (passend zur Mutter) und 11.0 mm Innendurchmesser (Tamper-Core). Wandstärke: 1.0 mm. Der Einreiß-Schutz-Ring ist auf dezente 15.0 mm geschrumpft.
+4. **Formen-Änderung:** Die Gussform ist jetzt ein simpler, gerader Kanal. Das hochviskose Knet-Silikon lässt sich hier mit der Keilpresse fehlerfrei und ohne Lufteinschlüsse hineinpressen, da es keine Bauch-Erweiterungen (Hinterschnitte) mehr gibt.
+5. **Die Idee / Der Grund:** Das dicke Silikon ("zu fett") war schwer zu gießen. Das gerade 13.0 mm Rohr passt ohne Quetschen direkt durch die Überwurfmutter. Der dicke CIEM dehnt das dünnwandige Rohr im freien Raum über der Mutter wie einen Luftballon flexibel auf. Das unter Spannung stehende Silikon liefert massiven "Grip" am Acryl. Da das Rohr erst am Eintritt in die Mutter seinen mechanischen Widerstand leistet, rutscht der CIEM extrem tief hinein $\rightarrow$ Die 8kHz "Keule" wird perfekt getroffen.
+
+
 ## [V37.1 CIEM The 3 Concepts] - 2026-09-24
 **Fokus:** Integration aller 3 XL-CIEM Konzepte (Thin-Wall, Step-Down, V-Bowl) in das Projekt.
 
