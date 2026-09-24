@@ -3724,7 +3724,8 @@ class MainWindow(QMainWindow):
 
             # Check 1: Absolute level too low (it's just room noise or acoustic bleed from the desk)
             # Check 2: Relative level dropped massively (IEM was just pulled out)
-            if current_mean < -25.0 or current_mean < self._max_rta_mean - 25.0:
+            # Threshold is -85 dBFS because a true seal is typically -50 to -70 dBFS, and desk bleed is < -100 dBFS.
+            if current_mean < -85.0 or current_mean < self._max_rta_mean - 25.0:
                 seal_html = "<span style='color: #a8a29e; font-weight: bold;'>IEM Not Detected (Silence)</span>"
                 depth_html = ""
                 if hasattr(self, 'rta_peak_line') and self.rta_peak_line is not None:
