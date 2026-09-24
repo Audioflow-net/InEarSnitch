@@ -569,15 +569,7 @@ class AudioEngine:
             if h_idx_expected - half_win < 0:
                 continue
                 
-            # Local search for the exact peak
-            search_rad = int(0.01 * self.sample_rate)
-            s_start = max(0, h_idx_expected - search_rad)
-            s_end = min(N, h_idx_expected + search_rad)
-            if s_start >= s_end:
-                continue
-                
-            local_peak = np.argmax(np.abs(ir[s_start:s_end]))
-            h_idx_actual = s_start + local_peak
+            h_idx_actual = h_idx_expected
             
             # Windowing the harmonic
             h_start = max(0, h_idx_actual - half_win)
@@ -670,12 +662,7 @@ class AudioEngine:
             if h_idx - half_win < 0 or h_idx + half_win >= N:
                 continue
             
-            # Local peak search
-            search_rad = int(0.005 * self.sample_rate)
-            s_start = max(0, h_idx - search_rad)
-            s_end = min(N, h_idx + search_rad)
-            local_peak = np.argmax(np.abs(ir[s_start:s_end]))
-            h_idx_actual = s_start + local_peak
+            h_idx_actual = h_idx
             
             h_start = max(0, h_idx_actual - half_win)
             h_end = min(N, h_idx_actual + half_win)
