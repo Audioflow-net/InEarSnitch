@@ -711,7 +711,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setAttribute(Qt.WA_StyledBackground, True)
         
-        self.setWindowTitle("InEar SNITCH PRO AUDIO DIAGNOSTICS")
+        self.setWindowTitle("")
         # Get screen size and adapt dynamically, or just maximize
         screen = QApplication.primaryScreen().availableGeometry()
         w, h = screen.width() * 0.85, screen.height() * 0.85
