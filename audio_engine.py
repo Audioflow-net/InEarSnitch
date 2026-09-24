@@ -601,8 +601,12 @@ class AudioEngine:
             
             harmonic_energy += h_mag ** 2
             
+        # Prevent micro-nulls from exploding the THD division
+        min_fund = np.max(fund_mag) * 0.001
+        fund_mag_safe = np.maximum(fund_mag, min_fund)
+        
         # Use THD-R formulation so it mathematically cannot exceed 100%
-        thd = np.sqrt(harmonic_energy) / np.sqrt(fund_mag**2 + harmonic_energy)
+        thd = np.sqrt(harmonic_energy) / np.sqrt(fund_mag_safe**2 + harmonic_energy)
         thd_percentage = thd * 100.0
         
         return freqs, thd_percentage
@@ -699,8 +703,10 @@ class AudioEngine:
         hf_mask = freqs >= 2400.0
         final_energy = np.where(hf_mask, thd_hf_energy, hohd_energy)
         
-        # Convert to dB relative to fundamental
-        hohd_db = 20 * np.log10(final_energy / fund_mag + 1e-12)
+        # Convert to dB relative to fundamental, preventing micro-nulls
+        min_fund = np.max(fund_mag) * 0.001
+        fund_mag_safe = np.maximum(fund_mag, min_fund)
+        hohd_db = 20 * np.log10(final_energy / fund_mag_safe + 1e-12)
         
         return freqs, hohd_db
 
