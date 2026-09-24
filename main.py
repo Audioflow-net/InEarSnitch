@@ -621,9 +621,15 @@ class LiveSealWorker(QThread):
                 mag_smooth = M_sparse @ mag
                 
                 mag_db = 20 * np.log10(mag_smooth + 1e-12)
-                mag_db += cal_offset
+                
+                if getattr(self, 'last_mag_db', None) is None:
+                    self.last_mag_db = mag_db
+                else:
+                    self.last_mag_db = 0.15 * mag_db + 0.85 * self.last_mag_db
                     
-                self.update_signal.emit(log_freqs, mag_db)
+                mag_db_out = self.last_mag_db + cal_offset
+                    
+                self.update_signal.emit(log_freqs, mag_db_out)
             except Exception as e:
                 print(f"[LiveSealWorker Error] {e}")
                 self.error.emit(str(e))
@@ -3807,8 +3813,8 @@ class MainWindow(QMainWindow):
         target_db = 85.0
         
         # Calculate needed shift to reach 85dB, but strictly bound it!
-        # Normal raw mic signals are -45 to -15 dBFS -> Shift of +100 to +130
-        calculated_shift = np.clip(target_db - current_mean, 50.0, 140.0)
+        # Normal raw mic signals are -45 to -15 dBFS -> Shift of +100 to +180
+        calculated_shift = np.clip(target_db - current_mean, 50.0, 180.0)
         
         if not hasattr(self, '_rta_shift'):
             self._rta_shift = calculated_shift
@@ -3839,8 +3845,8 @@ class MainWindow(QMainWindow):
 
             # Check 1: Absolute level too low (it's just room noise or acoustic bleed from the desk)
             # Check 2: Relative level dropped massively (IEM was just pulled out)
-            # Threshold is -85 dBFS because a true seal is typically -50 to -70 dBFS, and desk bleed is < -100 dBFS.
-            if current_mean < -85.0 or current_mean < self._max_rta_mean - 25.0:
+            # Threshold is -105 dBFS because a true seal is typically -50 to -70 dBFS, and desk bleed is < -120 dBFS.
+            if current_mean < -105.0 or current_mean < self._max_rta_mean - 25.0:
                 seal_html = "<span style='color: #a8a29e; font-weight: bold;'>IEM Not Detected (Silence)</span>"
                 depth_html = ""
                 if hasattr(self, 'rta_peak_line') and self.rta_peak_line is not None:

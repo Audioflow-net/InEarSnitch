@@ -99,6 +99,7 @@ class HistoryCardWidget(QWidget):
         **kwargs
     ):
         super().__init__(parent)
+        self.setObjectName("HistoryCard")
         self.timestamp = timestamp
         self.iem_name = iem_name
         self.side = side
@@ -108,8 +109,6 @@ class HistoryCardWidget(QWidget):
         self.tip_icon = tip_icon if tip_icon else "?"
         self.tip_material = tip_material if tip_material else "Standard"
 
-        # Compute seal metrics if not explicitly passed
-        # (LOCKED DESIGN DECISION 2: L and R channels ALWAYS SEPARATE)
         if seal_l is not None:
             self.seal_l_delta = float(round(seal_l, 1))
             self.seal_l_status = "OK" if self.seal_l_delta >= self.SEAL_THRESHOLD_DB else "LEAK"
@@ -126,7 +125,6 @@ class HistoryCardWidget(QWidget):
         else:
             self.seal_r_status, self.seal_r_delta = None, None
 
-        # Determine formatted seal text
         if seal_text:
             self.seal_text = seal_text
         else:
@@ -139,14 +137,11 @@ class HistoryCardWidget(QWidget):
             else:
                 self.seal_text = ""
 
-        fg = "white"
-        text_sec = "#888"
-
         card_layout = QVBoxLayout(self)
-        card_layout.setContentsMargins(10, 6, 10, 6)
-        card_layout.setSpacing(3)
+        card_layout.setContentsMargins(10, 8, 10, 8)
+        card_layout.setSpacing(6)
 
-        # Row 1: IEM Name, Channel Badge, Graph Checkbox
+        # Row 1: IEM Name -> Stretch -> Side Badge -> Graph Checkbox
         row1 = QHBoxLayout()
         row1.setSpacing(6)
 
@@ -154,52 +149,35 @@ class HistoryCardWidget(QWidget):
         self.lbl_iem.setObjectName("lbl_iem")
         self.lbl_iem.setMinimumWidth(1)
         self.lbl_iem.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
-        self.lbl_iem.setStyleSheet(f"background-color: transparent; font-weight: bold; font-size: 13px; color: {fg};")
         row1.addWidget(self.lbl_iem, stretch=1)
 
-        # Channel Badge
         self.lbl_side = QLabel(side)
         self.lbl_side.setObjectName("lbl_side")
         side_lower = side.lower() if side else ""
         if side_lower == "left":
-            self.lbl_side.setStyleSheet(f"background-color: #3b82f6; color: {fg}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
+            self.lbl_side.setStyleSheet(f"background-color: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
         elif side_lower == "right":
-            self.lbl_side.setStyleSheet(f"background-color: #ef4444; color: {fg}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
+            self.lbl_side.setStyleSheet(f"background-color: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
         else:
-            self.lbl_side.setStyleSheet(f"background-color: #10b981; color: {fg}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
+            self.lbl_side.setStyleSheet(f"background-color: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
         row1.addWidget(self.lbl_side)
 
-        # Graph Checkbox
         self.cb_graph = QCheckBox("Graph")
         self.cb_graph.setObjectName("cb_graph")
-        self.cb_graph.setStyleSheet(f"QCheckBox {{ background-color: transparent; color: {text_sec}; font-size: 11px; font-weight: bold; }}")
+        self.cb_graph.setCursor(Qt.PointingHandCursor)
         row1.addWidget(self.cb_graph)
         card_layout.addLayout(row1)
 
-        # Row 2: Date & Seal Text on Left, Tip Badge & L/R Seal Badges on Right
+        # Row 2: Date -> Stretch -> Tip Badge
         row2 = QHBoxLayout()
         row2.setSpacing(5)
-
-        date_seal_layout = QVBoxLayout()
-        date_seal_layout.setSpacing(1)
-
+        
         self.lbl_date = QLabel(timestamp)
         self.lbl_date.setObjectName("lbl_date")
-        self.lbl_date.setMinimumWidth(1)
-        self.lbl_date.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
-        self.lbl_date.setStyleSheet(f"background-color: transparent; font-size: 10px; color: {text_sec};")
-        date_seal_layout.addWidget(self.lbl_date)
-
-        self.lbl_seal = QLabel(self.seal_text)
-        self.lbl_seal.setObjectName("lbl_seal")
-        self.lbl_seal.setStyleSheet("background-color: transparent; font-size: 10px; color: #a1a1aa;")
-        self.seal_badge = self.lbl_seal
-        date_seal_layout.addWidget(self.lbl_seal)
-        row2.addLayout(date_seal_layout)
-
+        row2.addWidget(self.lbl_date)
+        
         row2.addStretch(1)
-
-        # Tip Badge
+        
         self.lbl_tip_badge = QLabel()
         self.lbl_tip_badge.setObjectName("lbl_tip_badge")
         self.tip_badge = self.lbl_tip_badge
@@ -207,8 +185,19 @@ class HistoryCardWidget(QWidget):
         self.lbl_tip = self.lbl_tip_badge
         self._configure_tip_badge()
         row2.addWidget(self.lbl_tip_badge)
+        card_layout.addLayout(row2)
 
-        # Left Seal Indicator (L: OK / LEAK)
+        # Row 3: Seal Text -> Stretch -> Left Seal -> Right Seal
+        row3 = QHBoxLayout()
+        row3.setSpacing(5)
+        
+        self.lbl_seal = QLabel(self.seal_text)
+        self.lbl_seal.setObjectName("lbl_seal")
+        self.seal_badge = self.lbl_seal
+        row3.addWidget(self.lbl_seal)
+        
+        row3.addStretch(1)
+
         self.lbl_seal_l = QLabel()
         self.lbl_seal_l.setObjectName("lbl_seal_l")
         if self.seal_l_status is not None:
@@ -219,9 +208,8 @@ class HistoryCardWidget(QWidget):
                 self.lbl_seal_l.setStyleSheet("background-color: #065f46; color: #34d399; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #10b981;")
             else:
                 self.lbl_seal_l.setStyleSheet("background-color: #7f1d1d; color: #f87171; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #ef4444;")
-        row2.addWidget(self.lbl_seal_l)
+            row3.addWidget(self.lbl_seal_l)
 
-        # Right Seal Indicator (R: OK / LEAK)
         self.lbl_seal_r = QLabel()
         self.lbl_seal_r.setObjectName("lbl_seal_r")
         if self.seal_r_status is not None:
@@ -232,20 +220,32 @@ class HistoryCardWidget(QWidget):
                 self.lbl_seal_r.setStyleSheet("background-color: #065f46; color: #34d399; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #10b981;")
             else:
                 self.lbl_seal_r.setStyleSheet("background-color: #7f1d1d; color: #f87171; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #ef4444;")
-        row2.addWidget(self.lbl_seal_r)
+            row3.addWidget(self.lbl_seal_r)
 
-        card_layout.addLayout(row2)
-
-        # ProKit Gating
-        try:
-            is_unlocked = config.is_prokit_unlocked()
-        except Exception:
-            is_unlocked = False
-
-        self.lbl_tip_badge.setVisible(is_unlocked)
-        self.lbl_seal.setVisible(is_unlocked and bool(self.seal_text))
-        self.lbl_seal_l.setVisible(is_unlocked and self.seal_l_status is not None)
-        self.lbl_seal_r.setVisible(is_unlocked and self.seal_r_status is not None)
+        card_layout.addLayout(row3)
+        
+        self.update_theme()
+        
+    def update_theme(self):
+        import theme
+        bg = theme.get_color("bg_main")
+        border = theme.get_color("border")
+        fg = theme.get_color("text_primary")
+        text_sec = theme.get_color("text_secondary")
+        
+        self.setStyleSheet(f'''
+            QFrame#HistoryCard {{
+                background-color: {bg};
+                border: 1px solid {border};
+                border-radius: 6px;
+                margin: 2px;
+            }}
+        ''')
+        
+        self.lbl_iem.setStyleSheet(f"background-color: transparent; font-weight: bold; font-size: 13px; color: {fg}; border: none;")
+        self.lbl_date.setStyleSheet(f"background-color: transparent; font-size: 10px; color: {text_sec}; border: none;")
+        self.lbl_seal.setStyleSheet(f"background-color: transparent; font-size: 10px; color: {text_sec}; border: none;")
+        self.cb_graph.setStyleSheet(f"QCheckBox {{ background-color: transparent; color: {fg}; font-size: 11px; font-weight: bold; border: none; }} QCheckBox::indicator {{ width: 14px; height: 14px; border: 1px solid {border}; border-radius: 3px; background-color: {bg}; }} QCheckBox::indicator:checked {{ background-color: #10b981; border-color: #10b981; }}")
 
     def _configure_tip_badge(self):
         """Format badge text, tooltip, and stylesheet based on tip identity."""
@@ -427,6 +427,20 @@ class HistoryWidget(QWidget):
         self.plot_widget.setBackground(theme.get_color("pg_bg"))
         self.plot_widget.setLabel('left', 'Magnitude', units='dB', color=theme.get_color("pg_fg"))
         self.plot_widget.setLabel('bottom', 'Frequency', units='Hz', color=theme.get_color("pg_fg"))
+                # Update all history cards
+        for i in range(self.list_widget.count()):
+            item = self.list_widget.item(i)
+            widget = self.list_widget.itemWidget(item)
+            if hasattr(widget, 'update_theme'):
+                widget.update_theme()
+
+                # Update all history cards
+        for i in range(self.list_widget.count()):
+            item = self.list_widget.item(i)
+            widget = self.list_widget.itemWidget(item)
+            if hasattr(widget, 'update_theme'):
+                widget.update_theme()
+
         if hasattr(self, 'plot_widget'):
             self.plot_widget.showGrid(x=True, y=True, alpha=0.15 if theme.is_light() else 0.3)
         self.plot_widget.setLogMode(x=True, y=False)
