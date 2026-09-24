@@ -506,7 +506,9 @@ class LiveSealWorker(QThread):
         X_white = np.fft.rfft(np.random.randn(N_noise))
         S = np.sqrt(np.arange(X_white.size) + 1.0)
         y = np.fft.irfft(X_white / S, n=N_noise)
-        pink_noise_full = (y / np.max(np.abs(y))) * 0.15
+        # Use calibrated amplitude if available, otherwise 0.15
+        cal_amp = getattr(self, '_cal_amp', 0.15)
+        pink_noise_full = (y / np.max(np.abs(y))) * cal_amp
         self.noise_idx = 0
         
         # Precompute frequencies and calibration curve
@@ -3487,6 +3489,9 @@ class MainWindow(QMainWindow):
             self._rta_warmup = 0  # Suppress seal diagnostics for first 30 frames (~1s)
             
             self.live_worker = LiveSealWorker(self.selected_in_idx, self.selected_out_idx, cal_f, cal_m, target_channel=self.get_current_channel())
+            # Pass calibrated amplitude so pink noise matches calibrated sweep level
+            cal_amp = getattr(self.audio_engine, 'calibrated_sweep_amp', 0.15)
+            self.live_worker._cal_amp = cal_amp
             self.live_worker.update_signal.connect(self.update_live_rta)
             self.live_worker.error.connect(self.on_measurement_error)
             self.live_worker.start()
@@ -3535,8 +3540,8 @@ class MainWindow(QMainWindow):
         if not hasattr(self, '_rta_shift'):
             self._rta_shift = calculated_shift
         else:
-            # VERY slow adaptation so transients (like mic taps) are visibly preserved
-            self._rta_shift = 0.98 * self._rta_shift + 0.02 * calculated_shift
+            # Fast adaptation (~0.5s convergence) so level settles quickly
+            self._rta_shift = 0.92 * self._rta_shift + 0.08 * calculated_shift
             
         self.live_rta_line.setData(freqs[mask], mag_db[mask] + self._rta_shift)
         
