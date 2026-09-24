@@ -3055,6 +3055,7 @@ class MainWindow(QMainWindow):
             'noise_f_r': getattr(self, 'temp_noise_f_r', None),
             'noise_m_l': getattr(self, 'temp_noise_m_l', None),
             'noise_m_r': getattr(self, 'temp_noise_m_r', None),
+            'target_index': self.cb_meas_target.currentIndex() if hasattr(self, 'cb_meas_target') else 0,
         }
 
     def restore_workspace_state(self, iem_id):
@@ -3075,11 +3076,18 @@ class MainWindow(QMainWindow):
             self.temp_noise_f_r = state.get('noise_f_r')
             self.temp_noise_m_l = state.get('noise_m_l')
             self.temp_noise_m_r = state.get('noise_m_r')
+            
+            target_idx = state.get('target_index', -1)
+            if target_idx != -1 and hasattr(self, 'cb_meas_target'):
+                self.cb_meas_target.setCurrentIndex(target_idx)
+                
             self.redraw_graph()
             if hasattr(self, 'page_ana') and hasattr(self.page_ana, 'update_analysis_view'):
                 self.page_ana.update_analysis_view()
+            return True
         else:
             self.clear_trace()
+            return False
 
     def on_profile_selected(self, card=None):
         if not card: return
@@ -3117,7 +3125,7 @@ class MainWindow(QMainWindow):
             self.current_iem_id = iem_id
             
             # Restore unsaved workspace state for this specific IEM
-            self.restore_workspace_state(iem_id)
+            restored_state = self.restore_workspace_state(iem_id)
             
             # Reset history dropdown to clear previous IEM's history visually
             if hasattr(self, 'cb_meas_history'):
@@ -3138,17 +3146,18 @@ class MainWindow(QMainWindow):
             import sqlite3
             
             # --- AUTO-SELECT TARGET CURVE ---
-            if iem:
-                best_match_idx = -1
-                for i in range(1, self.cb_meas_target.count()):
-                    tgt_name = self.cb_meas_target.itemText(i).lower()
-                    if iem.lower() in tgt_name or tgt_name in iem.lower():
-                        best_match_idx = i
-                        break
-                if best_match_idx != -1:
-                    self.cb_meas_target.setCurrentIndex(best_match_idx)
-                else:
-                    self.cb_meas_target.setCurrentIndex(0)
+            if not restored_state:
+                if iem:
+                    best_match_idx = -1
+                    for i in range(1, self.cb_meas_target.count()):
+                        tgt_name = self.cb_meas_target.itemText(i).lower()
+                        if iem.lower() in tgt_name or tgt_name in iem.lower():
+                            best_match_idx = i
+                            break
+                    if best_match_idx != -1:
+                        self.cb_meas_target.setCurrentIndex(best_match_idx)
+                    else:
+                        self.cb_meas_target.setCurrentIndex(0)
             conn = sqlite3.connect(self.db.db_path)
             c = conn.cursor()
             c.execute("SELECT notes, profile_pic, id FROM Musicians WHERE name = ?", (name,))
