@@ -211,7 +211,7 @@ class IEMCardWidget(QFrame):
         self.pic_widget.set_image(self.pic_path)
         self.avatar_layout.addWidget(self.pic_widget, alignment=Qt.AlignCenter)
         
-        display_name = f"{self.custom_name}\n[{model_name}]" if self.custom_name else (model_name or "Unknown IEM")
+        display_name = f"{self.custom_name}<br><br><span style='color: #9ca3af; font-size: 11px; font-weight: normal;'>[{model_name}]</span>" if self.custom_name else (model_name or "Unknown IEM")
         self.lbl_title = QLabel(display_name)
         self.lbl_title.setMinimumWidth(120)
         self.lbl_title.setMaximumWidth(140)
