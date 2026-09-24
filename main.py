@@ -510,7 +510,7 @@ class LiveSealWorker(QThread):
         self.target_channel = target_channel
         self.running = True
         self.fs = 48000
-        self.blocksize = 65536
+        self.blocksize = 16384
 
     def set_target_channel(self, target_channel):
         self.target_channel = target_channel
@@ -533,11 +533,11 @@ class LiveSealWorker(QThread):
         # Precompute frequencies and calibration curve
         freqs = np.fft.rfftfreq(self.blocksize, 1/self.fs)
         
-        # Precompute Logarithmic Binning Matrix (1/96th octave for high res smoothing)
+        # Precompute Logarithmic Binning Matrix
         import math
         f_min = 20.0
         f_max = 24000.0
-        octave_frac = 1.0 / 96.0
+        octave_frac = 1.0 / 48.0
         n_bins = int(math.log2(f_max / f_min) / octave_frac) + 1
         log_freqs = f_min * (2.0 ** (np.arange(n_bins) * octave_frac))
         
@@ -621,14 +621,8 @@ class LiveSealWorker(QThread):
                 mag_smooth = M_sparse @ mag
                 
                 mag_db = 20 * np.log10(mag_smooth + 1e-12)
+                mag_db_out = mag_db + cal_offset
                 
-                if getattr(self, 'last_mag_db', None) is None:
-                    self.last_mag_db = mag_db
-                else:
-                    self.last_mag_db = 0.15 * mag_db + 0.85 * self.last_mag_db
-                    
-                mag_db_out = self.last_mag_db + cal_offset
-                    
                 self.update_signal.emit(log_freqs, mag_db_out)
             except Exception as e:
                 print(f"[LiveSealWorker Error] {e}")

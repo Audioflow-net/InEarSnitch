@@ -428,19 +428,6 @@ class HistoryWidget(QWidget):
         self.plot_widget.setLabel('left', 'Magnitude', units='dB', color=theme.get_color("pg_fg"))
         self.plot_widget.setLabel('bottom', 'Frequency', units='Hz', color=theme.get_color("pg_fg"))
                 # Update all history cards
-        for i in range(self.list_widget.count()):
-            item = self.list_widget.item(i)
-            widget = self.list_widget.itemWidget(item)
-            if hasattr(widget, 'update_theme'):
-                widget.update_theme()
-
-                # Update all history cards
-        for i in range(self.list_widget.count()):
-            item = self.list_widget.item(i)
-            widget = self.list_widget.itemWidget(item)
-            if hasattr(widget, 'update_theme'):
-                widget.update_theme()
-
         if hasattr(self, 'plot_widget'):
             self.plot_widget.showGrid(x=True, y=True, alpha=0.15 if theme.is_light() else 0.3)
         self.plot_widget.setLogMode(x=True, y=False)
@@ -644,6 +631,14 @@ class HistoryWidget(QWidget):
             for ax in [self.plot_widget.getAxis('left'), self.plot_widget.getAxis('bottom')]:
                 ax.setPen(theme.get_color("pg_fg"))
                 ax.setTextPen(theme.get_color("pg_fg"))
+
+
+        if hasattr(self, 'list_widget'):
+            for i in range(self.list_widget.count()):
+                item = self.list_widget.item(i)
+                widget = self.list_widget.itemWidget(item)
+                if hasattr(widget, 'update_theme'):
+                    widget.update_theme()
 
     def show_import_menu(self):
 
