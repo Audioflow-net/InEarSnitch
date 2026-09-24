@@ -162,10 +162,6 @@ class HistoryCardWidget(QWidget):
             self.lbl_side.setStyleSheet(f"background-color: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;")
         row1.addWidget(self.lbl_side)
 
-        self.cb_graph = QCheckBox("Graph")
-        self.cb_graph.setObjectName("cb_graph")
-        self.cb_graph.setCursor(Qt.PointingHandCursor)
-        row1.addWidget(self.cb_graph)
         card_layout.addLayout(row1)
 
         # Row 2: Date -> Stretch -> Tip Badge
@@ -234,18 +230,15 @@ class HistoryCardWidget(QWidget):
         text_sec = theme.get_color("text_secondary")
         
         self.setStyleSheet(f'''
-            QFrame#HistoryCard {{
-                background-color: {bg};
-                border: 1px solid {border};
-                border-radius: 6px;
-                margin: 2px;
-            }}
+            QFrame#HistoryCard {
+                background-color: transparent;
+                border: none;
+            }
         ''')
         
         self.lbl_iem.setStyleSheet(f"background-color: transparent; font-weight: bold; font-size: 13px; color: {fg}; border: none;")
         self.lbl_date.setStyleSheet(f"background-color: transparent; font-size: 10px; color: {text_sec}; border: none;")
         self.lbl_seal.setStyleSheet(f"background-color: transparent; font-size: 10px; color: {text_sec}; border: none;")
-        self.cb_graph.setStyleSheet(f"QCheckBox {{ background-color: transparent; color: {fg}; font-size: 11px; font-weight: bold; border: none; }} QCheckBox::indicator {{ width: 14px; height: 14px; border: 1px solid {border}; border-radius: 3px; background-color: {bg}; }} QCheckBox::indicator:checked {{ background-color: #10b981; border-color: #10b981; }}")
 
     def _configure_tip_badge(self):
         """Format badge text, tooltip, and stylesheet based on tip identity."""
@@ -567,7 +560,10 @@ class HistoryWidget(QWidget):
         # List Widget
         self.list_widget = QListWidget()
         self.list_widget.setStyleSheet(f"QListWidget {{ background-color: transparent; border: none; outline: none; }} QListWidget::item {{ padding: 2px; }} QListWidget::item:selected {{ background-color: {bg_hover}; border-radius: 6px; border: 1px solid {active}; }}")
+        from PySide6.QtWidgets import QAbstractItemView
+        self.list_widget.setSelectionMode(QAbstractItemView.MultiSelection)
         self.list_widget.itemSelectionChanged.connect(self.on_selection_changed)
+        self.list_widget.itemSelectionChanged.connect(self.refresh_view)
         
         target_layout.addWidget(self.list_widget, stretch=1)
         self.tools_tabs.addTab(target_tab, "ARCHIVE")
@@ -620,7 +616,7 @@ class HistoryWidget(QWidget):
         self.tools_tabs.setStyleSheet(f"QTabWidget::tab-bar {{ alignment: center; }} QTabWidget::pane {{ border: 1px solid {border}; border-radius: 4px; }} QTabBar::tab {{ background: {bg}; color: {text_sec}; padding: 4px 10px; min-width: 80px; border: 1px solid {border}; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: bold; font-size: 11px; }} QTabBar::tab:selected {{ background: {active}; color: {fg}; }}")
         
         self.search_bar.setStyleSheet(f"background-color: {bg_main}; color: {fg}; border: 1px solid {border}; padding: 6px; border-radius: 4px;")
-        self.list_widget.setStyleSheet(f"QListWidget {{ background-color: {bg}; border: none; outline: none; }} QListWidget::item {{ padding: 2px; }} QListWidget::item:selected {{ background-color: {bg_hover}; border-radius: 6px; border: 1px solid {theme.get_color('accent')}; }}")
+        self.list_widget.setStyleSheet(f"QListWidget {{ background-color: transparent; border: none; outline: none; }} QListWidget::item {{ background-color: {bg_main}; border: 1px solid {border}; border-radius: 6px; margin: 3px; }} QListWidget::item:selected {{ background-color: {bg_hover}; border: 1px solid {theme.get_color('accent')}; }}")
         self.list_widget.parentWidget().setStyleSheet(f"background-color: {bg};")
 
         if hasattr(self, 'plot_widget'):
@@ -858,7 +854,6 @@ class HistoryWidget(QWidget):
                     mag_l=mag_l,
                     mag_r=mag_r,
                 )
-                card.cb_graph.stateChanged.connect(self.refresh_view)
                 
                 # Ensure the item is big enough for the card
                 item.setSizeHint(card.sizeHint())
@@ -1005,7 +1000,7 @@ class HistoryWidget(QWidget):
             item = self.list_widget.item(i)
             card = self.list_widget.itemWidget(item)
             
-            if card and card.cb_graph.isChecked():
+            if card and item.isSelected():
                 data = item.data(Qt.UserRole)
                 freq = data['freq']
                 mag_l = data['mag_l']

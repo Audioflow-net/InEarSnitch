@@ -550,8 +550,19 @@ class LiveSealWorker(QThread):
             if np.any(mask):
                 M[i, mask] = 1.0 / np.sum(mask)
             else:
-                idx = np.argmin(np.abs(freqs - f_center))
-                M[i, idx] = 1.0
+                idx1 = np.searchsorted(freqs, f_center) - 1
+                if idx1 < 0:
+                    M[i, 0] = 1.0
+                elif idx1 >= len(freqs) - 1:
+                    M[i, -1] = 1.0
+                else:
+                    idx2 = idx1 + 1
+                    f1 = freqs[idx1]
+                    f2 = freqs[idx2]
+                    w2 = (f_center - f1) / (f2 - f1)
+                    w1 = 1.0 - w2
+                    M[i, idx1] = w1
+                    M[i, idx2] = w2
                 
         from scipy import sparse
         M_sparse = sparse.csr_matrix(M)
