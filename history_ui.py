@@ -427,7 +427,8 @@ class HistoryWidget(QWidget):
         self.plot_widget.setBackground(theme.get_color("pg_bg"))
         self.plot_widget.setLabel('left', 'Magnitude', units='dB', color=theme.get_color("pg_fg"))
         self.plot_widget.setLabel('bottom', 'Frequency', units='Hz', color=theme.get_color("pg_fg"))
-        self.plot_widget.showGrid(x=True, y=True, alpha=0.15 if theme.is_light() else 0.3)
+        if hasattr(self, 'plot_widget'):
+            self.plot_widget.showGrid(x=True, y=True, alpha=0.15 if theme.is_light() else 0.3)
         self.plot_widget.setLogMode(x=True, y=False)
         self.plot_widget.addLegend()
         self.reset_zoom()
@@ -621,11 +622,14 @@ class HistoryWidget(QWidget):
         self.list_widget.setStyleSheet(f"QListWidget {{ background-color: {bg}; border: none; outline: none; }} QListWidget::item {{ padding: 2px; }} QListWidget::item:selected {{ background-color: {bg_hover}; border-radius: 6px; border: 1px solid {theme.get_color('accent')}; }}")
         self.list_widget.parentWidget().setStyleSheet(f"background-color: {bg};")
 
-        self.plot.setBackground(theme.get_color("pg_bg"))
-        self.plot.showGrid(x=True, y=True, alpha=0.15 if theme.is_light() else 0.3)
-        for ax in [self.plot.getAxis('left'), self.plot.getAxis('bottom')]:
-            ax.setPen(theme.get_color("pg_fg"))
-            ax.setTextPen(theme.get_color("pg_fg"))
+        if hasattr(self, 'plot_widget'):
+            self.plot_widget.setBackground(theme.get_color("pg_bg"))
+        if hasattr(self, 'plot_widget'):
+            self.plot_widget.showGrid(x=True, y=True, alpha=0.15 if theme.is_light() else 0.3)
+        if hasattr(self, 'plot_widget'):
+            for ax in [self.plot_widget.getAxis('left'), self.plot_widget.getAxis('bottom')]:
+                ax.setPen(theme.get_color("pg_fg"))
+                ax.setTextPen(theme.get_color("pg_fg"))
 
     def show_import_menu(self):
 
