@@ -3971,14 +3971,7 @@ class MainWindow(QMainWindow):
                 "Please select or create a Musician Profile from the sidebar on the left.")
             return
         
-        if not is_stress_test:
-            reply = QMessageBox.question(self, self.tr("Hearing Safety Warning"),
-                                         self.tr("A sweep can produce high sound pressure levels.\n\n"
-                                         "Please ensure the In-Ear Monitor is securely seated in the coupler and NOT in your ear before measuring.\n\n"
-                                         "Proceed with measurement?"),
-                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-            if reply != QMessageBox.Yes:
-                return
+
                 
         # UI Hardening: block concurrent sweep attempts
         if self.is_measuring:
