@@ -2624,26 +2624,21 @@ class MainWindow(QMainWindow):
         if actual_peak < -30.0:
             log_lines.append("")
             log_lines.append("⚠️ WARNING: Recording level is very low!")
-            log_lines.append("   Action: Turn up your Mac / Interface volume.")
+            log_lines.append("   Action: Push the volume up and recalibrate!")
             QMessageBox.warning(self, "Volume Too Low",
-                "Your Mac/Interface volume is too low.\n\n"
-                "ACTION REQUIRED:\n"
-                "1. Turn up the volume on your Mac or headphone amplifier.\n"
-                "2. Run Auto-Calibration again."
+                "Volume Too Low!\n\n"
+                "Push the volume up and recalibrate."
             )
         
         # Warn if stress test can't go louder than normal sweep
         if stress_amp <= optimal_amp * 1.1:
             log_lines.append("")
             log_lines.append("⚠️ CRITICAL: No headroom for Stress Test")
-            log_lines.append("   Action: Turn up your Mac / Interface volume.")
+            log_lines.append("   Action: Push the volume up and recalibrate!")
             
             QMessageBox.warning(self, "Volume Too Low",
-                "Your Mac/Interface volume is too low.\n"
-                "The app has no digital headroom left to run the louder Stress Test.\n\n"
-                "ACTION REQUIRED:\n"
-                "1. Turn up the volume on your Mac or headphone amplifier.\n"
-                "2. Run Auto-Calibration again."
+                "Volume Too Low for Stress Test!\n\n"
+                "Push the volume up and recalibrate."
             )
         
         self.cal_results_lbl.setText("\n".join(log_lines))
