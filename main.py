@@ -820,10 +820,25 @@ class MainWindow(QMainWindow):
         top_layout = QHBoxLayout(top_bar)
         top_layout.setContentsMargins(20, 0, 20, 0)
         
+        import os
+        from PySide6.QtGui import QPixmap
+        from PySide6.QtCore import Qt
+        
+        logo_img = QLabel()
+        logo_path = os.path.join(os.path.dirname(__file__), "logo InEar SNITCH.png")
+        if os.path.exists(logo_path):
+            pix = QPixmap(logo_path)
+            if not pix.isNull():
+                # The top bar is 50px high, so 30px height fits perfectly
+                logo_img.setPixmap(pix.scaledToHeight(30, Qt.SmoothTransformation))
+        logo_img.setStyleSheet("margin-right: 5px;")
+        
         logo = QLabel("InEar SNITCH")
         logo.setStyleSheet("color: white; font-weight: bold; font-size: 20px; letter-spacing: 2px;")
         sublogo = QLabel("DIAGNOSTICS")
         sublogo.setStyleSheet("color: #666; font-size: 14px; margin-left: 10px;")
+        
+        top_layout.addWidget(logo_img)
         top_layout.addWidget(logo)
         top_layout.addWidget(sublogo)
         
