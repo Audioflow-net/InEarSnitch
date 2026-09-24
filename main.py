@@ -3092,8 +3092,6 @@ class MainWindow(QMainWindow):
             return
             
         iem_id = card.current_iem_id
-        if hasattr(self, 'current_iem_id') and str(self.current_iem_id) == str(iem_id):
-            return
             
         self.save_workspace_state()
             
@@ -3127,8 +3125,6 @@ class MainWindow(QMainWindow):
                 self.cb_meas_history.setCurrentIndex(0)
                 self.cb_meas_history.blockSignals(False)
                 
-            # Automatically switch to the Workspace tab (index 2) so user can see it
-            self.switch_workspace_tab(2)
             
             # ProKit: auto-suggest last used tip for current IEM
             self.suggest_tip_for_current_iem()
