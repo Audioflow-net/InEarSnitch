@@ -538,10 +538,33 @@ class LiveSealWorker(QThread):
         
         # Precompute frequencies and calibration curve
         freqs = np.fft.rfftfreq(self.blocksize, 1/self.fs)
-        cal_offset = np.zeros_like(freqs)
+        
+        # Precompute Logarithmic Binning Matrix (1/12th octave)
+        import math
+        f_min = 20.0
+        f_max = 24000.0
+        octave_frac = 1.0 / 12.0
+        n_bins = int(math.log2(f_max / f_min) / octave_frac) + 1
+        log_freqs = f_min * (2.0 ** (np.arange(n_bins) * octave_frac))
+        
+        M = np.zeros((n_bins, len(freqs)))
+        for i in range(n_bins):
+            f_center = log_freqs[i]
+            f_low = f_center * (2.0 ** (-octave_frac / 2.0))
+            f_high = f_center * (2.0 ** (octave_frac / 2.0))
+            mask = (freqs >= f_low) & (freqs < f_high)
+            if np.any(mask):
+                M[i, mask] = 1.0 / np.sum(mask)
+            else:
+                idx = np.argmin(np.abs(freqs - f_center))
+                M[i, idx] = 1.0
+                
+        cal_offset = np.zeros_like(log_freqs)
         if self.cal_f is not None and self.cal_m is not None:
-            interp_func = interpolate.interp1d(self.cal_f, self.cal_m, bounds_error=False, fill_value=0.0)
-            cal_offset = interp_func(freqs)
+            # Logarithmic interpolation for calibration
+            safe_log_freqs = np.clip(log_freqs, 1e-6, None)
+            safe_cal_f = np.clip(self.cal_f, 1e-6, None)
+            cal_offset = np.interp(np.log10(safe_log_freqs), np.log10(safe_cal_f), self.cal_m)
             
         # Precompute Hanning window
         window = np.hanning(self.blocksize)
@@ -584,15 +607,14 @@ class LiveSealWorker(QThread):
                 # Normalize the FFT so it outputs true linear amplitude (true dBFS)
                 # instead of being artificially inflated by N/2
                 mag = np.abs(np.fft.rfft(sig_w)) / (N_sig / 2.0)
-                # Simple smoothing
-                kernel_size = 15
-                kernel = np.ones(kernel_size) / kernel_size
-                mag_smooth = np.convolve(mag, kernel, mode='same')
+                
+                # Fast fractional octave log-binning
+                mag_smooth = M @ mag
                 
                 mag_db = 20 * np.log10(mag_smooth + 1e-12)
                 mag_db += cal_offset
                     
-                self.update_signal.emit(freqs, mag_db)
+                self.update_signal.emit(log_freqs, mag_db)
             except Exception as e:
                 print(f"[LiveSealWorker Error] {e}")
                 self.error.emit(str(e))

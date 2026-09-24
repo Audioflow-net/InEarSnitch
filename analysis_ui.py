@@ -186,6 +186,7 @@ class TipAnalysisCardWidget(QFrame):
         if freqs is None or mag is None:
             return None
         try:
+            from scipy.signal import find_peaks
             f = np.asarray(freqs, dtype=np.float64)
             m = np.asarray(mag, dtype=np.float64)
             if len(f) != len(m) or len(f) < 10:
@@ -195,11 +196,16 @@ class TipAnalysisCardWidget(QFrame):
                 return None
             sub_f = f[mask]
             sub_m = m[mask]
-            if np.any(np.isnan(sub_m)):
-                idx = int(np.nanargmax(sub_m))
+            
+            # Use find_peaks to ensure it's a true local peak, not just a steep slope
+            peaks, properties = find_peaks(sub_m, prominence=3.0, width=60)
+            
+            if len(peaks) > 0:
+                # Find the highest peak among the true local peaks
+                best_peak_idx = peaks[np.argmax(properties['prominences'])]
+                return float(sub_f[best_peak_idx])
             else:
-                idx = int(np.argmax(sub_m))
-            return float(sub_f[idx])
+                return None
         except Exception:
             return None
 

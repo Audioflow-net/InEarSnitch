@@ -645,8 +645,8 @@ class AudioEngine:
         hohd_energy = np.zeros_like(fund_mag)
         thd_hf_energy = np.zeros_like(fund_mag)
         
-        win_len = int(0.03 * self.sample_rate)  # Shorter window for high-order harmonics
-        half_win = win_len // 2
+        win_len = int(0.03 * self.sample_rate)  # Shorter default window for high-order harmonics
+        default_half_win = win_len // 2
         nyquist = self.sample_rate / 2.0
         
         for n in range(3, 21):
@@ -656,6 +656,10 @@ class AudioEngine:
             delta_t = duration * np.log(n) / np.log(f_end / f_start)
             offset_samples = int(delta_t * self.sample_rate)
             h_idx = peak_idx - offset_samples
+            
+            # Dynamically calculate safe half-window to avoid overlapping n+1
+            max_half_win = int((duration * np.log((n+1)/n) / np.log(f_end / f_start)) * self.sample_rate / 2.0)
+            half_win = min(default_half_win, max_half_win)
             
             if h_idx - half_win < 0 or h_idx + half_win >= N:
                 continue
