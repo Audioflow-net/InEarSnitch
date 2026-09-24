@@ -122,14 +122,14 @@ class Analyzer:
 
         if ir_l is not None and ir_r is not None and len(ir_l)>0 and len(ir_r)>0:
             if left_inv != right_inv:
-                report.append({'title': 'Relative Phase (Polarity)', 'status': 'FAIL', 'desc': 'Left and Right channels are OUT OF PHASE with each other. This destroys the stereo image and bass.\n💡 Check the 2-pin cable orientation. If this persists after re-seating, the cable or driver wiring is inverted.', 'band': None})
+                report.append({'title': 'Relative Phase (Polarity)', 'status': 'FAIL', 'desc': 'OUT OF PHASE (destroys stereo image).\n💡 Check 2-pin cable orientation.', 'band': None})
             else:
-                desc = 'Both channels are inverted (likely your soundcard or IEM crossover design). This is acoustically fine.' if left_inv else 'Acoustic polarity is correct (positive).'
+                desc = 'Both channels inverted (usually soundcard). Acoustically fine.' if left_inv else 'Acoustic polarity is correct.'
                 report.append({'title': 'Relative Phase (Polarity)', 'status': 'OK', 'desc': desc, 'band': None})
         else:
             ch = "Left" if ir_l is not None else "Right"
             inv = left_inv if ir_l is not None else right_inv
-            desc = 'Inverted polarity detected, but cannot check relative phase without both channels. Often caused by soundcard.' if inv else 'Acoustic polarity is correct (positive).'
+            desc = 'Inverted polarity (often soundcard). Need both channels to check relative phase.' if inv else 'Acoustic polarity is correct.'
             report.append({'title': f'{ch} Polarity', 'status': 'OK', 'desc': desc, 'band': None})
                 
         # Assign category FR to all existing checks
@@ -179,11 +179,11 @@ class Analyzer:
         val_5k = mag[idx_5k]
         
         if val_50 < val_1k - 20:
-            report.append({'title': f'{channel} Bass / Acoustic Seal', 'status': 'FAIL', 'desc': f'Severe bass roll-off detected ({val_50-val_1k:.1f} dB drop at 50Hz). This indicates a massive air leak or a dead Dynamic Driver.\n💡 Re-seat the IEM with a tighter seal and measure again.', 'band': (20, 100)})
+            report.append({'title': f'{channel} Bass / Acoustic Seal', 'status': 'FAIL', 'desc': f'Severe roll-off ({val_50-val_1k:.1f} dB at 50Hz). Leak or dead Dynamic Driver.\n💡 Re-seat tighter and re-measure.', 'band': (20, 100)})
         elif val_50 < val_1k - 14:
-            report.append({'title': f'{channel} Bass / Acoustic Seal', 'status': 'WARN', 'desc': f'Noticeable bass roll-off ({val_50-val_1k:.1f} dB). Could be a seal leak or normal BA driver roll-off.\n💡 Re-seat IEM in coupler and measure again – this is the #1 false alarm.', 'band': (20, 100)})
+            report.append({'title': f'{channel} Bass / Acoustic Seal', 'status': 'WARN', 'desc': f'Noticeable roll-off ({val_50-val_1k:.1f} dB). Leak or normal BA tuning.\n💡 Re-seat IEM – #1 false alarm.', 'band': (20, 100)})
         else:
-            report.append({'title': f'{channel} Bass / Acoustic Seal', 'status': 'OK', 'desc': 'Bass extension is within normal limits for typical IEM tunings.', 'band': None})
+            report.append({'title': f'{channel} Bass / Acoustic Seal', 'status': 'OK', 'desc': 'Bass extension is within normal limits.', 'band': None})
             
         idx_4k = (np.abs(freqs - 4000)).argmin()
         idx_8k = (np.abs(freqs - 8000)).argmin()
@@ -195,9 +195,9 @@ class Analyzer:
             avg_highs = val_5k
         
         if avg_highs < val_1k - 12:
-            report.append({'title': f'{channel} Highs / Wax Clog', 'status': 'FAIL', 'desc': f'Severe high-frequency drop ({avg_highs - val_1k:.0f} dB vs 1 kHz). Nozzle is likely clogged with wax or tweeter is dead.\n💡 Clean the nozzle and re-measure to confirm.', 'band': (4000, 8000)})
+            report.append({'title': f'{channel} Highs / Wax Clog', 'status': 'FAIL', 'desc': f'Severe drop ({avg_highs - val_1k:.0f} dB vs 1kHz). Wax clog or dead tweeter.\n💡 Clean nozzle and re-measure.', 'band': (4000, 8000)})
         elif avg_highs < val_1k - 5:
-            report.append({'title': f'{channel} Highs / Wax Clog', 'status': 'WARN', 'desc': f'Noticeable high-frequency drop ({avg_highs - val_1k:.0f} dB vs 1 kHz). Possible wax buildup in the nozzle.\n💡 Clean nozzle, re-seat IEM in coupler, and measure again.', 'band': (4000, 8000)})
+            report.append({'title': f'{channel} Highs / Wax Clog', 'status': 'WARN', 'desc': f'Noticeable drop ({avg_highs - val_1k:.0f} dB vs 1kHz). Possible wax buildup.\n💡 Clean nozzle, re-seat IEM.', 'band': (4000, 8000)})
         else:
             report.append({'title': f'{channel} Highs / Wax Clog', 'status': 'OK', 'desc': 'High frequencies are reaching the microphone properly (no severe wax clog).', 'band': None})
             
@@ -227,11 +227,11 @@ class Analyzer:
             max_thd_mid = np.clip(np.max(thd_percentage[idx_mid]), 0, 100)
             
             if max_thd_mid > 8.0 or avg_thd_mid > 3.0:
-                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'FAIL', 'desc': f'High distortion in mid-range (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%). Possible driver damage.\n💡 Narrow spikes at 500/550 Hz are often mains hum from your USB interface — not the IEM. Unplug the laptop charger and re-measure to check.', 'band': (500, 2000), 'category': 'THD'})
+                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'FAIL', 'desc': f'High distortion (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%).\n💡 Spikes at 500 Hz are often USB mains hum. Try on battery power.', 'band': (500, 2000), 'category': 'THD'})
             elif max_thd_mid > 4.0 or avg_thd_mid > 1.5:
-                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated distortion in mid-range (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%).\n💡 Narrow spikes at 500/550 Hz are often mains hum from your USB interface — not the IEM. Multi-BA crossover points also cause elevated THD at specific frequencies.', 'band': (500, 2000), 'category': 'THD'})
+                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated distortion (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%).\n💡 Often USB hum (500Hz) or BA crossover points.', 'band': (500, 2000), 'category': 'THD'})
             else:
-                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'OK', 'desc': f'Mid-range THD within normal limits (Avg: {avg_thd_mid:.1f}%).', 'band': (500, 2000), 'category': 'THD'})
+                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'OK', 'desc': f'Mid-range THD acceptable (Avg: {avg_thd_mid:.1f}%).', 'band': (500, 2000), 'category': 'THD'})
                 
         # Check bass THD (50Hz - 200Hz)
         idx_bass = np.where((freqs >= 50) & (freqs <= 200))[0]
@@ -240,9 +240,9 @@ class Analyzer:
             max_thd_bass = np.clip(np.max(thd_percentage[idx_bass]), 0, 100)
             
             if max_thd_bass > 15.0 or avg_thd_bass > 8.0:
-                report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'FAIL', 'desc': f'Severe distortion in bass (Max: {max_thd_bass:.1f}%, Avg: {avg_thd_bass:.1f}%). Check seal and driver.\n💡 Ensure no vibrations nearby (footsteps, HVAC). Re-seat IEM and measure again.', 'band': (50, 200), 'category': 'THD'})
+                report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'FAIL', 'desc': f'Severe bass distortion (Max: {max_thd_bass:.1f}%, Avg: {avg_thd_bass:.1f}%).\n💡 Ensure no nearby vibrations (footsteps, HVAC).', 'band': (50, 200), 'category': 'THD'})
             elif max_thd_bass > 8.0 or avg_thd_bass > 4.0:
-                report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated bass distortion (Max: {max_thd_bass:.1f}%, Avg: {avg_thd_bass:.1f}%). BA drivers naturally have higher bass THD.\n💡 Measure again in a quiet, vibration-free environment to confirm.', 'band': (50, 200), 'category': 'THD'})
+                report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated bass distortion (Max: {max_thd_bass:.1f}%, Avg: {avg_thd_bass:.1f}%).\n💡 BA drivers have naturally higher bass THD.', 'band': (50, 200), 'category': 'THD'})
             else:
                 report.append({'title': f'{channel} Bass Distortion (THD)', 'status': 'OK', 'desc': f'Bass THD acceptable (Avg: {avg_thd_bass:.1f}%).', 'band': (50, 200), 'category': 'THD'})
                 
@@ -254,9 +254,9 @@ class Analyzer:
             max_thd_treble = np.clip(np.max(thd_percentage[idx_treble]), 0, 100)
             
             if max_thd_treble > 10.0 or avg_thd_treble > 5.0:
-                report.append({'title': f'{channel} Treble Distortion (THD)', 'status': 'FAIL', 'desc': f'High distortion in treble (Max: {max_thd_treble:.1f}%, Avg: {avg_thd_treble:.1f}%).\n💡 The IEC 711 coupler resonance at ~8 kHz naturally inflates treble THD. Re-measure to confirm.', 'band': (8000, 20000), 'category': 'THD'})
+                report.append({'title': f'{channel} Treble Distortion (THD)', 'status': 'FAIL', 'desc': f'High treble distortion (Max: {max_thd_treble:.1f}%, Avg: {avg_thd_treble:.1f}%).\n💡 IEC 711 resonance at ~8 kHz inflates this reading.', 'band': (8000, 20000), 'category': 'THD'})
             elif max_thd_treble > 5.0 or avg_thd_treble > 2.5:
-                report.append({'title': f'{channel} Treble Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated distortion in treble (Max: {max_thd_treble:.1f}%, Avg: {avg_thd_treble:.1f}%).\n💡 The IEC 711 coupler resonance at ~8 kHz can inflate treble THD readings. This is often not a real defect.', 'band': (8000, 20000), 'category': 'THD'})
+                report.append({'title': f'{channel} Treble Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated treble distortion (Max: {max_thd_treble:.1f}%, Avg: {avg_thd_treble:.1f}%).\n💡 Coupler resonance often causes this.', 'band': (8000, 20000), 'category': 'THD'})
             else:
                 report.append({'title': f'{channel} Treble Distortion (THD)', 'status': 'OK', 'desc': f'Treble THD acceptable (Avg: {avg_thd_treble:.1f}%).', 'band': (8000, 20000), 'category': 'THD'})
 
@@ -297,9 +297,9 @@ class Analyzer:
                 avg_decay = np.mean(decay)
                 
                 if avg_decay < 10.0:
-                    report.append({'title': f'{channel} Treble Resonance (CSD)', 'status': 'WARN', 'desc': f'Slow treble decay ({avg_decay:.0f} dB after {times[slice_idx]:.1f}ms). May indicate an undamped BA resonance or missing acoustic filter.\n💡 Measure again to confirm – this can be caused by background noise.', 'band': (2000, 7000), 'category': 'CSD'})
+                    report.append({'title': f'{channel} Treble Resonance (CSD)', 'status': 'WARN', 'desc': f'Slow treble decay ({avg_decay:.0f} dB after {times[slice_idx]:.1f}ms).\n💡 Indicates undamped BA resonance or missing filter.', 'band': (2000, 7000), 'category': 'CSD'})
                 else:
-                    report.append({'title': f'{channel} Treble Resonance (CSD)', 'status': 'OK', 'desc': f'Clean decay in treble ({avg_decay:.0f} dB after {times[slice_idx]:.1f}ms).', 'band': (2000, 7000), 'category': 'CSD'})
+                    report.append({'title': f'{channel} Treble Resonance (CSD)', 'status': 'OK', 'desc': f'Clean treble decay ({avg_decay:.0f} dB after {times[slice_idx]:.1f}ms).', 'band': (2000, 7000), 'category': 'CSD'})
                     
         return report
 

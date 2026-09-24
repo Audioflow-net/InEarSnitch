@@ -1253,7 +1253,7 @@ class AnalysisWidget(QWidget):
                 noise_avg = np.mean(ndb[mask])
                 if noise_avg < -45:
                     n_status = 'OK'
-                    n_title = "Room Noise: Quiet ✅"
+                    n_title = "Room Noise: Quiet"
                 elif noise_avg < -35:
                     n_status = 'WARN'
                     n_title = "Background noise detected"
@@ -1264,7 +1264,7 @@ class AnalysisWidget(QWidget):
                 render_group([{
                     'status': n_status,
                     'title': n_title,
-                    'desc': f"Average noise floor: {noise_avg:.1f} dBFS (500-2kHz)",
+                    'desc': f"Avg Floor: {noise_avg:.1f} dBFS",
                     'category': 'ENV'
                 }], "ENVIRONMENT", "#a855f7")
 
@@ -1353,7 +1353,7 @@ class AnalysisWidget(QWidget):
         if mag_l is None and mag_r is None:
             report = [{'title': 'No Live Measurement', 'status': 'OK', 'desc': 'Run a measurement sweep to generate diagnostics.', 'band': None, 'category': 'FR'}]
         elif sweep_count == "1x":
-            report = [{'title': 'Diagnostics Disabled (1x Sweep)', 'status': 'WARN', 'desc': 'Diagnostics require at least a 3x sweep to reduce background noise and avoid false positives. Please select 3x or 5x and run the measurement again.', 'band': None, 'category': 'FR'}]
+            report = [{'title': 'Need 3x+ Sweeps for Diagnostics', 'status': 'WARN', 'desc': 'Diagnostics require at least 3 sweeps to reduce noise and false positives.', 'band': None, 'category': 'FR'}]
         else:
             report = Analyzer.run_full_diagnostics(freqs, mag_l, mag_r, best_ref_l, best_ref_r, ir_l_f, ir_r_f, thd_data, csd_data, ref_type)
         
