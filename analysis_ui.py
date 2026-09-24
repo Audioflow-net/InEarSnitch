@@ -1722,6 +1722,9 @@ class AnalysisWidget(QWidget):
                     for child in card.findChildren(pg.PlotWidget):
                         child.setBackground(theme.get_color('bg_main'))
                         
+        if hasattr(self, 'tip_analysis_card') and self.tip_analysis_card:
+            self.tip_analysis_card.update_theme()
+            
         # Redraw diagnostics cards to refresh their light/dark color palette
         self.render_diagnostics()
 

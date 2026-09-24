@@ -587,7 +587,48 @@ class HistoryWidget(QWidget):
         self.cached_photo_path = None
         self.cached_pixmap = None
 
+
+    def update_theme(self):
+        bg = theme.get_color("bg_panel")
+        active = theme.get_color("bg_hover")
+        border = theme.get_color("border")
+        fg = theme.get_color("text_primary")
+        text_sec = theme.get_color("text_secondary")
+        bg_hover = theme.get_color("bg_hover")
+        bg_main = theme.get_color("bg_main")
+        
+        self.graph_tabs.setStyleSheet(f"QTabWidget::tab-bar {{ left: 0px; alignment: left; }} QTabWidget::pane {{ border: 1px solid {border}; border-radius: 4px; }} QTabBar::tab {{ background: {bg}; color: {text_sec}; padding: 4px 10px; min-width: 80px; border: 1px solid {border}; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: bold; font-size: 11px; }} QTabBar::tab:selected {{ background: {active}; color: {fg}; }}")
+        self.btn_chan_l.setStyleSheet(f"QPushButton {{ background-color: {bg_main}; color: {text_sec}; border: 1px solid {border}; border-top-left-radius: 4px; border-bottom-left-radius: 4px; border-right: none; padding: 4px 10px; font-weight: bold; font-size: 11px; }} QPushButton:checked {{ background-color: {active}; color: {fg}; border-color: {border}; }}")
+        self.btn_chan_r.setStyleSheet(f"QPushButton {{ background-color: {bg_main}; color: {text_sec}; border: 1px solid {border}; border-top-right-radius: 4px; border-bottom-right-radius: 4px; padding: 4px 10px; font-weight: bold; font-size: 11px; }} QPushButton:checked {{ background-color: {active}; color: {fg}; border-color: {border}; }}")
+        self.cb_smooth.setStyleSheet(f"QComboBox {{ background-color: {bg_main}; color: {fg}; border: 1px solid {border}; padding: 2px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; min-height: 20px; }}")
+        self.btn_reset_zoom.setStyleSheet(f"QPushButton {{ background-color: {bg_main}; color: {fg}; border: 1px solid {border}; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px; }} QPushButton:hover {{ background-color: {active}; }}")
+        
+        self.edit_container.setStyleSheet(f"#EditContainer {{ background-color: {bg_panel}; border: 1px solid {border}; border-radius: 4px; }}")
+        self.edit_meas_name.setStyleSheet(f"background-color: {bg_main}; color: {fg}; border: 1px solid {border}; padding: 4px 8px; border-radius: 4px; font-size: 11px;")
+        self.edit_meas_date.setStyleSheet(f"background-color: {bg_main}; color: {text_sec}; border: 1px solid {border}; padding: 4px 8px; border-radius: 4px; font-size: 11px;")
+        self.txt_notes.setStyleSheet(f"background-color: {bg_main}; color: {fg}; border: 1px solid {border}; padding: 6px 10px; border-radius: 6px; font-size: 12px;")
+        
+        btn_style_base = f"QPushButton {{ background-color: {bg_main}; color: {text_sec}; font-weight: bold; padding: 6px 6px; border-radius: 4px; border: 1px solid {border}; font-size: 11px;}} QPushButton:disabled {{ color: #555; border-color: {border}; }}"
+        self.btn_import_history.setStyleSheet(btn_style_base + " QPushButton:hover { color: #f59e0b; border-color: #f59e0b; background-color: " + bg_hover + "; }")
+        self.btn_export_history.setStyleSheet(btn_style_base + " QPushButton:hover { color: #3b82f6; border-color: #3b82f6; background-color: " + bg_hover + "; }")
+        self.btn_save_target.setStyleSheet(btn_style_base + " QPushButton:hover { color: #10b981; border-color: #10b981; background-color: " + bg_hover + "; }")
+        self.btn_delete_history.setStyleSheet(btn_style_base + " QPushButton:hover { color: #ef4444; border-color: #ef4444; background-color: " + bg_hover + "; }")
+        
+        self.btn_toggle_tools.setStyleSheet(f"QPushButton {{ background-color: {bg_main}; color: {text_sec}; border: none; border-left: 1px solid {border}; font-size: 10px; }} QPushButton:hover {{ background-color: {active}; color: {fg}; }}")
+        self.tools_tabs.setStyleSheet(f"QTabWidget::tab-bar {{ alignment: center; }} QTabWidget::pane {{ border: 1px solid {border}; border-radius: 4px; }} QTabBar::tab {{ background: {bg}; color: {text_sec}; padding: 4px 10px; min-width: 80px; border: 1px solid {border}; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: bold; font-size: 11px; }} QTabBar::tab:selected {{ background: {active}; color: {fg}; }}")
+        
+        self.search_bar.setStyleSheet(f"background-color: {bg_main}; color: {fg}; border: 1px solid {border}; padding: 6px; border-radius: 4px;")
+        self.list_widget.setStyleSheet(f"QListWidget {{ background-color: {bg_panel}; border: none; outline: none; }} QListWidget::item {{ padding: 2px; }} QListWidget::item:selected {{ background-color: {bg_hover}; border-radius: 6px; border: 1px solid {theme.get_color('accent')}; }}")
+        self.list_widget.parentWidget().setStyleSheet(f"background-color: {bg_panel};")
+
+        self.plot.setBackground(theme.get_color("pg_bg"))
+        self.plot.showGrid(x=True, y=True, alpha=0.15 if theme.is_light() else 0.3)
+        for ax in [self.plot.getAxis('left'), self.plot.getAxis('bottom')]:
+            ax.setPen(theme.get_color("pg_fg"))
+            ax.setTextPen(theme.get_color("pg_fg"))
+
     def show_import_menu(self):
+
         from PySide6.QtWidgets import QMenu
         from PySide6.QtGui import QCursor
         

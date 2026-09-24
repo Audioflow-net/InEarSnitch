@@ -827,7 +827,8 @@ class MainWindow(QMainWindow):
         from PySide6.QtGui import QPixmap
         from PySide6.QtCore import Qt
         
-        logo_img = QLabel()
+        self.logo_img = QLabel()
+        logo_img = self.logo_img
         logo_path = os.path.join(os.path.dirname(__file__), "Final Logo InEar Snitch.png")
         if os.path.exists(logo_path):
             pix = QPixmap(logo_path)
@@ -3092,6 +3093,9 @@ class MainWindow(QMainWindow):
             QScrollBar::handle:vertical {{ background: {sb_handle}; border-radius: 4px; }}
         """)
 
+        if hasattr(self, 'page_hist') and hasattr(self.page_hist, 'update_theme'):
+            self.page_hist.update_theme()
+            
         # Refresh main tabs
         if hasattr(self, 'workspace_stacked'):
             self.switch_workspace_tab(self.workspace_stacked.currentIndex())
