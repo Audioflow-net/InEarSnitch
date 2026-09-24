@@ -2617,10 +2617,10 @@ class MainWindow(QMainWindow):
                 try:
                     f, m, p, ir, noise = self.engine.measure(
                         self.in_idx, self.out_idx, self.ch,
-                        duration=1.0, f_start=20.0, f_end=20000.0,
+                        duration=3.0, f_start=20.0, f_end=20000.0,
                         amplitude=self.amp,
                         progress_callback=lambda t: self.sweep_progress.emit(t, 1))
-                    hohd_f, hohd_db = self.engine.extract_hohd(ir, duration=1.0, noise_floor=noise)
+                    hohd_f, hohd_db = self.engine.extract_hohd(ir, duration=3.0, noise_floor=noise)
                     self.finished.emit(hohd_f, hohd_db)
                 except Exception as e:
                     self.error.emit(str(e))
