@@ -138,7 +138,7 @@ class Analyzer:
 
         # 5. Automated THD Diagnostics
         if thd_data is not None:
-            thd_freqs, thd_l, thd_r = thd_data
+            thd_freqs, thd_l, thd_r, *hohd = thd_data
             if thd_l is not None:
                 thd_rep = Analyzer.evaluate_thd(thd_freqs, thd_l, "Left")
                 for r in thd_rep: r['category'] = 'THD'
@@ -303,3 +303,40 @@ class Analyzer:
                     
         return report
 
+    @staticmethod
+    def auto_seal_detection(freqs, mag_l, mag_r):
+        if len(freqs) == 0:
+            return False, "Seal OK"
+        
+        warn_l = False
+        warn_r = False
+        
+        idx_sub = np.where((freqs >= 20) & (freqs <= 40))[0]
+        if len(idx_sub) > 0:
+            avg_sub_l = np.mean(mag_l[idx_sub])
+            if avg_sub_l < 40.0:
+                warn_l = True
+                
+            avg_sub_r = np.mean(mag_r[idx_sub])
+            if avg_sub_r < 40.0:
+                warn_r = True
+                
+        if warn_l and warn_r:
+            return True, "Left & Right Seal Warning"
+        elif warn_l:
+            return True, "Left Seal Warning"
+        elif warn_r:
+            return True, "Right Seal Warning"
+        return False, "Seal OK"
+
+    @staticmethod
+    def lr_imbalance_check(freqs, mag_l, mag_r):
+        if len(freqs) == 0:
+            return False, "L/R Balance OK"
+        
+        idx = np.where((freqs >= 100) & (freqs <= 5000))[0]
+        if len(idx) > 0:
+            max_diff = np.max(np.abs(mag_l[idx] - mag_r[idx]))
+            if max_diff > 2.5:
+                return True, f"Imbalance Detected. Max diff: {max_diff:.1f} dB"
+        return False, "L/R Balance OK"

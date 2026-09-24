@@ -208,3 +208,31 @@ Da der `openscad` Befehl auf diesem Mac oft nicht direkt im `$PATH` liegt, muss 
 - [ ] Es existieren 3 separate OpenSCAD-Dateien im Ordner `press_v2`.
 - [ ] Das Team hat per Kommandozeile erfolgreich verifiziert, dass alle 3 Varianten syntaktisch korrekt sind und sich ohne Fehler rendern lassen.
 - [ ] Jede Variante umschließt die originalen Kavitäten, weist aber ein völlig neues, schnelleres äußeres Schließkonzept auf.
+
+## 2026-09-24T15:34:28Z
+
+# Teamwork Project Prompt
+
+Perform a massive final pre-release audit of the InEar Snitch application, focusing on residual logical bugs, disconnected UI signals (dead buttons), and missing legal/safety disclaimers.
+
+Working directory: ~/Desktop/InEarSnitch
+Integrity mode: benchmark
+
+## Requirements
+
+### R1. Deep QA (Logic & Math)
+Identify any remaining logic flaws, `NoneType` crashes, division by zero, or unhandled exceptions in the backend threads and workers (`audio_engine.py`, `eq_math.py`). 
+
+### R2. UI Completeness Check
+Check every button, combo box, and interactive UI element in `main.py` and `analysis_ui.py`. Ensure no UI element triggers a dead link or a `NotImplementedError`.
+
+### R3. Legal & Safety Audit
+Verify that the app contains proper Health & Safety disclaimers regarding hearing protection, specifically concerning the loud (+15dB) "Stress Test" and general sine sweeps. 
+
+## Acceptance Criteria
+
+### Verification Report
+- [ ] The team outputs a comprehensive Markdown report of all identified issues.
+- [ ] Every identified issue points to a specific file and line number.
+- [ ] No direct code fixes are made by the team; they only report the findings.
+

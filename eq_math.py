@@ -13,6 +13,8 @@ class DSPEngine:
         self.master_enabled = enabled
 
     def _get_biquad(self, ftype, freq, gain, q, fs):
+        q = max(float(q), 0.001)
+        fs = max(int(fs), 1)
         A = 10 ** (gain / 40)
         w0 = 2 * np.pi * freq / fs
         alpha = np.sin(w0) / (2 * q)

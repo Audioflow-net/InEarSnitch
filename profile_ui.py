@@ -105,6 +105,10 @@ class ProfilePicWidget(QWidget):
         reader.setAutoTransform(True)
         circ_pix = create_circular_pixmap(reader, self.size_val)
         
+        if circ_pix is None:
+            self.set_image(None)
+            return
+            
         self.img_label.setPixmap(circ_pix)
         self.img_label.setStyleSheet("background-color: transparent; border: none;")
         self.has_image = True

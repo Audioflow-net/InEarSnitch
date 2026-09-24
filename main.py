@@ -568,8 +568,10 @@ class LiveSealWorker(QThread):
             
         # Precompute Hanning window
         window = np.hanning(self.blocksize)
+        in_circ = np.zeros(self.blocksize)
 
         def callback(indata, outdata, frames, time, status):
+            nonlocal in_circ
             if not self.running:
                 raise sd.CallbackStop
             try:
@@ -591,6 +593,8 @@ class LiveSealWorker(QThread):
                 if dsp_engine.master_enabled:
                     pn = dsp_engine.process(pn, self.fs)
                     
+                pn = np.clip(pn, -cal_amp, cal_amp)
+                    
                 if self.target_channel == "Left":
                     outdata[:, 0] = pn
                     if outdata.shape[1] > 1:
@@ -601,8 +605,16 @@ class LiveSealWorker(QThread):
                         outdata[:, 1] = pn
                     
                 sig = indata[:, 0].copy()
-                N_sig = len(sig)
-                sig_w = sig * window[:N_sig] if N_sig <= len(window) else sig * np.hanning(N_sig)
+                n_new = len(sig)
+                
+                if n_new >= self.blocksize:
+                    in_circ[:] = sig[-self.blocksize:]
+                else:
+                    in_circ = np.roll(in_circ, -n_new)
+                    in_circ[-n_new:] = sig
+                
+                sig_w = in_circ * window
+                N_sig = self.blocksize
                 
                 # Normalize the FFT so it outputs true linear amplitude (true dBFS)
                 # instead of being artificially inflated by N/2
@@ -830,6 +842,15 @@ class MainWindow(QMainWindow):
             else:
                 sys.exit(0)
 
+    def closeEvent(self, event):
+        if hasattr(self, 'live_worker') and self.live_worker and self.live_worker.isRunning():
+            self.live_worker.stop()
+            self.live_worker.wait()
+        if hasattr(self, 'worker') and self.worker and self.worker.isRunning():
+            self.worker.stop()
+            self.worker.wait()
+        event.accept()
+
     def setup_ui(self):
         from PySide6.QtWidgets import QComboBox
         central = QWidget()
@@ -924,6 +945,12 @@ class MainWindow(QMainWindow):
 
         
         main_layout.addWidget(top_bar)
+        
+        # --- SAFETY BANNER ---
+        safety_banner = QLabel("⚠️ WARNING: High-level audio sweeps can exceed 107 dB SPL. NEVER wear In-Ear Monitors while running a measurement.")
+        safety_banner.setStyleSheet("background-color: #991b1b; color: white; font-weight: bold; font-size: 13px; padding: 6px;")
+        safety_banner.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(safety_banner)
         
         # --- MAIN CONTENT ---
         content_layout = QHBoxLayout()
@@ -1327,6 +1354,7 @@ class MainWindow(QMainWindow):
         self.btn_capture.clicked.connect(self.run_measurement)
         
         self.btn_stress = QPushButton("STRESS")
+        self.btn_stress.setEnabled(False)
         self.btn_stress.setToolTip("Run high-level Rub & Buzz sweep")
         self.btn_stress.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         self.btn_stress.setFixedWidth(80)
@@ -1687,8 +1715,16 @@ class MainWindow(QMainWindow):
         # --- Fix for missing anchor jumps in Qt Markdown ---
         self.manual_browser.setOpenLinks(False)
         def handle_manual_link(url):
+            from PySide6.QtGui import QDesktopServices
             link = url.toString()
+            if link.startswith("http://") or link.startswith("https://"):
+                QDesktopServices.openUrl(url)
+                return
+            
             file_path = link.split("#")[0]
+            if not file_path:
+                file_path = "MANUAL.md"
+                
             if file_path.startswith("./"):
                 file_path = file_path[2:]
                 
@@ -2431,6 +2467,14 @@ class MainWindow(QMainWindow):
             self.btn_iec_guide.setChecked(False)
             self.toggle_live_seal(False)
 
+        reply = QMessageBox.question(self, self.tr("Hearing Safety Warning"),
+                                     self.tr("Calibration will play ascending tone bursts at potentially high volumes.\n\n"
+                                             "Please ensure the In-Ear Monitor is NOT in your ear before continuing.\n\n"
+                                             "Proceed with calibration?"),
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply != QMessageBox.Yes:
+            return
+
         self.btn_auto_cal.setEnabled(False)
         self.btn_auto_cal.setText("Calibrating...")
         self.cal_results_lbl.show()
@@ -2610,6 +2654,7 @@ class MainWindow(QMainWindow):
         self.btn_auto_cal.setText("Re-Calibrate")
         
         # Enable stress test button now that calibration exists
+        self.btn_stress.setEnabled(True)
         if hasattr(self, 'page_ana') and hasattr(self.page_ana, 'btn_stress_test'):
             self.page_ana.btn_stress_test.setEnabled(True)
             self.page_ana.btn_stress_test.setToolTip(
@@ -2641,10 +2686,10 @@ class MainWindow(QMainWindow):
 
         # Confirmation
         reply = QMessageBox.question(
-            self, "Run Rub & Buzz Test?",
-            f"This plays a louder-than-normal sweep to detect driver defects (Rub & Buzz).\n\n"
-            f"Make sure your IEM is seated in the coupler — do NOT wear it while measuring.\n"
-            f"Continue?",
+            self, self.tr("Run Rub & Buzz Test?"),
+            self.tr("This plays a louder-than-normal sweep to detect driver defects (Rub & Buzz).\n\n"
+            "Make sure your IEM is seated in the coupler — do NOT wear it while measuring.\n"
+            "Continue?"),
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         )
         if reply != QMessageBox.Yes:
@@ -3792,9 +3837,7 @@ class MainWindow(QMainWindow):
         else:
             if hasattr(self, 'live_worker'):
                 self.live_worker.stop()
-                if not self.live_worker.wait(2000):  # 2s timeout
-                    self.live_worker.terminate()
-                    self.live_worker.wait(1000)
+                self.live_worker.wait()
             if hasattr(self, 'rta_big_lbl'):
                 self.rta_big_lbl.hide()
             if hasattr(self, 'live_rta_line') and self.live_rta_line is not None:
@@ -3998,17 +4041,6 @@ class MainWindow(QMainWindow):
         except Exception as e:
             pass
 
-    def run_stress_test(self):
-        from PySide6.QtWidgets import QMessageBox
-        reply = QMessageBox.critical(self, "ACHTUNG: STRESS TEST",
-            "Der Stress Test jagt einen extrem lauten Sweep (+15dB) durch den IEM, um mechanische Defekte aufzudecken.\n\n"
-            "Nimm den In-Ear auf JEDEN FALL aus deinem Ohr!\n"
-            "Er muss für diesen Test sicher im Coupler stecken.\n\n"
-            "Möchtest du wirklich fortfahren?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-            
-        if reply == QMessageBox.Yes:
-            self.run_measurement(is_stress_test=True)
 
     def run_measurement(self, is_stress_test=False):
         from PySide6.QtWidgets import QMessageBox
@@ -4019,6 +4051,15 @@ class MainWindow(QMainWindow):
                 "Please select or create a Musician Profile from the sidebar on the left.")
             return
         
+        if not is_stress_test:
+            reply = QMessageBox.question(self, self.tr("Hearing Safety Warning"),
+                                         self.tr("A sweep can produce high sound pressure levels.\n\n"
+                                         "Please ensure the In-Ear Monitor is securely seated in the coupler and NOT in your ear before measuring.\n\n"
+                                         "Proceed with measurement?"),
+                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if reply != QMessageBox.Yes:
+                return
+                
         # UI Hardening: block concurrent sweep attempts
         if self.is_measuring:
             QMessageBox.warning(self, "Measurement Running",

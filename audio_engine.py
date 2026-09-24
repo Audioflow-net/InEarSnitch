@@ -595,7 +595,12 @@ class AudioEngine:
                 n_chunk_len = h_end - h_start
                 mid = len(noise_floor) // 2
                 n_ir = np.zeros_like(ir)
-                n_ir[h_start:h_end] = noise_floor[mid - n_chunk_len//2 : mid - n_chunk_len//2 + n_chunk_len] * tukey(n_chunk_len, alpha=0.5)
+                n_slice_start = max(0, mid - n_chunk_len // 2)
+                n_slice_end = n_slice_start + n_chunk_len
+                n_chunk = noise_floor[n_slice_start:n_slice_end]
+                if len(n_chunk) < n_chunk_len:
+                    n_chunk = np.pad(n_chunk, (0, n_chunk_len - len(n_chunk)))
+                n_ir[h_start:h_end] = n_chunk * tukey(n_chunk_len, alpha=0.5)
                 noise_mag = np.abs(rfft(n_ir)) + 1e-12
                 valid_mask = h_mag >= (noise_mag * 1.995)
                 h_mag = h_mag * valid_mask
@@ -684,7 +689,12 @@ class AudioEngine:
                 n_chunk_len = h_end - h_start
                 mid = len(noise_floor) // 2
                 n_ir = np.zeros_like(ir)
-                n_ir[h_start:h_end] = noise_floor[mid - n_chunk_len//2 : mid - n_chunk_len//2 + n_chunk_len] * tukey(n_chunk_len, alpha=0.5)
+                n_slice_start = max(0, mid - n_chunk_len // 2)
+                n_slice_end = n_slice_start + n_chunk_len
+                n_chunk = noise_floor[n_slice_start:n_slice_end]
+                if len(n_chunk) < n_chunk_len:
+                    n_chunk = np.pad(n_chunk, (0, n_chunk_len - len(n_chunk)))
+                n_ir[h_start:h_end] = n_chunk * tukey(n_chunk_len, alpha=0.5)
                 noise_mag = np.abs(rfft(n_ir)) + 1e-12
                 valid_mask = h_mag >= (noise_mag * 1.995)
                 h_mag = h_mag * valid_mask
