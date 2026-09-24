@@ -220,6 +220,10 @@ class AvatarButton(QLabel):
     def update_style(self, selected):
         import theme
         
+        if getattr(self, 'is_selected_state', None) == selected:
+            return
+        self.is_selected_state = selected
+        
         if selected:
             bg = "transparent" if self.has_pic else ("#0284c7" if theme.CURRENT_MODE == "light" else "#00FFFF")
             text_col = "#ffffff" if theme.CURRENT_MODE == "light" else "#000000"
@@ -2865,6 +2869,10 @@ class MainWindow(QMainWindow):
             
             for c in self.profile_cards:
                 is_sel = (c == card)
+                if getattr(c, 'is_selected_state', None) == is_sel:
+                    continue
+                c.is_selected_state = is_sel
+                
                 if is_sel:
                     if theme.CURRENT_MODE == "light":
                         c.setStyleSheet("#musicianCardObj { background-color: #e4e4e7; border-radius: 8px; border: 2px solid #0284c7; outline: none; }")
@@ -3082,8 +3090,8 @@ class MainWindow(QMainWindow):
                 self.cb_meas_target.setCurrentIndex(target_idx)
                 
             self.redraw_graph()
-            if hasattr(self, 'page_ana') and hasattr(self.page_ana, 'update_analysis_view'):
-                self.page_ana.update_analysis_view()
+            if hasattr(self, 'update_analysis_view'):
+                self.update_analysis_view()
             return True
         else:
             self.clear_trace()
