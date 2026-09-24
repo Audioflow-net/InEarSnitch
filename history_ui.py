@@ -441,7 +441,7 @@ class HistoryWidget(QWidget):
         self.edit_container.setFixedHeight(113)
         self.edit_container.setObjectName("EditContainer")
         bg_panel = "#222"
-        self.edit_container.setStyleSheet(f"#EditContainer {{ background-color: {bg_panel}; border: 1px solid {border}; border-radius: 4px; }}")
+        self.edit_container.setStyleSheet(f"#EditContainer {{ background-color: {bg}; border: 1px solid {border}; border-radius: 4px; }}")
         
         edit_layout = QHBoxLayout(self.edit_container)
         edit_layout.setContentsMargins(0, 0, 0, 0)
@@ -603,7 +603,7 @@ class HistoryWidget(QWidget):
         self.cb_smooth.setStyleSheet(f"QComboBox {{ background-color: {bg_main}; color: {fg}; border: 1px solid {border}; padding: 2px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; min-height: 20px; }}")
         self.btn_reset_zoom.setStyleSheet(f"QPushButton {{ background-color: {bg_main}; color: {fg}; border: 1px solid {border}; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 11px; }} QPushButton:hover {{ background-color: {active}; }}")
         
-        self.edit_container.setStyleSheet(f"#EditContainer {{ background-color: {bg_panel}; border: 1px solid {border}; border-radius: 4px; }}")
+        self.edit_container.setStyleSheet(f"#EditContainer {{ background-color: {bg}; border: 1px solid {border}; border-radius: 4px; }}")
         self.edit_meas_name.setStyleSheet(f"background-color: {bg_main}; color: {fg}; border: 1px solid {border}; padding: 4px 8px; border-radius: 4px; font-size: 11px;")
         self.edit_meas_date.setStyleSheet(f"background-color: {bg_main}; color: {text_sec}; border: 1px solid {border}; padding: 4px 8px; border-radius: 4px; font-size: 11px;")
         self.txt_notes.setStyleSheet(f"background-color: {bg_main}; color: {fg}; border: 1px solid {border}; padding: 6px 10px; border-radius: 6px; font-size: 12px;")
@@ -618,8 +618,8 @@ class HistoryWidget(QWidget):
         self.tools_tabs.setStyleSheet(f"QTabWidget::tab-bar {{ alignment: center; }} QTabWidget::pane {{ border: 1px solid {border}; border-radius: 4px; }} QTabBar::tab {{ background: {bg}; color: {text_sec}; padding: 4px 10px; min-width: 80px; border: 1px solid {border}; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: bold; font-size: 11px; }} QTabBar::tab:selected {{ background: {active}; color: {fg}; }}")
         
         self.search_bar.setStyleSheet(f"background-color: {bg_main}; color: {fg}; border: 1px solid {border}; padding: 6px; border-radius: 4px;")
-        self.list_widget.setStyleSheet(f"QListWidget {{ background-color: {bg_panel}; border: none; outline: none; }} QListWidget::item {{ padding: 2px; }} QListWidget::item:selected {{ background-color: {bg_hover}; border-radius: 6px; border: 1px solid {theme.get_color('accent')}; }}")
-        self.list_widget.parentWidget().setStyleSheet(f"background-color: {bg_panel};")
+        self.list_widget.setStyleSheet(f"QListWidget {{ background-color: {bg}; border: none; outline: none; }} QListWidget::item {{ padding: 2px; }} QListWidget::item:selected {{ background-color: {bg_hover}; border-radius: 6px; border: 1px solid {theme.get_color('accent')}; }}")
+        self.list_widget.parentWidget().setStyleSheet(f"background-color: {bg};")
 
         self.plot.setBackground(theme.get_color("pg_bg"))
         self.plot.showGrid(x=True, y=True, alpha=0.15 if theme.is_light() else 0.3)
