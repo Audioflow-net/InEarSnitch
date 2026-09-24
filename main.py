@@ -2631,7 +2631,7 @@ class MainWindow(QMainWindow):
             )
             
         # Warn if recording level is too high even at minimum amplitude
-        if optimal_amp <= 0.011 and actual_peak > -10.0:
+        if optimal_amp <= 0.011:
             log_lines.append("")
             log_lines.append("⚠️ WARNING: Recording level is very high!")
             log_lines.append("   Action: Push the volume down and recalibrate!")
