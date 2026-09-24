@@ -578,9 +578,12 @@ class LiveSealWorker(QThread):
                         outdata[:, 1] = pn
                     
                 sig = indata[:, 0].copy()
-                sig_w = sig * window[:len(sig)] if len(sig) <= len(window) else sig * np.hanning(len(sig))
+                N_sig = len(sig)
+                sig_w = sig * window[:N_sig] if N_sig <= len(window) else sig * np.hanning(N_sig)
                 
-                mag = np.abs(np.fft.rfft(sig_w))
+                # Normalize the FFT so it outputs true linear amplitude (true dBFS)
+                # instead of being artificially inflated by N/2
+                mag = np.abs(np.fft.rfft(sig_w)) / (N_sig / 2.0)
                 # Simple smoothing
                 kernel_size = 15
                 kernel = np.ones(kernel_size) / kernel_size
@@ -908,7 +911,8 @@ class MainWindow(QMainWindow):
         workspace_layout.setSpacing(0)
         
         # SIDEBAR 2 (Profiles)
-        profile_bar = QWidget()
+        self.profile_bar = QWidget()
+        profile_bar = self.profile_bar
         profile_bar.setMinimumWidth(170)
         profile_bar.setMaximumWidth(280)
         profile_bar.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
@@ -950,12 +954,14 @@ class MainWindow(QMainWindow):
         prof_layout.addWidget(header)
         header.hide()
         
-        lbl_prof = QLabel("MUSICIAN PROFILES")
+        self.lbl_prof = QLabel("MUSICIAN PROFILES")
+        lbl_prof = self.lbl_prof
         lbl_prof.setStyleSheet("color: white; font-weight: bold; font-size: 11px;")
         prof_layout.addWidget(lbl_prof)
         
         search_box = QHBoxLayout()
-        search_input = QLineEdit()
+        self.search_input = QLineEdit()
+        search_input = self.search_input
         search_input.setPlaceholderText("Search...")
         search_input.setStyleSheet("background-color: #111; color: white; border: 1px solid #333; padding: 5px; border-radius: 4px;")
         btn_add_prof = QPushButton("+")
@@ -3050,7 +3056,42 @@ class MainWindow(QMainWindow):
             self.manual_browser.setStyleSheet(f"background-color: {theme.get_color('bg_main')}; color: {theme.get_color('text_primary')}; border: 1px solid {theme.get_color('border')}; border-radius: 4px; padding: 10px;")
         if hasattr(self, 'console_output'):
             self.console_output.setStyleSheet(f"background-color: {theme.get_color('bg_main')}; color: {theme.get_color('text_primary')}; font-family: 'Courier New', Courier, monospace; font-size: 11px; padding: 5px; border: 1px solid {theme.get_color('border')}; border-radius: 4px;")
+            
+        # Update Profile Bar (Left Sidebar)
+        bg_panel = theme.get_color('bg_panel')
+        border = theme.get_color('border')
+        fg = theme.get_color('text_primary')
         
+        # Switch Logo for Light/Dark mode
+        if hasattr(self, 'logo_img'):
+            import os
+            from PySide6.QtGui import QPixmap
+            from PySide6.QtCore import Qt
+            
+            logo_filename = "Final Logo InEar Snitch_Light.png" if theme.is_light() else "Final Logo InEar Snitch.png"
+            logo_path = os.path.join(os.path.dirname(__file__), logo_filename)
+            if os.path.exists(logo_path):
+                pix = QPixmap(logo_path)
+                if not pix.isNull():
+                    self.logo_img.setPixmap(pix.scaledToHeight(46, Qt.SmoothTransformation))
+
+        if hasattr(self, 'profile_bar'):
+            self.profile_bar.setStyleSheet(f"#ProfileBar {{ background-color: {bg_panel}; border-right: 1px solid {border}; }}")
+        if hasattr(self, 'lbl_prof'):
+            self.lbl_prof.setStyleSheet(f"color: {fg}; font-weight: bold; font-size: 11px;")
+        if hasattr(self, 'search_input'):
+            input_bg = theme.get_color('bg_main')
+            self.search_input.setStyleSheet(f"background-color: {input_bg}; color: {fg}; border: 1px solid {border}; padding: 5px; border-radius: 4px;")
+        
+        # Update Scrollbars dynamically
+        sb_bg = "#f4f4f5" if theme.is_light() else "#111"
+        sb_handle = "#d4d4d8" if theme.is_light() else "#444"
+        self.setStyleSheet(f"""
+            QMainWindow {{ background-color: {theme.get_color('bg_main')}; }}
+            QScrollBar:vertical {{ border: none; background: {sb_bg}; width: 8px; margin: 0px; }}
+            QScrollBar::handle:vertical {{ background: {sb_handle}; border-radius: 4px; }}
+        """)
+
         # Refresh main tabs
         if hasattr(self, 'workspace_stacked'):
             self.switch_workspace_tab(self.workspace_stacked.currentIndex())

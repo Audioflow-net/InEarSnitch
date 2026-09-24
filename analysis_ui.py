@@ -1679,6 +1679,8 @@ class AnalysisWidget(QWidget):
     def update_theme(self):
         bg = theme.get_color('bg_panel')
         fg = theme.get_color('text_primary')
+        self.setStyleSheet(f"#AnalysisRoot {{ background-color: transparent; color: {fg}; }}")
+        fg = theme.get_color('text_primary')
         border = theme.get_color('border')
         active = theme.get_color('bg_hover')
         text_sec = theme.get_color('text_secondary')
@@ -1696,6 +1698,11 @@ class AnalysisWidget(QWidget):
             self.thd_widget.setBackground(pg_bg)
         if hasattr(self, 'csd_widget'):
             self.csd_widget.setBackground(pg_bg)
+            
+        if hasattr(self, 'btn_toggle_tools'):
+            btn_bg = theme.get_color('bg_hover')
+            btn_border = theme.get_color('border')
+            self.btn_toggle_tools.setStyleSheet(f"QPushButton {{ background-color: {btn_bg}; color: {fg}; border: none; border-left: 1px solid {btn_border}; font-size: 10px; }} QPushButton:hover {{ background-color: {border}; color: {fg}; }}")
             
         # Update EQ mini plots and labels
         if hasattr(self, 'preset_cards_layout'):
