@@ -3681,9 +3681,9 @@ class MainWindow(QMainWindow):
                 # Fast decay (~1 second recovery)
                 self._max_rta_mean = 0.95 * self._max_rta_mean + 0.05 * current_mean
 
-            # Check 1: Absolute level too low (it's just room noise, no IEM playing into mic)
+            # Check 1: Absolute level too low (it's just room noise or acoustic bleed from the desk)
             # Check 2: Relative level dropped massively (IEM was just pulled out)
-            if current_mean < -75.0 or current_mean < self._max_rta_mean - 25.0:
+            if current_mean < -55.0 or current_mean < self._max_rta_mean - 25.0:
                 seal_html = "<span style='color: #a8a29e; font-weight: bold;'>IEM Not Detected (Silence)</span>"
                 depth_html = ""
                 if hasattr(self, 'rta_peak_line') and self.rta_peak_line is not None:
