@@ -1,6 +1,28 @@
 # InEar Snitch Hardware & CAD Changelog
 *Lückenlose Dokumentation aller physikalischen Änderungen an den 3D-Modellen, um wissenschaftliche Reproduzierbarkeit sicherzustellen.*
 
+## [V37.6 CIEM V27 Flare] - 2026-09-24
+**Fokus:** Back to the Roots. Eine stumpfe, simple V27-Geometrie, nur mit einem "Anti-Tear" Kragen.
+
+### Geändert (CIEM_XL_Adapter_Molds.scad)
+1. **Version / Datum:** V37.6 - 2026-09-24
+2. **Das betroffene Bauteil:** `CIEM_XL_Adapter_Molds.scad` (V27 Flare)
+3. **Maße (Alt vs. Neu):** Die gigantische Eichel-Kugel wurde gelöscht. Die Spitze ist nun exakt wie bei V27 ein 2.0 mm Radius Torus, der jedoch auf 15.0 mm Außendurchmesser (statt 13.0 mm) aufgeblasen ist.
+4. **Formen-Änderung:** Dieser 15.0 mm Torus wird über einen weichen `hull()` Befehl fließend mit dem 13.0 mm Schaft verbunden. Es entsteht die exakte Optik von V27, nur dass sich die Spitze wie bei einer Tulpe auf 15 mm aufweitet. 
+5. **Die Idee / Der Grund:** Der pragmatische Ansatz des Users: "Einfach V27 machen, aber mit breitem oberen Rand". Das gerade 13.0 mm Rohr bleibt erhalten (passt durch die Mutter), das Loch ist 7.0 mm (für Grip), aber die aufgeweitete 15mm Eintrittslippe (Flare) verhindert, dass das dünne Silikon beim Spannen über fette CIEMs einreißt.
+
+
+## [V37.5 CIEM The Acorn] - 2026-09-24
+**Fokus:** Anpassung der Eintrittslippe auf die extrem sanfte "V27-Rundung", jedoch optimiert für große CIEMs und den 13mm Coupler-Neck.
+
+### Geändert (CIEM_XL_Adapter_Molds.scad)
+1. **Version / Datum:** V37.5 - 2026-09-24
+2. **Das betroffene Bauteil:** `CIEM_XL_Adapter_Molds.scad` (Acorn Shape)
+3. **Maße (Alt vs. Neu):** Das gerade Rohr wurde durch eine Teardrop/Acorn-Form ersetzt. Die Spitze (Z=-3.01) besteht nun aus dem Südpol einer gigantischen 16.0 mm Kugel.
+4. **Formen-Änderung:** Die Eintrittslippe ist nun keine scharfe Wulst mehr, sondern eine extrem sanfte, unendliche Rundung (exakt wie bei V27, nur fetter). Nach dem 16mm Äquator verjüngt sich die Form konisch zurück auf die 13.0 mm, um durch die Mutter zu passen.
+5. **Die Idee / Der Grund:** Das gerade Rohr bot zwar Grip, aber das Einführen des Hörers wäre an der harten Kante unschön gewesen. Die V27-Rundung ist ergonomisch überlegen. Da wir hier aber mehr Grip für massive CIEMs brauchen, ist der "Bauch" 16.0 mm dick (viel dicker als V27), aber der Hals verjüngt sich auf 13.0 mm, um das Hardware-Limit der Messkammer zu respektieren.
+
+
 ## [V37.4 CIEM V27-Tamper Sync] - 2026-09-24
 **Fokus:** Mathematische Synchronisierung der neuen CIEM-Form mit den existierenden V27-Tampern für maximale Modularität.
 

@@ -940,12 +940,6 @@ class MainWindow(QMainWindow):
         
         main_layout.addWidget(top_bar)
         
-        # --- SAFETY BANNER ---
-        safety_banner = QLabel("⚠️ WARNING: High-level audio sweeps can exceed 107 dB SPL. NEVER wear In-Ear Monitors while running a measurement.")
-        safety_banner.setStyleSheet("background-color: #991b1b; color: white; font-weight: bold; font-size: 13px; padding: 6px;")
-        safety_banner.setAlignment(Qt.AlignCenter)
-        main_layout.addWidget(safety_banner)
-        
         # --- MAIN CONTENT ---
         content_layout = QHBoxLayout()
         content_layout.setSpacing(0)
