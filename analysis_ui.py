@@ -1478,17 +1478,28 @@ class AnalysisWidget(QWidget):
         if csd_data is not None:
             show_l = self.btn_chan_l.isChecked()
             show_r = self.btn_chan_r.isChecked()
-            # Prefer R if R is checked, else L
-            if show_r and 'R' in csd_data:
-                active_csd = csd_data.get('R')
-                is_right = True
+            
+            active_csd = None
+            is_right = False
+            
+            if show_l and show_r:
+                # If both are checked, Waterfall can only show one cleanly. Default to Left.
+                if 'L' in csd_data:
+                    active_csd = csd_data['L']
+                    is_right = False
+                elif 'R' in csd_data:
+                    active_csd = csd_data['R']
+                    is_right = True
             elif show_l and 'L' in csd_data:
-                active_csd = csd_data.get('L')
+                active_csd = csd_data['L']
                 is_right = False
-            else:
-                active_csd = csd_data.get('L') or csd_data.get('R')
-                is_right = (active_csd is csd_data.get('R'))
-                
+            elif show_r and 'R' in csd_data:
+                active_csd = csd_data['R']
+                is_right = True
+            
+            if not active_csd:
+                # If everything is unchecked or data is missing, draw nothing.
+                pass
             print(f"[CSD DEBUG] csd_data keys={list(csd_data.keys())}, show_l={show_l}, show_r={show_r}, active_csd={'YES' if active_csd else 'NONE'}")
             if active_csd:
                 csd_freqs, csd_times, orig_csd_slices = active_csd
