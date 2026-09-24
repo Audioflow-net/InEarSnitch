@@ -115,8 +115,11 @@ class AutoWrapLabel(QLabel):
     def __init__(self, text=""):
         super().__init__(text)
         self.setWordWrap(True)
-        self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.MinimumExpanding)
-        self.setMinimumWidth(10)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
+        
+    def minimumSizeHint(self):
+        from PySide6.QtCore import QSize
+        return QSize(10, 10)
 
 class StableTabWidget(QTabWidget):
     def sizeHint(self):
