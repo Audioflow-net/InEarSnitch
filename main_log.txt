@@ -1,0 +1,103 @@
+commit d4a4f940980c00cc73e79d855ae84cba832c0c98
+Author: Audioflow-net <besse.genever@googlemail.com>
+Date:   Thu Sep 24 09:14:14 2026 +0200
+
+    fix: stress test sweep 1s→3s for better frequency resolution and R&B detection
+
+diff --git a/main.py b/main.py
+index d2cc164..8541d4c 100644
+--- a/main.py
++++ b/main.py
+@@ -2617,10 +2617,10 @@ class MainWindow(QMainWindow):
+                 try:
+                     f, m, p, ir, noise = self.engine.measure(
+                         self.in_idx, self.out_idx, self.ch,
+-                        duration=1.0, f_start=20.0, f_end=20000.0,
++                        duration=3.0, f_start=20.0, f_end=20000.0,
+                         amplitude=self.amp,
+                         progress_callback=lambda t: self.sweep_progress.emit(t, 1))
+-                    hohd_f, hohd_db = self.engine.extract_hohd(ir, duration=1.0, noise_floor=noise)
++                    hohd_f, hohd_db = self.engine.extract_hohd(ir, duration=3.0, noise_floor=noise)
+                     self.finished.emit(hohd_f, hohd_db)
+                 except Exception as e:
+                     self.error.emit(str(e))
+
+commit 1cdbe1835d2fd7ff47df258b38147a62809934de
+Author: Audioflow-net <besse.genever@googlemail.com>
+Date:   Thu Sep 24 08:56:54 2026 +0200
+
+    fix: faster RTA auto-gain (0.92 EMA) + use calibrated amplitude for pink noise
+
+diff --git a/main.py b/main.py
+index c686dec..d2cc164 100644
+--- a/main.py
++++ b/main.py
+@@ -506,7 +506,9 @@ class LiveSealWorker(QThread):
+         X_white = np.fft.rfft(np.random.randn(N_noise))
+         S = np.sqrt(np.arange(X_white.size) + 1.0)
+         y = np.fft.irfft(X_white / S, n=N_noise)
+-        pink_noise_full = (y / np.max(np.abs(y))) * 0.15
++        # Use calibrated amplitude if available, otherwise 0.15
++        cal_amp = getattr(self, '_cal_amp', 0.15)
++        pink_noise_full = (y / np.max(np.abs(y))) * cal_amp
+         self.noise_idx = 0
+         
+         # Precompute frequencies and calibration curve
+@@ -3487,6 +3489,9 @@ class MainWindow(QMainWindow):
+             self._rta_warmup = 0  # Suppress seal diagnostics for first 30 frames (~1s)
+             
+             self.live_worker = LiveSealWorker(self.selected_in_idx, self.selected_out_idx, cal_f, cal_m, target_channel=self.get_current_channel())
++            # Pass calibrated amplitude so pink noise matches calibrated sweep level
++            cal_amp = getattr(self.audio_engine, 'calibrated_sweep_amp', 0.15)
++            self.live_worker._cal_amp = cal_amp
+             self.live_worker.update_signal.connect(self.update_live_rta)
+             self.live_worker.error.connect(self.on_measurement_error)
+             self.live_worker.start()
+@@ -3535,8 +3540,8 @@ class MainWindow(QMainWindow):
+         if not hasattr(self, '_rta_shift'):
+             self._rta_shift = calculated_shift
+         else:
+-            # VERY slow adaptation so transients (like mic taps) are visibly preserved
+-            self._rta_shift = 0.98 * self._rta_shift + 0.02 * calculated_shift
++            # Fast adaptation (~0.5s convergence) so level settles quickly
++            self._rta_shift = 0.92 * self._rta_shift + 0.08 * calculated_shift
+             
+         self.live_rta_line.setData(freqs[mask], mag_db[mask] + self._rta_shift)
+         
+
+commit a9eeac3c5b2d484d829dcb5a4fff3d9fd075d4f2
+Author: Audioflow-net <besse.genever@googlemail.com>
+Date:   Wed Sep 23 19:02:39 2026 +0200
+
+    fix: reset RTA EMA state on start + 1s warmup before seal diagnostics
+
+diff --git a/main.py b/main.py
+index f618818..c686dec 100644
+--- a/main.py
++++ b/main.py
+@@ -3479,6 +3479,13 @@ class MainWindow(QMainWindow):
+             target_plot.update()
+             target_plot.repaint()
+             
++            # Reset all EMA state so curve doesn't drift from top
++            for attr in ('_rta_shift', '_max_rta_mean', '_iec_smooth_mags',
++                         '_iec_status_counter', '_iec_last_ok'):
++                if hasattr(self, attr):
++                    delattr(self, attr)
++            self._rta_warmup = 0  # Suppress seal diagnostics for first 30 frames (~1s)
++            
+             self.live_worker = LiveSealWorker(self.selected_in_idx, self.selected_out_idx, cal_f, cal_m, target_channel=self.get_current_channel())
+             self.live_worker.update_signal.connect(self.update_live_rta)
+             self.live_worker.error.connect(self.on_measurement_error)
+@@ -3534,6 +3541,11 @@ class MainWindow(QMainWindow):
+         self.live_rta_line.setData(freqs[mask], mag_db[mask] + self._rta_shift)
+         
+         # --- Live IEC 711 Positioning Diagnostics ---
++        # Skip diagnostics during warmup (~1 second) while EMA settles
++        warmup = getattr(self, '_rta_warmup', 0)
++        if warmup < 30:
++            self._rta_warmup = warmup + 1
++            return
+         try:
+             # Detect if IEM is pulled out (massive drop in volume from recent peak)
+             if not hasattr(self, '_max_rta_mean'):
