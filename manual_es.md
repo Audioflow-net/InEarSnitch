@@ -303,3 +303,14 @@ Estos compresores de rango dinámico intentan suprimir agresivamente el sonido e
 
 ### 2. Advertencia: "Signal too quiet" a pesar del alto volumen
 InEar Snitch emite intencionalmente el barrido de medición a un volumen digital muy bajo (-20 dBFS) para evitar que tu micrófono se sature (clipping). ¡Un monitor intrauditivo dentro de un acoplador de silicona sellado genera más de 115 dB SPL! Emitir un barrido a máxima escala (0 dBFS) saturaría instantáneamente el ADC de tu tarjeta de sonido, lo que *también* resulta en una curva perfectamente plana e inválida. Si la aplicación te advierte que la señal es demasiado baja, debes aumentar la ganancia de entrada física (Gain) en tu interfaz de micrófono, no el volumen de los auriculares.
+
+### 3. Understanding THD & Waterfall (CSD) Diagnostics
+
+#### 1. THD Crossover Hump (Balanced Armatures):
+Si en los in-ears multi-BA los valores de THD aumentan a alrededor del 4% en el rango de 300-500 Hz, esto NO es un error del software. Es la realidad física del punto de cruce (crossover), donde los drivers trabajan eléctricamente unos contra otros. Esto es completamente normal.
+
+#### 2. THD Sub-Bass Limit:
+A diferencia de los drivers dinámicos, los drivers BA casi no tienen capacidad de excursión mecánica. Si la aplicación muestra altos valores de THD (ej. 5-10%) en la región de subgraves (ej. 50 Hz), esto se debe a la falta de capacidad de excursión de los drivers BA a niveles altos de reproducción. Esto también es físicamente correcto y una característica típica de los IEMs BA. Consejo: ¡Medir a un Level (volumen de salida) más bajo reduce la distorsión! (Nota: Reduce el Output Level, no el Gain del micrófono).
+
+#### 3. Reading the Waterfall (CSD):
+El gráfico de cascada (Cumulative Spectral Decay) muestra el decaimiento de las resonancias a lo largo del tiempo. Está estructurado como una verdadera topografía de "2D Spectral Decay". Las líneas de contorno negras sólidas representan diferentes cortes de tiempo (Time Slices). Las líneas descienden orgánicamente porque la señal se vuelve más silenciosa con el tiempo. Si una resonancia no decae inmediatamente, verás una "cresta" o "cordillera" prominente que persiste por más tiempo.

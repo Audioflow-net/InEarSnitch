@@ -882,7 +882,7 @@ class AnalysisWidget(QWidget):
         
         # --- EQ Bands (Horizontal, ultra compact) ---
         self.peq_bands = []
-        for i in range(5):
+        for i in reversed(range(5)):
             band_frame = QFrame()
             band_frame.setStyleSheet("QFrame { background: #18181b; border: 1px solid #333; border-radius: 4px; }")
             bl = QHBoxLayout(band_frame)
@@ -921,7 +921,7 @@ class AnalysisWidget(QWidget):
             bl.addStretch()
             
             dsp_layout.addWidget(band_frame)
-            self.peq_bands.append({'on': cb_on, 'f': knob_f, 'g': knob_g, 'q': knob_q, 'type': 'peq' if i>0 and i<4 else ('lowshelf' if i==0 else 'highshelf')})
+            self.peq_bands.insert(0, {'on': cb_on, 'f': knob_f, 'g': knob_g, 'q': knob_q, 'type': 'peq' if i>0 and i<4 else ('lowshelf' if i==0 else 'highshelf')})
             
             def update_dsp(val=0, idx=i):
                 from eq_math import dsp_engine
@@ -1047,13 +1047,10 @@ class AnalysisWidget(QWidget):
             self.plot_widget.setYRange(40, 110, padding=0.0)
         if hasattr(self, 'thd_widget'):
             self.thd_widget.setXRange(np.log10(20), np.log10(20000), padding=0.0)
-            self.thd_widget.setYRange(0, 5, padding=0.0)
+            self.thd_widget.plotItem.vb.autoRange(padding=0.1)
         if hasattr(self, 'csd_widget'):
             self.csd_widget.setXRange(np.log10(200), np.log10(20000), padding=0.0)
-            if hasattr(self, '_csd_max_peak'):
-                self.csd_widget.setYRange(self._csd_max_peak - 45, self._csd_max_peak + 5, padding=0.0)
-            else:
-                self.csd_widget.setYRange(-30, 20, padding=0.0)
+            self.csd_widget.plotItem.vb.autoRange(padding=0.1)
 
     def zoom_graph(self, min_f, max_f):
         import numpy as np
@@ -1524,28 +1521,27 @@ class AnalysisWidget(QWidget):
                 for i in range(num_slices):
                     slice_mag = csd_slices[i]
                     
-                    # 3 & 2: Freq-Shift 0.99, Y-Offset 1.5 dB
-                    shift_freqs = csd_freqs * (1.015 ** i)
-                    shift_mag = slice_mag - (i * 1.5) 
+                    # Clean 2D Spectral Decay (no artificial isometric frequency distortion)
+                    shift_freqs = csd_freqs
+                    # Apply a small visual Y-offset so the time slices separate vertically
+                    shift_mag = slice_mag - (i * 1.5)
                 
                     # 6. Farb-Gradient
                     blend = i / max(1, num_slices - 1)
                     r = int(base_rgb[0] * (1 - blend) + 30 * blend)
                     g = int(base_rgb[1] * (1 - blend) + 30 * blend)
                     b = int(base_rgb[2] * (1 - blend) + 40 * blend)
-                    a = 255
-                    color = pg.mkColor(r, g, b, a)
                     
                     # Beautiful shaded body fill for 3D effect
-                    fill_brush = pg.mkBrush(pg.mkColor(r, g, b, 150))
+                    fill_brush = pg.mkBrush(pg.mkColor(r, g, b, 255))
                     
-                    # 5. Linienbreite: vorne 2.0, hinten 1.0
-                    pen_width = 2.0 - (1.0 * blend)
+                    # 5. Distinct contour lines (black/dark) so the ridges are clearly visible!
+                    pen_color = pg.mkColor(20, 20, 25, 255)
                 
                     self.csd_widget.plot(
                         shift_freqs, 
                         shift_mag, 
-                        pen=pg.mkPen(color, width=pen_width),
+                        pen=pg.mkPen(pen_color, width=1.5),
                         fillLevel=-100, 
                         brush=fill_brush,
                         name=f"CSD_{'R' if is_right else 'L'}_{i}" if i==0 else None

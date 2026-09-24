@@ -315,6 +315,17 @@ Diese Filter versuchen den extrem lauten Sweep künstlich leise zu regeln (Kompr
 ### 2. Warnung: "Signal too quiet" trotz hoher Lautstärke
 Die Software gibt den Sweep absichtlich sehr leise aus (-20 dBFS), um zu verhindern, dass Ihr Mikrofon übersteuert. Ein In-Ear-Monitor erzeugt in einem abgedichteten Silikon-Coupler ohnehin über 115 dB SPL! Ein voll ausgesteuerter Sweep (0 dBFS) würde den ADC (Analog-Digital-Wandler) Ihrer Soundkarte zum "Clippen" bringen, was wiederum eine komplett flache, verfälschte Kurve erzeugt. Wenn das Signal zu leise ist, erhöhen Sie stattdessen den Gain am Mikrofon-Interface.
 
+### 3. Understanding THD & Waterfall (CSD) Diagnostics
+
+#### 1. THD Crossover Hump (Balanced Armatures):
+Wenn bei Multi-BA In-Ears im Bereich von 300-500 Hz die THD-Werte auf z.B. 4% ansteigen, ist das KEIN Fehler in der Software. Das ist die physikalische Realität der Frequenzweiche (Crossover-Point), wo die Treiber elektrisch gegeneinander arbeiten. Dies ist völlig normal.
+
+#### 2. THD Sub-Bass Limit:
+BA-Treiber haben im Gegensatz zu dynamischen Treibern fast keinen mechanischen Hubraum. Wenn die App im Sub-Bass (z.B. 50 Hz) hohe THD-Werte (z.B. 5-10%) anzeigt, liegt das an der mangelnden Exkursionsfähigkeit der BA-Treiber bei hohen Pegeln. Auch das ist physikalisch korrekt und ein typisches Merkmal von BA-IEMs. Tipp: Mit einem geringeren Level (Ausgangslautstärke) messen verringert die Verzerrung! (Hinweis: Reduzieren Sie den Output Level, nicht den Mic-Gain.)
+
+#### 3. Reading the Waterfall (CSD):
+Das Waterfall-Diagramm (Cumulative Spectral Decay) zeigt das Ausklingen von Resonanzen über die Zeit. Es ist als echte "2D Spectral Decay"-Topographie aufgebaut. Die harten schwarzen Konturlinien repräsentieren verschiedene Zeit-Ebenen (Time Slices). Die Linien fallen organisch nach unten ab, weil das Signal mit der Zeit leiser wird. Wenn eine Resonanz nicht sofort abfällt, sehen Sie einen markanten "Grat" oder "Bergkamm", der lange stehen bleibt.
+
 ---
 
 ## 17. Haftungsausschluss & Hardware-Sicherheit (WICHTIG!)

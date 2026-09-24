@@ -583,21 +583,11 @@ class AudioEngine:
             h_fft = rfft(h_ir)
             h_mag = np.abs(h_fft)
             
-            if noise_floor is not None:
-                n_chunk_len = h_end - h_start
-                mid = len(noise_floor) // 2
-                n_ir = np.zeros_like(ir)
-                n_slice_start = max(0, mid - n_chunk_len // 2)
-                n_slice_end = n_slice_start + n_chunk_len
-                n_chunk = noise_floor[n_slice_start:n_slice_end]
-                if len(n_chunk) < n_chunk_len:
-                    n_chunk = np.pad(n_chunk, (0, n_chunk_len - len(n_chunk)))
-                n_ir[h_start:h_end] = n_chunk * tukey(n_chunk_len, alpha=0.5)
-                noise_mag = np.abs(rfft(n_ir))
-                # Spectral power subtraction instead of a hard jagged gate
-                h_mag = np.sqrt(np.maximum(0, h_mag**2 - noise_mag**2))
-                
-            # Broken dBFS vs Deconvolved IR scale mismatch check removed.
+            # Physically impossible harmonics (above Nyquist) contain only noise.
+            # We must zero them out to prevent the THD from exploding in the treble.
+            nyquist = self.sample_rate / 2.0
+            valid_nyquist = (n * freqs) < nyquist
+            h_mag = h_mag * valid_nyquist
             
             harmonic_energy += h_mag ** 2
             
@@ -676,22 +666,6 @@ class AudioEngine:
             h_ir = np.zeros_like(ir)
             h_ir[h_start:h_end] = ir[h_start:h_end] * tukey(h_end - h_start, alpha=0.5)
             h_mag = np.abs(rfft(h_ir))
-            
-            if noise_floor is not None:
-                n_chunk_len = h_end - h_start
-                mid = len(noise_floor) // 2
-                n_ir = np.zeros_like(ir)
-                n_slice_start = max(0, mid - n_chunk_len // 2)
-                n_slice_end = n_slice_start + n_chunk_len
-                n_chunk = noise_floor[n_slice_start:n_slice_end]
-                if len(n_chunk) < n_chunk_len:
-                    n_chunk = np.pad(n_chunk, (0, n_chunk_len - len(n_chunk)))
-                n_ir[h_start:h_end] = n_chunk * tukey(n_chunk_len, alpha=0.5)
-                noise_mag = np.abs(rfft(n_ir))
-                # Spectral power subtraction instead of a hard jagged gate
-                h_mag = np.sqrt(np.maximum(0, h_mag**2 - noise_mag**2))
-                
-            # Broken dBFS vs Deconvolved IR scale mismatch check removed.
             
             if n in range(3, 6):
                 thd_hf_energy = np.maximum(thd_hf_energy, h_mag)

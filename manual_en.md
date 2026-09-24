@@ -313,6 +313,17 @@ These dynamic range compressors try to suppress the extremely loud measurement s
 ### 2. Warning: "Signal too quiet" despite high volume
 InEar Snitch deliberately outputs the measurement sweep at a very low digital volume (-20 dBFS) to prevent your microphone from clipping. An In-Ear Monitor inside a sealed silicone coupler generates well over 115 dB SPL! Outputting a full-scale sweep (0 dBFS) would instantly clip the ADC (Analog-to-Digital Converter) of your sound card, which *also* results in a perfectly flat and invalid curve. If the app warns you that the signal is too quiet, you should increase the physical input gain on your microphone interface, not your headphone volume.
 
+### 3. Understanding THD & Waterfall (CSD) Diagnostics
+
+#### 1. THD Crossover Hump (Balanced Armatures):
+If THD values rise to around 4% in the 300-500 Hz range for multi-BA in-ears, this is NOT a software error. It is the physical reality of the crossover point, where the drivers are electrically working against each other. This is completely normal.
+
+#### 2. THD Sub-Bass Limit:
+Unlike dynamic drivers, BA drivers have almost no mechanical excursion capabilities. If the app displays high THD values (e.g., 5-10%) in the sub-bass region (e.g., 50 Hz), this is due to the lack of excursion capabilities of BA drivers at high levels. This is also physically accurate and a typical characteristic of BA IEMs. Tip: Measuring at a lower Level (output volume) reduces the distortion! (Note: Reduce the output level, not the mic gain.)
+
+#### 3. Reading the Waterfall (CSD):
+The waterfall plot (Cumulative Spectral Decay) shows the decay of resonances over time. It is structured as a true "2D Spectral Decay" topography. The hard black contour lines represent different time slices. The lines drop organically because the signal gets quieter over time. If a resonance does not decay immediately, you will see a prominent "ridge" or "mountain crest" that persists for a longer duration.
+
 ---
 
 ## 17. Liability Disclaimer & Hardware Safety (IMPORTANT!)
