@@ -690,19 +690,11 @@ class AnalysisWidget(QWidget):
         fr_layout.setContentsMargins(4, 4, 4, 4)
         fr_layout.setSpacing(4)
         
-        # --- Smart Toolbar (Inline) ---
-        zoom_layout = QHBoxLayout()
-        zoom_layout.setSpacing(6)
-        
+        # --- Smart Toolbar logic (extracted to main.py) ---
         from PySide6.QtWidgets import QLabel
         vis_layout = QVBoxLayout()
         vis_layout.setSpacing(2)
         vis_layout.setContentsMargins(0, 0, 0, 0)
-
-        self.seg_widget = QWidget()
-        seg_layout = QHBoxLayout(self.seg_widget)
-        seg_layout.setContentsMargins(0,0,0,0)
-        seg_layout.setSpacing(0)
 
         self.btn_chan_l = QPushButton("L")
         self.btn_chan_l.setToolTip("Show/Hide Left Channel Curve")
@@ -716,9 +708,6 @@ class AnalysisWidget(QWidget):
         self.btn_chan_r.setChecked(True)
         self.btn_chan_r.setStyleSheet("QPushButton { background-color: #1f1f23; color: #888; border: 1px solid #3f3f46; border-top-right-radius: 4px; border-bottom-right-radius: 4px; padding: 4px 10px; font-weight: bold; font-size: 11px; } QPushButton:checked { background-color: #ef4444; color: white; border-color: #ef4444; }")
 
-        seg_layout.addWidget(self.btn_chan_l)
-        seg_layout.addWidget(self.btn_chan_r)
-        
         self.cb_ana_target = QComboBox()
         self.cb_ana_target.hide()
         self.cb_ana_target.addItem("-- Target --")
@@ -731,29 +720,11 @@ class AnalysisWidget(QWidget):
         self.cb_ana_history.setToolTip("Select a historical measurement.")
         self.cb_ana_history.setMinimumWidth(120)
         
-        self.btn_reset_zoom = QPushButton("🔍 Autozoom")
-        self.btn_reset_zoom.setStyleSheet("QPushButton { background: #333; color: white; border-radius: 4px; padding: 2px 8px; font-size: 10px; }")
-        self.btn_reset_zoom.clicked.connect(self.reset_zoom)
-        
-        self.btn_run_sweep = QPushButton("▶ MEASURE")
-        self.btn_run_sweep.hide()
-        self.btn_run_sweep.setStyleSheet("QPushButton { background: #db2777; color: #ffffff; border-radius: 4px; padding: 2px 12px; font-weight: bold; font-size: 11px; margin-left: 8px; } QPushButton:hover { background: #be185d; }")
-        self.btn_run_sweep.clicked.connect(self.request_measurement.emit)
-        self.btn_run_sweep.setToolTip("Run a new Sine Sweep measurement from within the Analysis tab")
-        
         self.btn_chan_l.toggled.connect(self.refresh_view)
         self.btn_chan_l.toggled.connect(lambda _: self.render_diagnostics())
         self.btn_chan_r.toggled.connect(self.refresh_view)
         self.btn_chan_r.toggled.connect(lambda _: self.render_diagnostics())
-        
-        zoom_layout.addWidget(self.seg_widget)
-        zoom_layout.addWidget(self.cb_ana_target)
-        zoom_layout.addWidget(self.cb_ana_history)
-        zoom_layout.addWidget(self.btn_run_sweep)
-        zoom_layout.addStretch()
-        zoom_layout.addWidget(self.btn_reset_zoom)
-        # zoom_layout is intentionally not added to left_pane_layout to avoid double toolbar
-        # We will extract its buttons into the tab corner widget in main.py
+
         
         self.plot_widget = pg.PlotWidget(axisItems={'bottom': FreqAxisItem(orientation='bottom')})
         self.plot_widget.setClipToView(True)
@@ -1576,7 +1547,7 @@ class AnalysisWidget(QWidget):
     def init_eq_db(self):
         import sqlite3
         try:
-            conn = sqlite3.connect("inearsnitch.db")
+            conn = sqlite3.connect(self.db.db_path)
             c = conn.cursor()
             c.execute("CREATE TABLE IF NOT EXISTS eq_presets (id INTEGER PRIMARY KEY, name TEXT UNIQUE, data TEXT)")
             conn.commit()
@@ -1597,7 +1568,7 @@ class AnalysisWidget(QWidget):
             import json, numpy as np
             import pyqtgraph as pg
             from eq_math import DSPEngine
-            conn = sqlite3.connect("inearsnitch.db")
+            conn = sqlite3.connect(self.db.db_path)
             c = conn.cursor()
             c.execute("SELECT name, data FROM eq_presets ORDER BY name")
             rows = c.fetchall()
@@ -1678,7 +1649,7 @@ class AnalysisWidget(QWidget):
                 'q': b['q'].value()
             })
         try:
-            conn = sqlite3.connect("inearsnitch.db")
+            conn = sqlite3.connect(self.db.db_path)
             c = conn.cursor()
             c.execute("INSERT OR REPLACE INTO eq_presets (name, data) VALUES (?, ?)", (name, json.dumps(data)))
             conn.commit()
@@ -1694,7 +1665,7 @@ class AnalysisWidget(QWidget):
         import sqlite3
         if QMessageBox.question(self, "Delete EQ Preset", f"Are you sure you want to delete the preset '{name}'? This cannot be undone.") == QMessageBox.Yes:
             try:
-                conn = sqlite3.connect("inearsnitch.db")
+                conn = sqlite3.connect(self.db.db_path)
                 c = conn.cursor()
                 c.execute("DELETE FROM eq_presets WHERE name = ?", (name,))
                 conn.commit()
@@ -1706,7 +1677,7 @@ class AnalysisWidget(QWidget):
     def apply_eq_preset(self, name):
         import sqlite3, json
         try:
-            conn = sqlite3.connect("inearsnitch.db")
+            conn = sqlite3.connect(self.db.db_path)
             c = conn.cursor()
             c.execute("SELECT data FROM eq_presets WHERE name = ?", (name,))
             row = c.fetchone()

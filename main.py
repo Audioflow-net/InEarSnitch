@@ -275,12 +275,6 @@ class MusicianCard(QWidget):
             b.update_style(b_id == iem_id)
         self.iem_changed.emit()
 
-    def on_menu_triggered(self, action):
-        self.current_iem_id = action.data()
-        self.current_iem_name = action.text().replace("", "")
-        self.iem_btn.setText(f"{self.current_iem_name} ▾")
-        self.iem_changed.emit()
-
 
     def __init__(self, name, role, iems, status="Ready", profile_pic=None):
         super().__init__()
@@ -1019,6 +1013,7 @@ class MainWindow(QMainWindow):
         search_input = self.search_input
         search_input.setPlaceholderText("Search...")
         search_input.setStyleSheet("background-color: #111; color: white; border: 1px solid #333; padding: 5px; border-radius: 4px;")
+        search_input.textChanged.connect(self.filter_profiles)
         btn_add_prof = QPushButton("+")
         btn_add_prof.setToolTip("Add a new profile")
         btn_add_prof.setFixedSize(25, 25)
@@ -1865,7 +1860,18 @@ class MainWindow(QMainWindow):
 
 
 
-        # Save button – no popup, no panel close; inline feedback only
+        # Settings buttons
+        settings_btn_layout = QHBoxLayout()
+        
+        btn_about = QPushButton("About / Health && Safety")
+        btn_about.setStyleSheet(
+            "background-color: #333; color: white; "
+            "padding: 11px; border-radius: 4px; font-size: 13px;"
+        )
+        btn_about.setCursor(Qt.PointingHandCursor)
+        btn_about.clicked.connect(self.show_about_dialog)
+        settings_btn_layout.addWidget(btn_about)
+        
         btn_save_set = QPushButton("Save & Apply Settings")
         btn_save_set.setToolTip("Save and apply settings")
         btn_save_set.setStyleSheet(
@@ -1874,7 +1880,9 @@ class MainWindow(QMainWindow):
         )
         btn_save_set.setCursor(Qt.PointingHandCursor)
         btn_save_set.clicked.connect(self.save_settings)
-        set_layout.addWidget(btn_save_set)
+        settings_btn_layout.addWidget(btn_save_set)
+        
+        set_layout.addLayout(settings_btn_layout)
 
         
         
@@ -2849,6 +2857,19 @@ class MainWindow(QMainWindow):
             f"Technical detail: {msg}")
 
 
+    def show_about_dialog(self):
+        from PySide6.QtWidgets import QMessageBox
+        parent_widget = self.settings_panel if self.settings_panel else self
+        QMessageBox.about(parent_widget, "About / Health & Safety", 
+            "<b>InEar Snitch</b><br>"
+            "An advanced audio measurement suite.<br><br>"
+            "<b>Health & Safety Warning:</b><br>"
+            "This software is designed to produce loud sweeping tones. "
+            "Never wear In-Ear Monitors while running a sweep unless you are absolutely sure of the volume levels. "
+            "High sound pressure levels can cause permanent hearing damage.<br><br>"
+            "<i>Use at your own risk.</i>"
+        )
+
     def save_settings(self):
         from PySide6.QtCore import QSettings
         self.selected_in_idx = self.in_combo.currentData()
@@ -2949,6 +2970,18 @@ class MainWindow(QMainWindow):
             QScrollBar:vertical { border: none; background: #111; width: 8px; margin: 0px; }
             QScrollBar::handle:vertical { background: #444; border-radius: 4px; }
         """)
+
+    def filter_profiles(self, text):
+        search_term = text.lower()
+        for i in range(self.profile_list_layout.count()):
+            item = self.profile_list_layout.itemAt(i)
+            if item.widget():
+                card = item.widget()
+                if hasattr(card, "name") and hasattr(card, "role_lbl"):
+                    if search_term in card.name.lower() or search_term in card.role_lbl.text().lower():
+                        card.show()
+                    else:
+                        card.hide()
 
     def open_add_profile_dialog(self):
         dialog = AddProfileDialog(self.db, self)
@@ -3459,111 +3492,6 @@ class MainWindow(QMainWindow):
                 self.page_prof.load_profile(iem_id, m_id)
             elif self.workspace_stacked.currentIndex() == 3 and hasattr(self.page_hist, 'load_history'):
                 self.page_hist.load_history(m_id)
-
-    def delete_profile(self):
-        if not self.current_iem_id:
-            self.sub_lbl.setText("No profile selected. Click a profile in the sidebar first.")
-            self.sub_lbl.setStyleSheet("color: red; font-size: 13px;")
-            return
-        # UI Hardening: prevent deletion while sweep is running
-        if self.is_measuring:
-            from PySide6.QtWidgets import QMessageBox
-            QMessageBox.warning(self, "Measurement Running",
-                "A measurement is currently running.\n\n"
-                "Please wait for it to finish before deleting a profile.")
-            return
-        # Simple inline deletion to avoid modal question box
-        conn = sqlite3.connect(self.db.db_path)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM Measurements WHERE iem_id = ?", (self.current_iem_id,))
-        cursor.execute("DELETE FROM IEM_Models WHERE id = ?", (self.current_iem_id,))
-        conn.commit()
-        conn.close()
-
-
-    def edit_profile(self):
-        if not self.current_iem_id:
-            return
-            
-        import sqlite3
-        conn = sqlite3.connect(self.db.db_path)
-        c = conn.cursor()
-        c.execute('''
-            SELECT m.name, m.band, i.model_name, m.id, m.profile_pic, m.notes 
-            FROM IEM_Models i 
-            JOIN Musicians m ON i.musician_id = m.id 
-            WHERE i.id = ?
-        ''', (self.current_iem_id,))
-        row = c.fetchone()
-        
-        if not row:
-            conn.close()
-            return
-            
-        old_name, old_band, old_model, mus_id, old_pic, old_notes = row
-        
-        from PySide6.QtWidgets import QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QPushButton, QTextEdit, QFileDialog
-        dlg = QDialog(self)
-        dlg.setWindowTitle("Edit Profile")
-        dlg.setStyleSheet("background-color: #222; color: white;")
-        layout = QFormLayout(dlg)
-        
-        le_name = QLineEdit(old_name)
-        le_band = QLineEdit(old_band)
-        le_model = QLineEdit(old_model)
-        for le in [le_name, le_band, le_model]:
-            le.setStyleSheet("background: #111; border: 1px solid #444; padding: 4px;")
-            
-        te_notes = QTextEdit(old_notes if old_notes else "")
-        te_notes.setStyleSheet("background: #111; border: 1px solid #444; padding: 4px;")
-        te_notes.setFixedHeight(60)
-            
-        btn_pic = QPushButton("Select Image" if not old_pic else "Change Image")
-        btn_pic.setToolTip("Select or change profile image")
-        btn_pic.setStyleSheet("background-color: #333; padding: 5px;")
-        selected_pic = [old_pic]
-        
-        def choose_pic():
-            path, _ = QFileDialog.getOpenFileName(dlg, "Select Profile Picture", "", "Images (*.png *.jpg *.jpeg)")
-            if path:
-                selected_pic[0] = path
-                btn_pic.setText("Image Selected")
-                btn_pic.setStyleSheet("background-color: #008800;")
-                
-        btn_pic.clicked.connect(choose_pic)
-            
-        layout.addRow("Musician Name:", le_name)
-        layout.addRow("Band / Role:", le_band)
-        layout.addRow("IEM Model:", le_model)
-        layout.addRow("Profile Picture:", btn_pic)
-        layout.addRow("Notes:", te_notes)
-        
-        bbox = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
-        bbox.accepted.connect(dlg.accept)
-        bbox.rejected.connect(dlg.reject)
-        layout.addRow(bbox)
-        
-        if dlg.exec():
-            new_name = le_name.text().strip()
-            new_band = le_band.text().strip()
-            new_model = le_model.text().strip()
-            new_notes = te_notes.toPlainText().strip()
-            new_pic = selected_pic[0]
-            
-            if new_name and new_model:
-                c.execute("UPDATE Musicians SET name=?, band=?, notes=?, profile_pic=? WHERE id=?", (new_name, new_band, new_notes, new_pic, mus_id))
-                c.execute("UPDATE IEM_Models SET model_name=? WHERE id=?", (new_model, self.current_iem_id))
-                conn.commit()
-                self.load_profiles_from_db()
-                
-        conn.close()
-        self.load_profiles_from_db()
-        self.plot_widget.clear()
-        
-        self.sub_lbl.setText("Profile deleted successfully.")
-        self.sub_lbl.setStyleSheet("color: #00FF99; font-size: 13px;")
-        self.current_iem_id = None
-        self.settings_panel = None
 
     def run_compare(self):
         if not self.current_iem_id:
