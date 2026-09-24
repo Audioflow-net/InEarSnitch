@@ -3033,6 +3033,54 @@ class MainWindow(QMainWindow):
         if active_card:
             self.force_profile_selection(active_card)
 
+    def save_workspace_state(self):
+        if not hasattr(self, 'current_iem_id') or not self.current_iem_id:
+            return
+        if not hasattr(self, 'temp_workspace_states'):
+            self.temp_workspace_states = {}
+            
+        self.temp_workspace_states[self.current_iem_id] = {
+            'freqs': getattr(self, 'temp_freqs', None),
+            'mag_l': getattr(self, 'temp_mag_l', None),
+            'mag_r': getattr(self, 'temp_mag_r', None),
+            'phase_l': getattr(self, 'temp_phase_l', None),
+            'phase_r': getattr(self, 'temp_phase_r', None),
+            'ir_l': getattr(self, 'temp_ir_l', None),
+            'ir_r': getattr(self, 'temp_ir_r', None),
+            'thd_data': getattr(self, 'temp_thd_data', None),
+            'csd_data': getattr(self, 'temp_csd_data', None),
+            'noise_l': getattr(self, 'temp_noise_l', None),
+            'noise_r': getattr(self, 'temp_noise_r', None),
+            'noise_f_l': getattr(self, 'temp_noise_f_l', None),
+            'noise_f_r': getattr(self, 'temp_noise_f_r', None),
+            'noise_m_l': getattr(self, 'temp_noise_m_l', None),
+            'noise_m_r': getattr(self, 'temp_noise_m_r', None),
+        }
+
+    def restore_workspace_state(self, iem_id):
+        state = getattr(self, 'temp_workspace_states', {}).get(iem_id, None)
+        if state:
+            self.temp_freqs = state.get('freqs')
+            self.temp_mag_l = state.get('mag_l')
+            self.temp_mag_r = state.get('mag_r')
+            self.temp_phase_l = state.get('phase_l')
+            self.temp_phase_r = state.get('phase_r')
+            self.temp_ir_l = state.get('ir_l')
+            self.temp_ir_r = state.get('ir_r')
+            self.temp_thd_data = state.get('thd_data')
+            self.temp_csd_data = state.get('csd_data')
+            self.temp_noise_l = state.get('noise_l')
+            self.temp_noise_r = state.get('noise_r')
+            self.temp_noise_f_l = state.get('noise_f_l')
+            self.temp_noise_f_r = state.get('noise_f_r')
+            self.temp_noise_m_l = state.get('noise_m_l')
+            self.temp_noise_m_r = state.get('noise_m_r')
+            self.redraw_graph()
+            if hasattr(self, 'page_ana') and hasattr(self.page_ana, 'update_analysis_view'):
+                self.page_ana.update_analysis_view()
+        else:
+            self.clear_trace()
+
     def on_profile_selected(self, card=None):
         if not card: return
         self.active_card = card
@@ -3042,6 +3090,12 @@ class MainWindow(QMainWindow):
             self.sub_lbl.setText("Measurement in progress — please wait before switching profiles.")
             self.sub_lbl.setStyleSheet("color: #FF8C00; font-size: 12px; font-weight: bold;")
             return
+            
+        iem_id = card.current_iem_id
+        if hasattr(self, 'current_iem_id') and str(self.current_iem_id) == str(iem_id):
+            return
+            
+        self.save_workspace_state()
             
         # Clear styling from ALL OTHER CARDS, and restore active card
         for c in self.profile_cards:
@@ -3063,6 +3117,18 @@ class MainWindow(QMainWindow):
             from datetime import datetime
             self.sub_lbl.setText("Status: Ready to measure.")
             self.current_iem_id = iem_id
+            
+            # Restore unsaved workspace state for this specific IEM
+            self.restore_workspace_state(iem_id)
+            
+            # Reset history dropdown to clear previous IEM's history visually
+            if hasattr(self, 'cb_meas_history'):
+                self.cb_meas_history.blockSignals(True)
+                self.cb_meas_history.setCurrentIndex(0)
+                self.cb_meas_history.blockSignals(False)
+                
+            # Automatically switch to the Workspace tab (index 2) so user can see it
+            self.switch_workspace_tab(2)
             
             # ProKit: auto-suggest last used tip for current IEM
             self.suggest_tip_for_current_iem()

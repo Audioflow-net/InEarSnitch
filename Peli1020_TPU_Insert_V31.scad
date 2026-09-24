@@ -16,7 +16,6 @@ show_tpu_sleeve = true;
 show_dummy_mic = false;
 show_cross_section = false;
 show_test_print = false; // TEST-DRUCK FÜR DIE LASCHE
-show_nameplate = true;   // NEU: Separates Logo-Schild für Option 1!
 
 // --- 1. Design Parameters ---
 // Peli 1020 Internal Dimensions (Drafted)
@@ -319,6 +318,20 @@ module retaining_lip_y(x, y, z, on_front, length, protrusion, thickness) {
     }
 }
 
+
+// ==========================================
+// DEIN INDIVIDUELLES LOGO (Option "Base-Through")
+// ==========================================
+module custom_logo_2d() {
+    // Hier kannst du später dein SVG (das Spy-Logo) importieren!
+    // Lösche dann einfach den text()-Befehl und entkommentiere import().
+    // Wichtig: Das SVG muss zentriert sein!
+    // import("spy_logo.svg");
+    
+    // Platzhalter, bis du das SVG einfügst:
+    text("InEar Snitch", size=7.0, font="Arial:style=Black", halign="center", valign="center");
+}
+
 module cutouts() {
     // 1. THE HARMONIOUS L-SHAPE CABLE TRENCH
     difference() {
@@ -427,24 +440,12 @@ module cutouts() {
         }
     }
     
-    // 5. NAMEPLATE POCKET (Für das Logo-Schild)
-    // 50.4 x 18.4mm Mulde (+0.4mm Toleranz für leichten Fit). 2.0mm tief.
-    // Positioniert mittig im riesigen, leeren Bereich unten rechts!
-    translate([105.0 - 50.4/2, 38.0 - 18.4/2, depth + flange_t - 2.0]) {
-        linear_extrude(height=2.0 + eps)
-            rounded_rect_center_2(50.4, 18.4, 2.0); 
-    }
-}
-
-// Hilfsmodul für das abgerundete Rechteck (falls nicht lokal definiert)
-module rounded_rect_center_2(w, h, r) {
-    translate([r, r])
-    hull() {
-        translate([0, 0]) circle(r=r);
-        translate([w-2*r, 0]) circle(r=r);
-        translate([w-2*r, h-2*r]) circle(r=r);
-        translate([0, h-2*r]) circle(r=r);
-    }
+        // 5. DAS INTEGRIERTE LOGO (Lücken im TPU)
+    // Wir stanzen das Logo als Löcher durch das gesamte TPU bis zum Chassis runter (Z=2.0).
+    // offset(r=0.2) gibt dem harten PETG etwas "Luft", damit es sauber reinrutscht!
+    translate([50.0, 80.0, 2.0 - eps])
+        linear_extrude(height=depth + flange_t - 2.0 + 2*eps)
+            offset(r=0.2) custom_logo_2d();
 }
 
 // ==========================================
@@ -460,6 +461,13 @@ module petg_chassis(tol=0) {
             translate([base_dx + 3.0, base_dx + 3.0, 0])
                 rounded_rect(base_x - 6.0, base_y - 6.0, 2.0, base_r - 3.0);
                 
+            
+            // 3. DIE LOGO-STELZEN (Dein Wunsch: Wachsen aus der Base durchs TPU!)
+            // Extrudieren exakt von der Bodenplatte (Z=2.0) bis bündig zur TPU-Oberfläche.
+            translate([50.0, 80.0, 2.0 - eps])
+                linear_extrude(height=depth + flange_t - 2.0 + eps)
+                    custom_logo_2d();
+            
             // Main PETG Tube (OD: 22mm)
             // GEKÜRZT AUF 41.5mm! (Absolute Decke der Peli-Kiste ist bei 42.42mm).
             translate([109.65, 41.65, 0]) 
@@ -697,11 +705,6 @@ module assembly() {
     if (show_tpu_sleeve) {
         color("OrangeRed") tpu_tower_sleeve();
     }
-    if (show_nameplate) {
-        // Platziere das Schild exakt in seiner Mulde!
-        translate([105.0, 38.0, depth + flange_t - 2.0])
-            color("Cyan", 1.0) nameplate_badge();
-    }
     if (show_dummy_mic) {
         translate([108, 40, 44]) rotate([0, 180, 0]) dummy_coupler();
     }
@@ -732,27 +735,7 @@ module test_print(part="tpu") {
     }
 }
 
-// ==========================================
-// 6. NAMEPLATE BADGE (Option 1 Logo)
-// ==========================================
-module nameplate_badge() {
-    // 50x18mm Schild (passt perfekt in die Mulde, die in cutouts() generiert wird)
-    difference() {
-        // Das Schild selbst (wird mittig generiert, damit es schön auf dem Druckbett liegt)
-        translate([-25.0, -9.0, 0])
-            rounded_rect(50.0, 18.0, 2.0, 2.0);
-            
-        // Text "InEar Snitch" (Debossed) - wir stanzen den Text als Loch ein!
-        // Dadurch scheint das schwarze TPU später durch den Cyan-farbenen Druck hindurch!
-        // Der Text ist rechtsbündig formatiert, damit links Platz für dein Spy-Logo (SVG) ist.
-        translate([5.0, 1.0, -eps])
-            linear_extrude(height=2.0 + 2*eps)
-                text("InEar", size=5.5, font="Arial:style=Bold", halign="center", valign="bottom");
-        translate([5.0, -1.0, -eps])
-            linear_extrude(height=2.0 + 2*eps)
-                text("Snitch", size=5.5, font="Arial:style=Bold", halign="center", valign="top");
-    }
-}
+
 
 if (show_test_print) {
     color("Gold", 1.0) test_print();
