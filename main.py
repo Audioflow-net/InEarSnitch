@@ -3745,20 +3745,20 @@ class MainWindow(QMainWindow):
                     if hasattr(self, 'rta_peak_line') and self.rta_peak_line is not None:
                         self.rta_peak_line.hide()
     
-                # 2. Seal (40Hz vs 500Hz)
-                mask_40 = (freqs >= 35) & (freqs <= 45)
-                mask_500 = (freqs >= 450) & (freqs <= 550)
-                if np.any(mask_40) and np.any(mask_500):
-                    val_40 = np.mean(mag_db[mask_40])
-                    val_500 = np.mean(mag_db[mask_500])
-                    # Check for bass roll-off OR overall low signal variance (just noise floor)
-                    if val_40 < val_500 - 12:
-                        seal_html = "<span style='color: #ef4444; font-weight: bold;'>🔴 SEAL LEAK!</span>"
-                    else:
-                        seal_html = "<span style='color: #10b981; font-weight: bold;'>🟢 SEAL OK</span>"
+            # --- Status Check: Low Frequency Roll-off (Bass leak) ---
+            # Added debug info to show raw `current_mean` dBFS so we can determine the correct silence threshold.
+            mask_40 = (freqs >= 35) & (freqs <= 45)
+            mask_500 = (freqs >= 450) & (freqs <= 550)
+            if np.any(mask_40) and np.any(mask_500):
+                val_40 = np.mean(mag_db[mask_40])
+                val_500 = np.mean(mag_db[mask_500])
+                if val_40 < val_500 - 12:
+                    seal_html = f"<span style='color: #ef4444; font-weight: bold;'>🔴 SEAL LEAK!</span> <span style='color: gray; font-size: 14px;'>[{current_mean:.1f} dBFS]</span>"
                 else:
-                    seal_html = ""
-                
+                    seal_html = f"<span style='color: #10b981; font-weight: bold;'>🟢 SEAL OK</span> <span style='color: gray; font-size: 14px;'>[{current_mean:.1f} dBFS]</span>"
+            else:
+                seal_html = f"<span style='color: gray; font-size: 14px;'>[{current_mean:.1f} dBFS]</span>"
+            
             self.sub_lbl.setText(f"Live RTA | {seal_html} | {depth_html}")
             
             # Big on-screen text
