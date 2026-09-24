@@ -1215,7 +1215,7 @@ class AnalysisWidget(QWidget):
                 cl.setContentsMargins(4, 2, 4, 2)
                 cl.setSpacing(0)
 
-                hdr = QLabel(f"<span style='color:{accent};font-weight:bold;'>{icon}</span>  <b>{item.get('title','')}</b>  <span style='color:{'#52525b' if is_light else '#666'};font-size:9px;'>[{cat}]</span>")
+                hdr = AutoWrapLabel(f"<span style='color:{accent};font-weight:bold;'>{icon}</span>  <b>{item.get('title','')}</b>  <span style='color:{'#52525b' if is_light else '#666'};font-size:9px;'>[{cat}]</span>")
                 hdr.setStyleSheet(f"color: {accent}; font-size: 11px; background: transparent; border: none;")
                 cl.addWidget(hdr)
 
