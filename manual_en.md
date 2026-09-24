@@ -273,7 +273,22 @@ To prevent damage to sensitive drivers, InEar Snitch **automatically applies a s
 
 This is especially important for sensitive **Balanced Armature drivers**, which can be permanently damaged by overdrive. The Safety Cap operates transparently in the background – no configuration is required.
 
-## 14. Troubleshooting Guide: Abnormal Measurements
+## 14. Noise Robustness & Farina Deconvolution
+
+InEar Snitch uses the advanced **Log Sine Sweep deconvolution method developed by Angelo Farina**. This mathematical approach provides exceptional immunity against ambient and environmental noise during acoustic measurements.
+
+### How Farina Deconvolution Works:
+- **Separation of Impulse Response and Noise:** During the measurement sweep, the software plays a continuous logarithmic sine sweep and records the microphone response. When deconvolving the recorded signal with the inverse sweep filter, the pure linear impulse response of the IEM is mathematically separated from uncorrelated background noise (such as talking, typing, knocking on the desk, or pink noise in the room).
+- **Negative Time Rejection:** All uncorrelated acoustic noise and harmonic distortion products are pushed into "negative time" (anticipative time before the main impulse peak) during the deconvolution calculation. The analysis window isolates only the causal acoustic impulse response and completely ignores the negative-time noise.
+- **Immunity During Sweeps:** Because uncorrelated noise is mathematically rejected, your **Frequency Response and Total Harmonic Distortion (THD) graphs remain clean and highly accurate—even if loud noises occur during the measurement sweep!** You do not need an anechoic chamber or absolute silence while the sweep is running.
+
+### The Single Exception: Pre-Flight Room Noise Check
+The only stage where ambient quietness is monitored is the **Pre-Flight Room Noise check**:
+- For **0.5 seconds *before*** the measurement sweep begins, InEar Snitch briefly listens to the ambient microphone signal (`Listening to room noise...`).
+- This 0.5-second pre-flight phase establishes an environmental baseline and warns you in the Analysis report if ambient room noise is excessively high for optimal THD analysis.
+- Once the actual sweep starts, Farina deconvolution takes over, ensuring complete robustness against background noise.
+
+## 15. Troubleshooting Guide: Abnormal Measurements
 
 > **CORE MESSAGE:** When in doubt: take the IEM out, reseat it, and measure again. Most issues are seal problems, not hardware defects.
 
@@ -287,7 +302,7 @@ This is especially important for sensitive **Balanced Armature drivers**, which 
 | **Inconsistent Results** (Every measurement looks different) | Coupler position varies, IEM slips | Use 5x Sweep (Averaging), secure IEM with Blu-Tack |
 | **Treble Peaks at 8 kHz** (Sharp peak at 8 kHz) | IEC-711 coupler resonance (normal!) | This is normal, not a defect. Use IEC Guide (Depth Tool) to calibrate insertion depth |
 
-## 15. Additional Troubleshooting & Best Practices (CRITICAL)
+## 16. Additional Troubleshooting & Best Practices (CRITICAL)
 
 ### 1. My frequency response is a perfectly flat line!
 If you see a nearly perfectly flat line after running a sweep, this is 99% of the time caused by **Operating System Audio Filters** (AGC / Auto-Gain / Voice Isolation):
@@ -300,7 +315,7 @@ InEar Snitch deliberately outputs the measurement sweep at a very low digital vo
 
 ---
 
-## 16. Liability Disclaimer & Hardware Safety (IMPORTANT!)
+## 17. Liability Disclaimer & Hardware Safety (IMPORTANT!)
 
 In addition to the software, the InEar Snitch system includes physical 3D-printed parts (TPU inserts) and cast silicone adapters. You must strictly observe the following hardware guidelines:
 

@@ -631,7 +631,7 @@ class LiveSealWorker(QThread):
 
         try:
             with sd.Stream(device=(self.in_idx, self.out_idx),
-                           samplerate=self.fs, blocksize=self.blocksize,
+                           samplerate=self.fs, blocksize=2048,
                            channels=(1, 2), callback=callback):
                 while self.running:
                     sd.sleep(100)

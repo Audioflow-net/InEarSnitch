@@ -275,7 +275,22 @@ Um Schäden an empfindlichen Treibern zu verhindern, wendet InEar Snitch **nach 
 
 Dies ist besonders wichtig für empfindliche **Balanced-Armature-Treiber**, die bei Übersteuerung dauerhaft beschädigt werden können. Der Safety Cap arbeitet transparent im Hintergrund – Sie müssen nichts konfigurieren.
 
-## 14. Troubleshooting Guide: Auffällige Messungen
+## 14. Störgeräusch-Robustheit & Farina-Dekonvolution (Noise Robustness & Farina Deconvolution)
+
+InEar Snitch nutzt das wissenschaftlich etablierte **Log-Sine-Sweep-Dekonvolutionsverfahren nach Angelo Farina**. Diese mathematische Methode sorgt für eine außergewöhnlich hohe Unempfindlichkeit gegenüber Umgebungs- und Störgeräuschen während der akustischen Messung.
+
+### Funktionsweise der Farina-Dekonvolution:
+- **Mathematische Trennung von Impulsantwort und Störschall:** Während des Sweeps gibt die Software einen logarithmisch ansteigenden Sinuston aus und nimmt das Signal des Messmikrofons auf. Bei der anschließenden Dekonvolution mit dem zeitinversen Filter wird die reine lineare Impulsantwort des In-Ear-Monitors mathematisch präzise von unkorreliertem Hintergrundlärm getrennt (z. B. Sprechen, Tastaturklappern, Schläge auf den Schreibtisch oder Rosa Rauschen im Raum).
+- **Verschiebung in die „negative Zeit“:** Unkorrelierte Störgeräusche sowie harmonische Verzerrungsprodukte werden bei der Dekonvolutions-Berechnung in die sogenannte „negative Zeit“ (zeitlich vor den Hauptimpuls) verschoben und vom Analyse-Fenster vollständig ignoriert und verworfen.
+- **Saubere Messungen trotz Raumlärm:** Da unkorrelierter Störschall rechnerisch eliminiert wird, bleiben die **Frequenzgang- und THD-Graphen absolut sauber und präzise – selbst wenn während des Mess-Sweeps laute Geräusche im Raum auftreten!** Ein schalltoter Raum oder absolute Stille während des Sweeps sind daher nicht erforderlich.
+
+### Die einzige Ausnahme: Pre-Flight Room Noise Check
+Die einzige Phase, in der Umgebungsgeräusche eine Rolle spielen, ist die automatische **Pre-Flight Room Noise Prüfung**:
+- Für **0,5 Sekunden *vor* Beginn des Sweeps** lauscht InEar Snitch kurzzeitig auf das Grundrauschen des Mikrofons (`Listening to room noise...`).
+- Diese 0,5-sekündige Ruhephase dient dazu, eine Baseline für den Raum-Rauschpegel zu ermitteln und im Analyse-Report eine Warnung auszugeben, falls die Umgebung für verlässliche THD-Grenzwerte zu laut ist.
+- Sobald der eigentliche Sweep startet, greift die Farina-Dekonvolution und schirmt die Messung zuverlässig gegen Störgeräusche ab.
+
+## 15. Troubleshooting Guide: Auffällige Messungen
 
 > **KERNBOTSCHAFT:** Im Zweifel: IEM rausnehmen, neu einsetzen, nochmal messen. Die meisten Probleme sind Seal-Probleme, keine Defekte.
 
@@ -289,7 +304,7 @@ Dies ist besonders wichtig für empfindliche **Balanced-Armature-Treiber**, die 
 | **Inkonsistente Ergebnisse** (Jede Messung sieht anders aus) | Kuppler-Position variiert, IEM rutscht | 5x Sweep nutzen (Averaging), IEM mit Blu-Tack fixieren |
 | **Treble-Peaks bei 8 kHz** (Scharfer Peak bei 8 kHz) | IEC-711 Kuppler-Eigenresonanz (normal!) | Das ist normal, kein Defekt. IEC Guide (Depth-Tool) nutzen, um Einstecktiefe zu kalibrieren |
 
-## 15. Weitere Fehlerbehebung & Best Practices (WICHTIG!)
+## 16. Weitere Fehlerbehebung & Best Practices (WICHTIG!)
 
 ### 1. Mein Frequenzgang ist ein perfekt gerader Strich!
 Wenn Sie nach dem Sweep eine fast perfekt flache, gerade Linie sehen, liegt dies in 99% der Fälle an **Betriebssystem-Filtern** (AGC / Auto-Gain / Voice Isolation):
@@ -302,7 +317,7 @@ Die Software gibt den Sweep absichtlich sehr leise aus (-20 dBFS), um zu verhind
 
 ---
 
-## 16. Haftungsausschluss & Hardware-Sicherheit (WICHTIG!)
+## 17. Haftungsausschluss & Hardware-Sicherheit (WICHTIG!)
 
 Neben der Software besteht das InEar Snitch System aus physischen 3D-Druckteilen (TPU-Einlagen) und gegossenen Silikon-Adaptern. Bitte beachten Sie zwingend die folgenden Hinweise zur Hardware:
 

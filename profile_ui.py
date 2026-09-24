@@ -300,7 +300,7 @@ class IEMCardWidget(QFrame):
         l_name = QLabel("Name:"); l_name.setStyleSheet(lbl_style)
         from PySide6.QtWidgets import QLineEdit
         self.custom_name_input = QLineEdit(self.custom_name)
-        self.custom_name_input.setMaxLength(25)
+        self.custom_name_input.setMaxLength(18)
         self.custom_name_input.setPlaceholderText("e.g. Ben's Main IEM")
         self.custom_name_input.setStyleSheet(f"background: transparent; border: none; border-bottom: 1px solid {bc}; color: {tc}; font-size: 14px; padding-bottom: 4px;")
         self.custom_name_input.textChanged.connect(self.sync_title)

@@ -264,7 +264,22 @@ Para prevenir daños en drivers sensibles, InEar Snitch **aplica automáticament
 
 Esto es especialmente importante para los sensibles **drivers de armadura balanceada (Balanced Armature)**, que pueden dañarse permanentemente por sobreexcitación. El Safety Cap funciona de forma transparente en segundo plano – no requiere configuración alguna.
 
-## 14. Guía de Solución de Problemas (Troubleshooting)
+## 14. Robustez frente al Ruido y Deconvolución de Farina (Noise Robustness & Farina Deconvolution)
+
+InEar Snitch utiliza el método avanzado de **deconvolución por barrido senoidal logarítmico (Log Sine Sweep) desarrollado por Angelo Farina**. Este enfoque matemático proporciona una inmunidad excepcional frente al ruido ambiental durante las mediciones acústicas.
+
+### Cómo funciona la deconvolución de Farina:
+- **Separación de la respuesta al impulso y el ruido:** Durante la medición, el software reproduce un barrido senoidal logarítmico continuo y graba la señal del micrófono. Al desconvolucionar la señal grabada con el filtro inverso, la respuesta al impulso pura y lineal del IEM se separa matemáticamente del ruido de fondo no correlacionado (como hablar, teclear, golpes en la mesa o ruido rosa en la sala).
+- **Desplazamiento a "tiempo negativo":** El ruido no correlacionado y las distorsiones armónicas se desplazan hacia el "tiempo negativo" (antes del pico del impulso principal) durante el cálculo de la deconvolución. La ventana de análisis aísla únicamente la respuesta al impulso acústica causal e ignora/descarta por completo el ruido situado en el tiempo negativo.
+- **Inmunidad durante el barrido:** Gracias a este filtrado matemático del ruido no correlacionado, los **gráficos de Respuesta de Frecuencia y Distorsión Armónica Total (THD) se mantienen limpios y sumamente precisos, ¡incluso si el usuario hace ruidos fuertes durante el barrido de medición!** No se necesita una cámara anecoica ni silencio absoluto mientras se ejecuta el barrido.
+
+### La única excepción: Verificación previa del ruido de la sala (Pre-Flight Room Noise)
+La única fase en la que se evalúa el ruido ambiental es la comprobación **Pre-Flight Room Noise**:
+- Durante **0,5 segundos *antes*** de que comience el barrido, InEar Snitch escucha brevemente la señal del micrófono (`Listening to room noise...`).
+- Esta fase previa de 0,5 segundos establece una línea de base del entorno y advierte al usuario en el informe de análisis si el ruido de la sala es excesivo para un análisis óptimo de THD.
+- Una vez que comienza el barrido propiamente dicho, la deconvolución de Farina toma el control, garantizando una total robustez contra los ruidos ambientales.
+
+## 15. Guía de Solución de Problemas (Troubleshooting)
 
 > **MENSAJE CLAVE:** En caso de duda: retire el IEM, vuelva a colocarlo y mida de nuevo. La mayoría de los problemas se deben a un mal sellado, no a defectos.
 
@@ -278,7 +293,7 @@ Esto es especialmente importante para los sensibles **drivers de armadura balanc
 | **Resultados Inconsistentes** (Cada medición se ve diferente) | La posición en el acoplador varía, el IEM resbala | Usar Sweep x5 (Promedio), fijar IEM con Blu-Tack |
 | **Picos de Agudos en 8 kHz** (Pico agudo en 8 kHz) | Resonancia propia del acoplador IEC-711 (¡normal!) | Es normal, no un defecto. Usar la Guía IEC (herramienta de profundidad) para calibrar la inserción |
 
-## 15. Más Solución de Problemas y Mejores Prácticas (IMPORTANTE)
+## 16. Más Solución de Problemas y Mejores Prácticas (IMPORTANTE)
 
 ### 1. ¡Mi respuesta de frecuencia es una línea perfectamente plana!
 Si ves una línea casi perfectamente plana después de ejecutar un barrido (sweep), el 99% de las veces se debe a los **Filtros de Audio del Sistema Operativo** (AGC / Auto-Gain / Voice Isolation):
