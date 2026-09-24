@@ -229,16 +229,25 @@ class AvatarButton(QLabel):
         if selected:
             bg = "transparent" if self.has_pic else ("#3b82f6" if theme.CURRENT_MODE == "dark" else "#2563eb")
             text_col = "#ffffff"
-            border_col = "#60a5fa" if theme.CURRENT_MODE == "dark" else "#3b82f6"
-            self.setStyleSheet(f"QLabel {{ background-color: {bg}; color: {text_col}; border: 2px solid {border_col}; border-radius: 18px; font-weight: bold; font-size: 14px; outline: none; }}")
+            
+            # Make border brighter and thicker for photos so it stands out
+            if self.has_pic:
+                border_col = "#93c5fd" if theme.CURRENT_MODE == "dark" else "#3b82f6"
+                border_w = "3px"
+            else:
+                border_col = "#60a5fa" if theme.CURRENT_MODE == "dark" else "#3b82f6"
+                border_w = "2px"
+                
+            self.setStyleSheet(f"QLabel {{ background-color: {bg}; color: {text_col}; border: {border_w} solid {border_col}; border-radius: 18px; font-weight: bold; font-size: 14px; outline: none; }}")
             
             shadow = QGraphicsDropShadowEffect(self)
-            shadow.setBlurRadius(15)
+            # Stronger glow for photos
+            shadow.setBlurRadius(25 if self.has_pic else 15)
             shadow.setOffset(0, 0)
             if theme.CURRENT_MODE == "light":
-                shadow.setColor(QColor(37, 99, 235, 120))
+                shadow.setColor(QColor(37, 99, 235, 255 if self.has_pic else 120))
             else:
-                shadow.setColor(QColor(96, 165, 250, 180))
+                shadow.setColor(QColor(147, 197, 253, 255) if self.has_pic else QColor(96, 165, 250, 180))
             self.setGraphicsEffect(shadow)
         else:
             bg = "transparent" if self.has_pic else self.color
