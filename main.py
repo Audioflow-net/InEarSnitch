@@ -2987,6 +2987,12 @@ class MainWindow(QMainWindow):
             color = theme.get_color('curve_left') if self.get_current_channel() == "Left" else theme.get_color('curve_right')
             if hasattr(self, 'live_rta_line') and self.live_rta_line is not None:
                 self.live_rta_line.setPen(pg.mkPen(color, width=2))
+            # Reset EMA state so the new channel starts fresh without inheriting the drop from the physical swap
+            for attr in ('_rta_shift', '_max_rta_mean', '_iec_smooth_mags',
+                         '_iec_status_counter', '_iec_last_ok'):
+                if hasattr(self, attr):
+                    delattr(self, attr)
+            self._rta_warmup = 0
 
     def get_current_channel(self):
         if hasattr(self, 'btn_grp_chan'):
@@ -3801,9 +3807,9 @@ class MainWindow(QMainWindow):
         self.live_rta_line.setData(freqs[mask], mag_db[mask] + self._rta_shift)
         
         # --- Live IEC 711 Positioning Diagnostics ---
-        # Skip diagnostics during warmup (~1 second) while EMA settles
+        # Skip diagnostics during warmup (~0.8 seconds) while EMA settles
         warmup = getattr(self, '_rta_warmup', 0)
-        if warmup < 30:
+        if warmup < 5:
             self._rta_warmup = warmup + 1
             return
         try:
