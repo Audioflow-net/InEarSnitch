@@ -2629,6 +2629,16 @@ class MainWindow(QMainWindow):
                 "Volume Too Low!\n\n"
                 "Push the volume up and recalibrate."
             )
+            
+        # Warn if recording level is too high even at minimum amplitude
+        if optimal_amp <= 0.011 and actual_peak > -10.0:
+            log_lines.append("")
+            log_lines.append("⚠️ WARNING: Recording level is very high!")
+            log_lines.append("   Action: Push the volume down and recalibrate!")
+            QMessageBox.warning(self, "Volume Too High",
+                "Volume Too High!\n\n"
+                "Push the volume down and recalibrate."
+            )
         
         # Warn if stress test can't go louder than normal sweep
         if stress_amp <= optimal_amp * 1.1:
