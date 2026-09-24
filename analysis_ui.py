@@ -115,19 +115,8 @@ class AutoWrapLabel(QLabel):
     def __init__(self, text=""):
         super().__init__(text)
         self.setWordWrap(True)
-        self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Minimum)
-        
-    def minimumSizeHint(self):
-        from PySide6.QtCore import QSize
-        # Force a small minimum width so it can be squished, but calculate height based on 320px
-        # 320 is roughly the width of the right pane minus scrollbar and margins.
-        h = self.heightForWidth(320)
-        return QSize(10, h)
-        
-    def sizeHint(self):
-        from PySide6.QtCore import QSize
-        h = self.heightForWidth(320)
-        return QSize(320, h)
+        self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.MinimumExpanding)
+        self.setMinimumWidth(10)
 
 class StableTabWidget(QTabWidget):
     def sizeHint(self):
@@ -693,8 +682,10 @@ class AnalysisWidget(QWidget):
         self.btn_run_sweep.clicked.connect(self.request_measurement.emit)
         self.btn_run_sweep.setToolTip("Run a new Sine Sweep measurement from within the Analysis tab")
         
-        self.btn_chan_l.clicked.connect(self.refresh_view)
-        self.btn_chan_r.clicked.connect(self.refresh_view)
+        self.btn_chan_l.toggled.connect(self.refresh_view)
+        self.btn_chan_l.toggled.connect(lambda _: self.render_diagnostics())
+        self.btn_chan_r.toggled.connect(self.refresh_view)
+        self.btn_chan_r.toggled.connect(lambda _: self.render_diagnostics())
         
         zoom_layout.addWidget(self.seg_widget)
         zoom_layout.addWidget(self.cb_ana_target)
@@ -1174,16 +1165,29 @@ class AnalysisWidget(QWidget):
         
         report_items = getattr(self, '_last_report', None) or []
         active_cat = None
+        tab_idx = self.graph_tabs.currentIndex()
+        if tab_idx == 0:
+            active_cat = 'FR'
+        elif tab_idx == 1:
+            active_cat = 'THD'
+        elif tab_idx == 2:
+            active_cat = 'CSD'
+            
+        show_l = self.btn_chan_l.isChecked()
+        show_r = self.btn_chan_r.isChecked()
+        
         for item in report_items:
             cat = item.get('category', 'FR')
-            if active_cat is not None and cat != active_cat:
+            if active_cat is not None and cat not in (active_cat, 'ENV'):
                 continue
                 
             title = item.get('title', '')
             if title.startswith('Left '):
-                left_items.append(item)
+                if show_l:
+                    left_items.append(item)
             elif title.startswith('Right '):
-                right_items.append(item)
+                if show_r:
+                    right_items.append(item)
             else:
                 gen_items.append(item)
                 

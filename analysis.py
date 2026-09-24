@@ -226,12 +226,10 @@ class Analyzer:
             avg_thd_mid = np.clip(np.mean(thd_percentage[idx_mid]), 0, 100)
             max_thd_mid = np.clip(np.max(thd_percentage[idx_mid]), 0, 100)
             
-            # OLD: max_thd_mid > 8.0 or avg_thd_mid > 3.0
-            if max_thd_mid > 3.0 or avg_thd_mid > 1.0:
-                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'FAIL', 'desc': f'High distortion in mid-range (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%). Possible driver damage.\n💡 Ensure the room is quiet and measure again to rule out background noise.', 'band': (500, 2000), 'category': 'THD'})
-            # OLD: max_thd_mid > 4.0 or avg_thd_mid > 1.5
-            elif max_thd_mid > 1.5 or avg_thd_mid > 0.5:
-                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated distortion in mid-range (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%).\n💡 Measure again in a quiet room to confirm.', 'band': (500, 2000), 'category': 'THD'})
+            if max_thd_mid > 8.0 or avg_thd_mid > 3.0:
+                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'FAIL', 'desc': f'High distortion in mid-range (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%). Possible driver damage.\n💡 Narrow spikes at 500/550 Hz are often mains hum from your USB interface — not the IEM. Unplug the laptop charger and re-measure to check.', 'band': (500, 2000), 'category': 'THD'})
+            elif max_thd_mid > 4.0 or avg_thd_mid > 1.5:
+                report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'WARN', 'desc': f'Elevated distortion in mid-range (Max: {max_thd_mid:.1f}%, Avg: {avg_thd_mid:.1f}%).\n💡 Narrow spikes at 500/550 Hz are often mains hum from your USB interface — not the IEM. Multi-BA crossover points also cause elevated THD at specific frequencies.', 'band': (500, 2000), 'category': 'THD'})
             else:
                 report.append({'title': f'{channel} Mid-Band Distortion (THD)', 'status': 'OK', 'desc': f'Mid-range THD within normal limits (Avg: {avg_thd_mid:.1f}%).', 'band': (500, 2000), 'category': 'THD'})
                 
