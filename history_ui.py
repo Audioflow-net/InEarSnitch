@@ -230,10 +230,10 @@ class HistoryCardWidget(QWidget):
         text_sec = theme.get_color("text_secondary")
         
         self.setStyleSheet(f'''
-            QFrame#HistoryCard {
+            QFrame#HistoryCard {{
                 background-color: transparent;
                 border: none;
-            }
+            }}
         ''')
         
         self.lbl_iem.setStyleSheet(f"background-color: transparent; font-weight: bold; font-size: 13px; color: {fg}; border: none;")

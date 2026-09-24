@@ -713,7 +713,7 @@ class MeasurementWorker(QThread):
             avg_ir = np.mean(irs, axis=0)
             avg_noise = np.mean(noises, axis=0)
             
-            self.finished.emit(freqs, avg_mag, avg_phase, avg_ir, self.target_channel, avg_noise, noise_f, noise_m)
+            self.meas_finished.emit(freqs, avg_mag, avg_phase, avg_ir, self.target_channel, avg_noise, noise_f, noise_m)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -3811,6 +3811,19 @@ class MainWindow(QMainWindow):
 
     def update_live_rta(self, freqs, mag_db):
         import numpy as np
+        from scipy.ndimage import gaussian_filter1d
+        
+        # Apply visual frequency-domain smoothing to eliminate pink noise variance
+        mag_db = gaussian_filter1d(mag_db, sigma=4.0)
+        
+        # Pink Noise drops by 3dB per octave (-10*log10(f)). 
+        # Since the RTA plots raw mic output (not a Transfer Function like the Sweep),
+        # the RTA inherently shows this 3dB/oct bass boost.
+        # We apply a +3dB/oct tilt normalized at 1kHz to perfectly match the Sweep Target!
+        safe_freqs = np.clip(freqs, 1e-6, None)
+        pn_comp = 10 * np.log10(safe_freqs / 1000.0)
+        mag_db = mag_db + pn_comp
+        
         mask = (freqs >= 20) & (freqs <= 20000)
         
         mask_1k = (freqs >= 500) & (freqs <= 2000)
