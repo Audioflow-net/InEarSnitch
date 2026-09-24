@@ -1342,16 +1342,7 @@ class MainWindow(QMainWindow):
         self.btn_capture.setStyleSheet("QPushButton { background-color: #10b981; color: black; font-weight: bold; font-size: 24px; border-radius: 6px; padding: 12px 10px;} QPushButton:disabled { background-color: #333; color: #666; } QPushButton:hover { background-color: #34d399; }")
         self.btn_capture.clicked.connect(self.run_measurement)
         
-        self.btn_stress = QPushButton("STRESS")
-        self.btn_stress.setEnabled(False)
-        self.btn_stress.setToolTip("Run high-level Rub & Buzz sweep")
-        self.btn_stress.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-        self.btn_stress.setFixedWidth(80)
-        self.btn_stress.setStyleSheet("QPushButton { background-color: #ef4444; color: white; font-weight: bold; font-size: 14px; border-radius: 6px; padding: 12px 5px;} QPushButton:disabled { background-color: #333; color: #666; } QPushButton:hover { background-color: #f87171; }")
-        self.btn_stress.clicked.connect(self.run_stress_test)
-        
         run_layout.addWidget(self.btn_capture)
-        run_layout.addWidget(self.btn_stress)
         
         run_widget = QWidget()
         run_widget.setFixedWidth(220)
@@ -2663,7 +2654,7 @@ class MainWindow(QMainWindow):
         self.btn_auto_cal.setText("Re-Calibrate")
         
         # Enable stress test button now that calibration exists
-        self.btn_stress.setEnabled(True)
+
         if hasattr(self, 'page_ana') and hasattr(self.page_ana, 'btn_stress_test'):
             self.page_ana.btn_stress_test.setEnabled(True)
             self.page_ana.btn_stress_test.setToolTip(
