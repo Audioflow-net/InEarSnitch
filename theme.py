@@ -16,6 +16,9 @@ COLORS = {
         "accent": "#00FFFF",
         "danger": "#dc2626",
         "danger_text": "white",
+        "stress": "#ea580c",
+        "stress_hover": "#c2410c",
+        "stress_text": "white",
         "pg_bg": "#18181b",
         "pg_fg": "w",
         "card_bg": "#1f1f23",
@@ -40,6 +43,9 @@ COLORS = {
         "accent": "#0284c7",
         "danger": "#dc2626",
         "danger_text": "white",
+        "stress": "#ea580c",
+        "stress_hover": "#c2410c",
+        "stress_text": "white",
         "pg_bg": "#f4f4f5",
         "pg_fg": "k",
         "card_bg": "#ffffff",
@@ -129,6 +135,24 @@ def get_global_qss():
     
     QPushButton:hover {{
         background-color: {get_color('bg_hover')};
+    }}
+    
+    QPushButton[class="stress"] {{
+        background-color: {get_color('stress')};
+        color: {get_color('stress_text')};
+        border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        padding: 8px;
+    }}
+    
+    QPushButton[class="stress"]:disabled {{
+        background-color: {get_color('bg_hover')};
+        color: {get_color('text_secondary')};
+    }}
+
+    QPushButton[class="stress"]:hover {{
+        background-color: {get_color('stress_hover')};
     }}
     
     QPushButton[class="danger"] {{

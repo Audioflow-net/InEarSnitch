@@ -790,7 +790,7 @@ class AnalysisWidget(QWidget):
         self.btn_stress_test = QPushButton("STRESS TEST")
         self.btn_stress_test.setEnabled(False)
         self.btn_stress_test.setToolTip("Run Output Level Calibration in Settings first.")
-        self.btn_stress_test.setProperty("class", "danger")
+        self.btn_stress_test.setProperty("class", "stress")
         self.btn_stress_test.clicked.connect(self.request_stress_test.emit)
         stress_bar.addStretch()
         stress_bar.addWidget(self.btn_stress_test)
