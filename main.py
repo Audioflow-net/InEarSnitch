@@ -1844,28 +1844,24 @@ class MainWindow(QMainWindow):
 
         set_layout.addWidget(self.settings_tabs)
 
-        privacy_lbl = QLabel("Privacy: All data (musician profiles, measurements, photos) is stored exclusively on this device. No data is transmitted to the internet. No telemetry, no tracking, no analytics.")
+        privacy_layout = QHBoxLayout()
+        privacy_layout.setContentsMargins(0, 0, 0, 0)
+        privacy_lbl = QLabel("Privacy: All data is stored exclusively on this device. No telemetry, no tracking.")
         privacy_lbl.setWordWrap(True)
         privacy_lbl.setStyleSheet("font-size: 11px; color: #888888;")
-        set_layout.addWidget(privacy_lbl)
+        privacy_layout.addWidget(privacy_lbl)
+        
+        btn_about = QPushButton("ℹ️ About / Health & Safety")
+        btn_about.setStyleSheet("background: transparent; color: #888888; border: none; font-size: 11px; text-decoration: underline;")
+        btn_about.setCursor(Qt.PointingHandCursor)
+        btn_about.clicked.connect(self.show_about_dialog)
+        privacy_layout.addWidget(btn_about)
+        
+        set_layout.addLayout(privacy_layout)
 
         self.reload_calibrations()
         self.update_cal_preview()
 
-
-
-        # Settings buttons
-        settings_btn_layout = QHBoxLayout()
-        
-        btn_about = QPushButton("About / Health && Safety")
-        btn_about.setStyleSheet(
-            "background-color: #333; color: white; "
-            "padding: 11px; border-radius: 4px; font-size: 13px;"
-        )
-        btn_about.setCursor(Qt.PointingHandCursor)
-        btn_about.clicked.connect(self.show_about_dialog)
-        settings_btn_layout.addWidget(btn_about)
-        
         btn_save_set = QPushButton("Save & Apply Settings")
         btn_save_set.setToolTip("Save and apply settings")
         btn_save_set.setStyleSheet(
@@ -1874,9 +1870,7 @@ class MainWindow(QMainWindow):
         )
         btn_save_set.setCursor(Qt.PointingHandCursor)
         btn_save_set.clicked.connect(self.save_settings)
-        settings_btn_layout.addWidget(btn_save_set)
-        
-        set_layout.addLayout(settings_btn_layout)
+        set_layout.addWidget(btn_save_set)
 
         
         
@@ -2640,9 +2634,15 @@ class MainWindow(QMainWindow):
         # Warn if stress test can't go louder than normal sweep
         if stress_amp <= optimal_amp * 1.1:
             log_lines.append("")
-            log_lines.append("⚠️ WARNING: Stress Test is at the same level as normal sweep!")
-            log_lines.append("   Rub & Buzz detection may be unreliable.")
-            log_lines.append("   Increase system output level to enable proper stress testing.")
+            log_lines.append("⚠️ CRITICAL: Output Level Too Low for Stress Test")
+            log_lines.append("   The Stress Test cannot run louder than the normal sweep.")
+            log_lines.append("   Turn up the physical volume knob on your audio interface!")
+            
+            QMessageBox.warning(self, "Output Level Too Low",
+                "Your system volume is so low that the normal sweep is already near the digital maximum (0 dBFS).\n\n"
+                "Because of this, the Stress Test cannot be made any louder, which makes Rub & Buzz detection unreliable.\n\n"
+                "SOLUTION: Please turn up the physical volume knob on your headphone amplifier, then run Auto-Calibration again."
+            )
         
         self.cal_results_lbl.setText("\n".join(log_lines))
         
