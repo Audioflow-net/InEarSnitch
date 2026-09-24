@@ -462,8 +462,10 @@ class AudioEngine:
         
         # 5. Apply Microphone Calibration if provided
         if mic_cal_freqs is not None and mic_cal_mags is not None and len(mic_cal_freqs) > 1:
-            # Interpolate the calibration points to match our FFT frequency bins
-            cal_interp = np.interp(freqs, mic_cal_freqs, mic_cal_mags)
+            # Interpolate the calibration points in log-space to match audio physics
+            safe_freqs = np.clip(freqs, 1e-6, None)
+            safe_cal_freqs = np.clip(mic_cal_freqs, 1e-6, None)
+            cal_interp = np.interp(np.log10(safe_freqs), np.log10(safe_cal_freqs), mic_cal_mags)
             mag += cal_interp
         
         # === DEBUG DUMP: Disabled for release. Uncomment for DSP diagnosis. ===
@@ -536,7 +538,7 @@ class AudioEngine:
             tuple: (freqs, thd_percentage)
         """
         from scipy.fft import rfft, rfftfreq
-        from scipy.signal.windows import hann
+        from scipy.signal.windows import tukey
         
         peak_idx = np.argmax(np.abs(ir))
         N = len(ir)
@@ -548,7 +550,8 @@ class AudioEngine:
         fund_end = min(N, peak_idx + fund_win_len)
         
         fund_ir = np.zeros_like(ir)
-        fund_ir[fund_start:fund_end] = ir[fund_start:fund_end] * hann(fund_end - fund_start)
+        # Use a Tukey window (flat top) to preserve the impulse decay instead of Hann
+        fund_ir[fund_start:fund_end] = ir[fund_start:fund_end] * tukey(fund_end - fund_start, alpha=0.5)
         
         fund_fft = rfft(fund_ir)
         fund_mag = np.abs(fund_fft) + 1e-12
@@ -583,7 +586,7 @@ class AudioEngine:
                 continue
                 
             h_ir = np.zeros_like(ir)
-            h_ir[h_start:h_end] = ir[h_start:h_end] * hann(h_end - h_start)
+            h_ir[h_start:h_end] = ir[h_start:h_end] * tukey(h_end - h_start, alpha=0.5)
             
             h_fft = rfft(h_ir)
             h_mag = np.abs(h_fft)
@@ -592,19 +595,12 @@ class AudioEngine:
                 n_chunk_len = h_end - h_start
                 mid = len(noise_floor) // 2
                 n_ir = np.zeros_like(ir)
-                n_ir[h_start:h_end] = noise_floor[mid - n_chunk_len//2 : mid - n_chunk_len//2 + n_chunk_len] * hann(n_chunk_len)
+                n_ir[h_start:h_end] = noise_floor[mid - n_chunk_len//2 : mid - n_chunk_len//2 + n_chunk_len] * tukey(n_chunk_len, alpha=0.5)
                 noise_mag = np.abs(rfft(n_ir)) + 1e-12
                 valid_mask = h_mag >= (noise_mag * 1.995)
                 h_mag = h_mag * valid_mask
                 
-            if noise_floor_db is not None and noise_freqs is not None:
-                from scipy.interpolate import interp1d
-                nf_interp = interp1d(noise_freqs, noise_floor_db, bounds_error=False, fill_value=-120)
-                harmonic_freqs = freqs * n
-                noise_at_freqs = nf_interp(harmonic_freqs)
-                h_level = 20 * np.log10(h_mag + 1e-12)
-                valid_mask_nf = h_level >= (noise_at_freqs + 6.0)
-                h_mag = h_mag * valid_mask_nf
+            # Broken dBFS vs Deconvolved IR scale mismatch check removed.
             
             harmonic_energy += h_mag ** 2
             
@@ -632,7 +628,7 @@ class AudioEngine:
             tuple: (freqs, hohd_db) — frequencies and HOHD in dB relative to fundamental.
         """
         from scipy.fft import rfft, rfftfreq
-        from scipy.signal.windows import hann
+        from scipy.signal.windows import tukey
         
         peak_idx = np.argmax(np.abs(ir))
         N = len(ir)
@@ -643,7 +639,7 @@ class AudioEngine:
         fund_start = max(0, peak_idx - fund_win_len)
         fund_end = min(N, peak_idx + fund_win_len)
         fund_ir = np.zeros_like(ir)
-        fund_ir[fund_start:fund_end] = ir[fund_start:fund_end] * hann(fund_end - fund_start)
+        fund_ir[fund_start:fund_end] = ir[fund_start:fund_end] * tukey(fund_end - fund_start, alpha=0.5)
         fund_mag = np.abs(rfft(fund_ir)) + 1e-12
         
         hohd_energy = np.zeros_like(fund_mag)
@@ -677,26 +673,19 @@ class AudioEngine:
                 continue
             
             h_ir = np.zeros_like(ir)
-            h_ir[h_start:h_end] = ir[h_start:h_end] * hann(h_end - h_start)
+            h_ir[h_start:h_end] = ir[h_start:h_end] * tukey(h_end - h_start, alpha=0.5)
             h_mag = np.abs(rfft(h_ir))
             
             if noise_floor is not None:
                 n_chunk_len = h_end - h_start
                 mid = len(noise_floor) // 2
                 n_ir = np.zeros_like(ir)
-                n_ir[h_start:h_end] = noise_floor[mid - n_chunk_len//2 : mid - n_chunk_len//2 + n_chunk_len] * hann(n_chunk_len)
+                n_ir[h_start:h_end] = noise_floor[mid - n_chunk_len//2 : mid - n_chunk_len//2 + n_chunk_len] * tukey(n_chunk_len, alpha=0.5)
                 noise_mag = np.abs(rfft(n_ir)) + 1e-12
                 valid_mask = h_mag >= (noise_mag * 1.995)
                 h_mag = h_mag * valid_mask
                 
-            if noise_floor_db is not None and noise_freqs is not None:
-                from scipy.interpolate import interp1d
-                nf_interp = interp1d(noise_freqs, noise_floor_db, bounds_error=False, fill_value=-120)
-                harmonic_freqs = freqs * n
-                noise_at_freqs = nf_interp(harmonic_freqs)
-                h_level = 20 * np.log10(h_mag + 1e-12)
-                valid_mask_nf = h_level >= (noise_at_freqs + 6.0)
-                h_mag = h_mag * valid_mask_nf
+            # Broken dBFS vs Deconvolved IR scale mismatch check removed.
             
             if n in range(3, 6):
                 thd_hf_energy = np.maximum(thd_hf_energy, h_mag)
