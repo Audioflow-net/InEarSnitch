@@ -533,11 +533,11 @@ class LiveSealWorker(QThread):
         # Precompute frequencies and calibration curve
         freqs = np.fft.rfftfreq(self.blocksize, 1/self.fs)
         
-        # Precompute Logarithmic Binning Matrix (1/12th octave)
+        # Precompute Logarithmic Binning Matrix (1/96th octave for high res smoothing)
         import math
         f_min = 20.0
         f_max = 24000.0
-        octave_frac = 1.0 / 12.0
+        octave_frac = 1.0 / 96.0
         n_bins = int(math.log2(f_max / f_min) / octave_frac) + 1
         log_freqs = f_min * (2.0 ** (np.arange(n_bins) * octave_frac))
         
