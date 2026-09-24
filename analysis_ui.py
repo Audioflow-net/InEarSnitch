@@ -1150,10 +1150,11 @@ class AnalysisWidget(QWidget):
             self.hLine.hide()
             self.crosshair_label.hide()
         
-    def update_analysis(self, freqs, mag_l, mag_r, ref_mag_l=None, ref_mag_r=None, tgt_freqs=None, tgt_mags=None, thd_data=None, csd_data=None, ir_l=None, ir_r=None, sweep_count="1x", smoothing_pts=240, noise_freqs=None, noise_floor_db=None):
+    def update_analysis(self, freqs, mag_l, mag_r, ref_mag_l=None, ref_mag_r=None, tgt_freqs=None, tgt_mags=None, thd_data=None, csd_data=None, ir_l=None, ir_r=None, sweep_count="1x", smoothing_pts=240, noise_freqs=None, noise_floor_db=None, is_stress=False):
         self._last_data = (freqs, mag_l, mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data, ir_l, ir_r, sweep_count, smoothing_pts)
         self._noise_freqs = noise_freqs
         self._noise_floor_db = noise_floor_db
+        self._is_stress = is_stress
         
         # Auto-switch to the channel that actually has data
         if mag_l is None and mag_r is not None:
@@ -1475,8 +1476,11 @@ class AnalysisWidget(QWidget):
         if self.thd_widget.plotItem.legend:
             self.thd_widget.plotItem.legend.clear()
         if thd_data is not None:
-            # Expected format: (thd_freqs, orig_thd_l, orig_thd_r)
-            thd_freqs, orig_thd_l, orig_thd_r = thd_data
+            hohd_l, hohd_r = None, None
+            if len(thd_data) == 5:
+                thd_freqs, orig_thd_l, orig_thd_r, hohd_l, hohd_r = thd_data
+            else:
+                thd_freqs, orig_thd_l, orig_thd_r = thd_data
             
             show_l = self.btn_chan_l.isChecked()
             show_r = self.btn_chan_r.isChecked()
@@ -1487,6 +1491,14 @@ class AnalysisWidget(QWidget):
                 self.thd_widget.plot(thd_freqs, thd_l, pen=pg.mkPen(theme.get_color('curve_left'), width=2), name='Left THD')
             if thd_r is not None:
                 self.thd_widget.plot(thd_freqs, thd_r, pen=pg.mkPen(theme.get_color('curve_right'), width=2, style=Qt.DashLine), name='Right THD')
+                
+            if getattr(self, '_is_stress', False):
+                self.hohd_line.show()
+                active_hohd = hohd_r if (show_r and hohd_r is not None) else (hohd_l if show_l else None)
+                if active_hohd is not None:
+                    self.hohd_line.setData(thd_freqs, active_hohd)
+            else:
+                self.hohd_line.hide()
                 
         # --- Update CSD Plot ---
         self.csd_widget.clear()

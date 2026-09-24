@@ -640,7 +640,7 @@ class MeasurementWorker(QThread):
     progress = Signal(str)
     sweep_progress = Signal(float, int)
 
-    def __init__(self, audio_engine, in_idx, out_idx, target_channel, cal_f=None, cal_m=None, sweeps=1, spl_offset_db=0.0):
+    def __init__(self, audio_engine, in_idx, out_idx, target_channel, cal_f=None, cal_m=None, sweeps=1, spl_offset_db=0.0, stress_test=False):
         super().__init__()
         self.audio_engine = audio_engine
         self.in_idx = in_idx
@@ -650,6 +650,7 @@ class MeasurementWorker(QThread):
         self.cal_m = cal_m
         self.sweeps = sweeps
         self.spl_offset_db = spl_offset_db
+        self.stress_test = stress_test
 
     def run(self):
         try:
@@ -657,6 +658,9 @@ class MeasurementWorker(QThread):
             import time
             mags, phases, irs, noises = [], [], [], []
             freqs = None
+            
+            # Use 0.25 (approx -12 dBFS) for stress test, otherwise default 0.15
+            test_amplitude = 0.25 if self.stress_test else 0.15
             
             self.progress.emit("Status: 🎤 Listening to room noise...")
             try:
@@ -670,6 +674,7 @@ class MeasurementWorker(QThread):
                 res = self.audio_engine.measure(self.in_idx, self.out_idx, 
                                                 target_channel=self.target_channel, 
                                                 duration=1.0,
+                                                amplitude=test_amplitude,
                                                 mic_cal_freqs=self.cal_f,
                                                 mic_cal_mags=self.cal_m,
                                                 spl_offset_db=self.spl_offset_db,
@@ -1311,13 +1316,30 @@ class MainWindow(QMainWindow):
         mod_capture.setSpacing(4)
         
         # Run Button
+        run_layout = QHBoxLayout()
+        run_layout.setSpacing(4)
+        run_layout.setContentsMargins(0, 0, 0, 0)
+        
         self.btn_capture = QPushButton("RUN")
         self.btn_capture.setToolTip("Start measurement capture (Space)")
-        self.btn_capture.setFixedWidth(220)
-        self.btn_capture.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-        self.btn_capture.setStyleSheet("QPushButton { background-color: #10b981; color: black; font-weight: bold; font-size: 24px; border-radius: 6px; padding: 12px 30px;} QPushButton:disabled { background-color: #333; color: #666; } QPushButton:hover { background-color: #34d399; }")
+        self.btn_capture.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.btn_capture.setStyleSheet("QPushButton { background-color: #10b981; color: black; font-weight: bold; font-size: 24px; border-radius: 6px; padding: 12px 10px;} QPushButton:disabled { background-color: #333; color: #666; } QPushButton:hover { background-color: #34d399; }")
         self.btn_capture.clicked.connect(self.run_measurement)
-        mod_capture.addWidget(self.btn_capture, stretch=1)
+        
+        self.btn_stress = QPushButton("STRESS")
+        self.btn_stress.setToolTip("Run high-level Rub & Buzz sweep")
+        self.btn_stress.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        self.btn_stress.setFixedWidth(80)
+        self.btn_stress.setStyleSheet("QPushButton { background-color: #ef4444; color: white; font-weight: bold; font-size: 14px; border-radius: 6px; padding: 12px 5px;} QPushButton:disabled { background-color: #333; color: #666; } QPushButton:hover { background-color: #f87171; }")
+        self.btn_stress.clicked.connect(self.run_stress_test)
+        
+        run_layout.addWidget(self.btn_capture)
+        run_layout.addWidget(self.btn_stress)
+        
+        run_widget = QWidget()
+        run_widget.setFixedWidth(220)
+        run_widget.setLayout(run_layout)
+        mod_capture.addWidget(run_widget, stretch=1)
         
         # Sweeps
         sweeps_widget = QWidget()
@@ -3976,7 +3998,19 @@ class MainWindow(QMainWindow):
         except Exception as e:
             pass
 
-    def run_measurement(self):
+    def run_stress_test(self):
+        from PySide6.QtWidgets import QMessageBox
+        reply = QMessageBox.critical(self, "ACHTUNG: STRESS TEST",
+            "Der Stress Test jagt einen extrem lauten Sweep (+15dB) durch den IEM, um mechanische Defekte aufzudecken.\n\n"
+            "Nimm den In-Ear auf JEDEN FALL aus deinem Ohr!\n"
+            "Er muss für diesen Test sicher im Coupler stecken.\n\n"
+            "Möchtest du wirklich fortfahren?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            
+        if reply == QMessageBox.Yes:
+            self.run_measurement(is_stress_test=True)
+
+    def run_measurement(self, is_stress_test=False):
         from PySide6.QtWidgets import QMessageBox
         
         if not self.current_iem_id:
@@ -4046,7 +4080,10 @@ class MainWindow(QMainWindow):
         
         sweeps = int(self.get_current_sweeps().replace("x", ""))
         spl = getattr(self, 'spl_offset_db', 0.0)
-        self.worker = MeasurementWorker(self.audio_engine, self.selected_in_idx, self.selected_out_idx, target_ch, cal_f, cal_m, sweeps, spl)
+        self.worker = MeasurementWorker(self.audio_engine, self.selected_in_idx, self.selected_out_idx, target_ch, cal_f, cal_m, sweeps, spl, stress_test=is_stress_test)
+        
+        # Store stress test flag to reveal HOHD later
+        self._last_measurement_was_stress = is_stress_test
         
         self.worker.finished.connect(self.on_measurement_finished)
         self.worker.error.connect(self.on_measurement_error)
@@ -4128,7 +4165,8 @@ class MainWindow(QMainWindow):
             sweep_count=self.get_current_sweeps(),
             smoothing_pts=pts,
             noise_freqs=getattr(self, 'temp_noise_f_l', getattr(self, 'temp_noise_f_r', None)),
-            noise_floor_db=getattr(self, 'temp_noise_m_l', getattr(self, 'temp_noise_m_r', None))
+            noise_floor_db=getattr(self, 'temp_noise_m_l', getattr(self, 'temp_noise_m_r', None)),
+            is_stress=getattr(self, '_last_measurement_was_stress', False)
         )
 
     def on_measurement_finished(self, freqs, mag, phase, ir, channel, noise=None, noise_freqs=None, noise_mag_db=None):
@@ -4199,6 +4237,9 @@ class MainWindow(QMainWindow):
         csd_data = None
         try:
             thd_l, thd_r, thd_freqs = None, None, None
+            hohd_l, hohd_r = None, None
+            is_stress = getattr(self, '_last_measurement_was_stress', False)
+            
             # Left THD
             if getattr(self, 'temp_ir_l', None) is not None:
                 noise_l = getattr(self, 'temp_noise_l', None)
@@ -4206,6 +4247,13 @@ class MainWindow(QMainWindow):
                 noise_m_l = getattr(self, 'temp_noise_m_l', None)
                 thd_f_raw, thd_l_raw = self.audio_engine.extract_thd(self.temp_ir_l, 1.0, noise_floor=noise_l, noise_freqs=noise_f_l, noise_floor_db=noise_m_l)
                 thd_freqs, thd_l, _ = self.audio_engine.smooth_spectrum(thd_f_raw, thd_l_raw, points=300)
+                if is_stress:
+                    try:
+                        _, hohd_l_raw = self.audio_engine.extract_hohd(self.temp_ir_l, 1.0, noise_floor=noise_l, noise_freqs=noise_f_l, noise_floor_db=noise_m_l)
+                        _, hohd_l, _ = self.audio_engine.smooth_spectrum(thd_f_raw, hohd_l_raw, points=300)
+                    except Exception as e:
+                        print(f"Error computing HOHD (L): {e}")
+                        
             # Right THD
             if getattr(self, 'temp_ir_r', None) is not None:
                 noise_r = getattr(self, 'temp_noise_r', None)
@@ -4213,9 +4261,15 @@ class MainWindow(QMainWindow):
                 noise_m_r = getattr(self, 'temp_noise_m_r', None)
                 thd_f_raw, thd_r_raw = self.audio_engine.extract_thd(self.temp_ir_r, 1.0, noise_floor=noise_r, noise_freqs=noise_f_r, noise_floor_db=noise_m_r)
                 thd_freqs, thd_r, _ = self.audio_engine.smooth_spectrum(thd_f_raw, thd_r_raw, points=300)
+                if is_stress:
+                    try:
+                        _, hohd_r_raw = self.audio_engine.extract_hohd(self.temp_ir_r, 1.0, noise_floor=noise_r, noise_freqs=noise_f_r, noise_floor_db=noise_m_r)
+                        _, hohd_r, _ = self.audio_engine.smooth_spectrum(thd_f_raw, hohd_r_raw, points=300)
+                    except Exception as e:
+                        print(f"Error computing HOHD (R): {e}")
                 
             if thd_freqs is not None:
-                thd_data = (thd_freqs, thd_l, thd_r)
+                thd_data = (thd_freqs, thd_l, thd_r, hohd_l, hohd_r)
                 
             # CSD
             csd_data = {}
