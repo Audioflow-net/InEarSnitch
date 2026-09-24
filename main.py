@@ -3649,7 +3649,10 @@ class MainWindow(QMainWindow):
         mask_1k = (freqs >= 500) & (freqs <= 2000)
         current_mean = np.mean(mag_db[mask_1k])
         target_db = 85.0
-        calculated_shift = target_db - current_mean
+        
+        # Calculate needed shift to reach 85dB, but strictly bound it!
+        # Normal raw mic signals are -45 to -15 dBFS -> Shift of +100 to +130
+        calculated_shift = np.clip(target_db - current_mean, 50.0, 140.0)
         
         if not hasattr(self, '_rta_shift'):
             self._rta_shift = calculated_shift
