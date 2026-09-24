@@ -1492,10 +1492,14 @@ class AnalysisWidget(QWidget):
             # Prefer R if R is checked, else L
             if show_r and 'R' in csd_data:
                 active_csd = csd_data.get('R')
+                is_right = True
             elif show_l and 'L' in csd_data:
                 active_csd = csd_data.get('L')
+                is_right = False
             else:
                 active_csd = csd_data.get('L') or csd_data.get('R')
+                is_right = (active_csd is csd_data.get('R'))
+                
             print(f"[CSD DEBUG] csd_data keys={list(csd_data.keys())}, show_l={show_l}, show_r={show_r}, active_csd={'YES' if active_csd else 'NONE'}")
             if active_csd:
                 csd_freqs, csd_times, orig_csd_slices = active_csd
@@ -1503,7 +1507,6 @@ class AnalysisWidget(QWidget):
                 # 1. Reduziere die Anzahl gezeichneter Slices (jeden 3. nehmen)
                 csd_slices = orig_csd_slices[::3]
                 num_slices = len(csd_slices)
-                print(f"[CSD DEBUG] num_slices={num_slices}, freqs_shape={csd_freqs.shape}, slice_shape={csd_slices[0].shape}")
                 
                 # 4. Y-Range dynamisch basierend auf dem höchsten Peak
                 if num_slices > 0:
@@ -1511,6 +1514,11 @@ class AnalysisWidget(QWidget):
                     self._csd_max_peak = max_peak
                     self.csd_widget.setYRange(max_peak - 45, max_peak + 5)
                 
+                try:
+                    base_rgb = theme.get_color('curve_right_rgb') if is_right else theme.get_color('curve_left_rgb')
+                except Exception:
+                    base_rgb = (255, 0, 85) if is_right else (0, 255, 255)
+                    
                 # 4. Fill-Opacity reduzieren
                 # Draw from back (t=0) to front (t>0) to allow proper occlusion
                 for i in range(num_slices):
@@ -1520,11 +1528,11 @@ class AnalysisWidget(QWidget):
                     shift_freqs = csd_freqs * (1.015 ** i)
                     shift_mag = slice_mag - (i * 1.5) 
                 
-                    # 6. Farb-Gradient: Vorne (i=0) = voll Cyan, Hinten (i=max) = dunkel transparent
+                    # 6. Farb-Gradient
                     blend = i / max(1, num_slices - 1)
-                    r = 0
-                    g = int(255 * (1 - blend) + 30 * blend)
-                    b = int(255 * (1 - blend) + 40 * blend)
+                    r = int(base_rgb[0] * (1 - blend) + 30 * blend)
+                    g = int(base_rgb[1] * (1 - blend) + 30 * blend)
+                    b = int(base_rgb[2] * (1 - blend) + 40 * blend)
                     a = 255
                     color = pg.mkColor(r, g, b, a)
                     
@@ -1538,10 +1546,10 @@ class AnalysisWidget(QWidget):
                         shift_freqs, 
                         shift_mag, 
                         pen=pg.mkPen(color, width=pen_width),
-                        fillLevel=-100,
-                        fillBrush=fill_brush
+                        fillLevel=-100, 
+                        brush=fill_brush,
+                        name=f"CSD_{'R' if is_right else 'L'}_{i}" if i==0 else None
                     )
-                
         # Trigger EQ update to draw the virtual curve
         if hasattr(self, 'peq_bands') and len(self.peq_bands) > 0:
             # We call the first band's toggled slot manually to force an update
