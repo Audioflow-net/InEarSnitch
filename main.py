@@ -2624,24 +2624,26 @@ class MainWindow(QMainWindow):
         if actual_peak < -30.0:
             log_lines.append("")
             log_lines.append("⚠️ WARNING: Recording level is very low!")
-            log_lines.append("   Increase your system output level and re-calibrate.")
-            QMessageBox.warning(self, "Recording Level Too Low",
-                f"The signal coming in from your microphone is very quiet ({actual_peak:.0f} dBFS).\n\n"
-                "Your measurements may be noisy and unreliable.\n"
-                "Please increase your interface's output level, then run Calibration again."
+            log_lines.append("   Action: Turn up your Mac / Interface volume.")
+            QMessageBox.warning(self, "Volume Too Low",
+                "Your Mac/Interface volume is too low.\n\n"
+                "ACTION REQUIRED:\n"
+                "1. Turn up the volume on your Mac or headphone amplifier.\n"
+                "2. Run Auto-Calibration again."
             )
         
         # Warn if stress test can't go louder than normal sweep
         if stress_amp <= optimal_amp * 1.1:
             log_lines.append("")
-            log_lines.append("⚠️ CRITICAL: Output Level Too Low for Stress Test")
-            log_lines.append("   The Stress Test cannot run louder than the normal sweep.")
-            log_lines.append("   Turn up the physical volume knob on your audio interface!")
+            log_lines.append("⚠️ CRITICAL: No headroom for Stress Test")
+            log_lines.append("   Action: Turn up your Mac / Interface volume.")
             
-            QMessageBox.warning(self, "Output Level Too Low",
-                "Your system volume is so low that the normal sweep is already near the digital maximum (0 dBFS).\n\n"
-                "Because of this, the Stress Test cannot be made any louder, which makes Rub & Buzz detection unreliable.\n\n"
-                "SOLUTION: Please turn up the physical volume knob on your headphone amplifier, then run Auto-Calibration again."
+            QMessageBox.warning(self, "Volume Too Low",
+                "Your Mac/Interface volume is too low.\n"
+                "The app has no digital headroom left to run the louder Stress Test.\n\n"
+                "ACTION REQUIRED:\n"
+                "1. Turn up the volume on your Mac or headphone amplifier.\n"
+                "2. Run Auto-Calibration again."
             )
         
         self.cal_results_lbl.setText("\n".join(log_lines))
