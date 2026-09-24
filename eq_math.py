@@ -70,8 +70,13 @@ class DSPEngine:
                 f['_cached_freq'] = f['freq']
                 f['_cached_q'] = f['q']
                 f['_cached_type'] = f.get('type', 'peq')
+                f['_cached_zi'] = None  # Invalidate state on parameter change
                 
-            y = signal.lfilter(f['_cached_b'], f['_cached_a'], y)
+            if f.get('_cached_zi') is None:
+                f['_cached_zi'] = signal.lfilter_zi(f['_cached_b'], f['_cached_a']) * y[0]
+                
+            y, zf = signal.lfilter(f['_cached_b'], f['_cached_a'], y, zi=f['_cached_zi'])
+            f['_cached_zi'] = zf
 
         # Normalize to prevent digital clipping if EQ pushes > 0dBFS
         # But for measurements we want to keep absolute SPL scale if possible, 
