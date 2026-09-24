@@ -115,7 +115,7 @@ class AutoWrapLabel(QLabel):
     def __init__(self, text=""):
         super().__init__(text)
         self.setWordWrap(True)
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         
     def minimumSizeHint(self):
         from PySide6.QtCore import QSize
@@ -1241,6 +1241,10 @@ class AnalysisWidget(QWidget):
 
                 self.report_layout.addWidget(card)
                 
+        render_group(left_items, "LEFT EAR", "#3b82f6")
+        render_group(right_items, "RIGHT EAR", "#ef4444")
+        render_group(gen_items, "STEREO / GENERAL", "#10b981")
+
         if hasattr(self, '_noise_freqs') and self._noise_freqs is not None and getattr(self, '_noise_floor_db', None) is not None:
             nf = self._noise_freqs
             ndb = self._noise_floor_db
@@ -1264,9 +1268,6 @@ class AnalysisWidget(QWidget):
                     'category': 'ENV'
                 }], "ENVIRONMENT", "#a855f7")
 
-        render_group(left_items, "LEFT EAR", "#3b82f6")
-        render_group(right_items, "RIGHT EAR", "#ef4444")
-        render_group(gen_items, "STEREO / GENERAL", "#10b981")
         self.report_layout.addStretch()
 
     def update_prokit_visibility(self):
