@@ -830,8 +830,8 @@ class MainWindow(QMainWindow):
             pix = QPixmap(logo_path)
             if not pix.isNull():
                 # The top bar is 50px high, so 30px height fits perfectly
-                logo_img.setPixmap(pix.scaledToHeight(30, Qt.SmoothTransformation))
-        logo_img.setStyleSheet("margin-right: 5px;")
+                logo_img.setPixmap(pix.scaledToHeight(46, Qt.SmoothTransformation))
+        logo_img.setStyleSheet("margin-right: 12px; margin-top: 2px;")
         
         logo = QLabel("InEar SNITCH")
         logo.setStyleSheet("color: white; font-weight: bold; font-size: 20px; letter-spacing: 2px;")
