@@ -3318,14 +3318,18 @@ class MainWindow(QMainWindow):
         # Re-apply card inline styles for the new theme
         active_card = None
         for c in self.profile_cards:
-            if c.property("selected") == "true":
+            if getattr(c, 'is_selected_state', False):
                 active_card = c
+            # Clear state so force_profile_selection actually reapplies styles
+            c.is_selected_state = None
+            
             # Update AvatarButtons for the new theme
             for b_id, b in getattr(c, 'avatar_btns', []):
-                b.update_style(b.property("selected") == "true")
+                # We also need to force the button to update its style based on the new theme
+                is_btn_sel = getattr(b, 'is_selected', False)
+                b.update_style(is_btn_sel)
                 
-        if active_card:
-            self.force_profile_selection(active_card)
+        self.force_profile_selection(active_card)
 
     def save_workspace_state(self):
         if not hasattr(self, 'current_iem_id') or not self.current_iem_id:

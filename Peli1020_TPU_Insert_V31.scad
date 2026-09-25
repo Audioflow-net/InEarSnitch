@@ -775,8 +775,8 @@ module test_print(part="tpu") {
                 // Bounding Box EXAKT für das Logo links oben:
                 // X=-2 bis X=35 -> Deckt die Wand und das gesamte Logo ab
                 // Y=60 bis Y=95 -> Deckt die Wand oben und den Kabelgraben ab
-                translate([-2.0, 60.0, 2.0])
-                    cube([37.0, 35.0, 28.0]);
+                translate([-2.0, 60.0, 20.0])
+                    cube([37.0, 35.0, 6.0]);
             }
         }
     }
