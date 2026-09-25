@@ -305,7 +305,7 @@ class IEMCardWidget(QFrame):
         self.custom_name_input.setPlaceholderText("e.g. Ben's Main IEM")
         self.custom_name_input.setStyleSheet(f"background: transparent; border: none; border-bottom: 1px solid {bc}; color: {tc}; font-size: 14px; padding-bottom: 4px;")
         self.custom_name_input.textChanged.connect(self.sync_title)
-        self.custom_name_input.textChanged.connect(self.data_changed.emit)
+        self.custom_name_input.textChanged.connect(lambda *args: self.data_changed.emit())
         grid.addWidget(l_name, 0, 0)
         grid.addWidget(self.custom_name_input, 0, 1, 1, 3)
         
@@ -353,7 +353,7 @@ class IEMCardWidget(QFrame):
         line_edit.mousePressEvent = on_mouse_press
         try:
             line_edit.editingFinished.connect(self.sync_title)
-            line_edit.textChanged.connect(self.data_changed.emit)
+            line_edit.textChanged.connect(lambda *args: self.data_changed.emit())
         except Exception:
             pass
 
@@ -364,7 +364,7 @@ class IEMCardWidget(QFrame):
         self.abbr_input = QLineEdit(abbr)
         self.abbr_input.setPlaceholderText("Abbr.")
         self.abbr_input.setProperty("class", "prof_clean_input")
-        self.abbr_input.textChanged.connect(self.data_changed.emit)
+        self.abbr_input.textChanged.connect(lambda *args: self.data_changed.emit())
         self.abbr_input.textChanged.connect(self.sync_title)
         
         l_abbr = QLabel("Abbr:"); l_abbr.setStyleSheet(lbl_style)
@@ -375,7 +375,7 @@ class IEMCardWidget(QFrame):
         self.contact_input = QLineEdit(contact or "")
         self.contact_input.setPlaceholderText("Contact Person / Tech")
         self.contact_input.setProperty("class", "prof_clean_input")
-        self.contact_input.textChanged.connect(self.data_changed.emit)
+        self.contact_input.textChanged.connect(lambda *args: self.data_changed.emit())
         l_contact = QLabel("Contact:"); l_contact.setStyleSheet(lbl_style)
         grid.addWidget(l_contact, 2, 0)
         grid.addWidget(self.contact_input, 2, 1, 1, 3)
@@ -384,7 +384,7 @@ class IEMCardWidget(QFrame):
         self.service_input = QLineEdit(notes or "")
         self.service_input.setPlaceholderText("Service & Repair Log...")
         self.service_input.setProperty("class", "prof_clean_input")
-        self.service_input.textChanged.connect(self.data_changed.emit)
+        self.service_input.textChanged.connect(lambda *args: self.data_changed.emit())
         l_service = QLabel("Service:"); l_service.setStyleSheet(lbl_style)
         grid.addWidget(l_service, 3, 0)
         grid.addWidget(self.service_input, 3, 1, 1, 3)

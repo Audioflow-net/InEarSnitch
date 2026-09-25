@@ -2971,20 +2971,20 @@ class MainWindow(QMainWindow):
                                 "Please run Output Level Calibration first (in Settings → Calibration) before using the Stress Test.")
             return
         
-        if self.is_measuring:
-            return
-        
         if self.selected_in_idx is None or self.selected_out_idx is None:
             QMessageBox.warning(self, "Audio Not Set Up",
                 "We don't know which audio devices to use.\n\n"
                 "Please open Settings (top right) and select your Input and Output devices before running the Stress Test.")
             return
-        
+            
         # Fully stop any running RTA/Depth to prevent audio stream conflicts
         if getattr(self, 'live_worker', None) and self.live_worker.isRunning():
             self.btn_rta_raw.setChecked(False)
             self.btn_iec_guide.setChecked(False)
             self.toggle_live_seal(False)
+        
+        if self.is_measuring:
+            return
 
         # Confirmation
         reply = QMessageBox.question(
@@ -3004,6 +3004,16 @@ class MainWindow(QMainWindow):
             passed, peak_dbfs, pf_msg = self.audio_engine.preflight_check(
                 self.selected_in_idx, self.selected_out_idx, target_ch
             )
+            
+            # --- AUTO-HEAL: If macOS changed device indices (hot-plug), re-populate and retry! ---
+            if not passed and peak_dbfs == -9986.0:
+                print("[AUTO-HEAL] PortAudio stream failed. Re-populating device list...")
+                self.populate_audio_devices()
+                # Retry preflight with potentially updated indices
+                if self.selected_in_idx is not None and self.selected_out_idx is not None:
+                    passed, peak_dbfs, pf_msg = self.audio_engine.preflight_check(
+                        self.selected_in_idx, self.selected_out_idx, target_ch
+                    )
             if not passed:
                 from PySide6.QtCore import Qt
                 msg_box = QMessageBox(self)
@@ -4235,7 +4245,7 @@ class MainWindow(QMainWindow):
                             self.rta_peak_line.hide()
 
                     # Hysteresis: status only changes after 8 consecutive frames outside range
-                    is_ok = 7000 <= peak_freq <= 8600
+                    is_ok = 6500 <= peak_freq <= 8600
                     if not hasattr(self, '_iec_status_counter'):
                         self._iec_status_counter = 0
                         self._iec_last_ok = is_ok
@@ -4256,7 +4266,7 @@ class MainWindow(QMainWindow):
 
                     if self._iec_last_ok:
                         depth_html = f"<span style='color: {c_ok}; font-weight: bold;'>Depth OK ({peak_freq/1000:.1f}kHz)</span>"
-                    elif peak_freq < 7000:
+                    elif peak_freq < 6500:
                         depth_html = f"<span style='color: {c_warn}; font-weight: bold;'>Push Deeper (Peak: {peak_freq/1000:.1f}kHz)</span>"
                     else:
                         depth_html = f"<span style='color: {c_warn}; font-weight: bold;'>Pull Out Slightly (Peak: {peak_freq/1000:.1f}kHz)</span>"
@@ -4342,13 +4352,6 @@ class MainWindow(QMainWindow):
         
 
                 
-        # UI Hardening: block concurrent sweep attempts
-        if self.is_measuring:
-            QMessageBox.warning(self, "Measurement Running",
-                "A measurement is already in progress.\n\n"
-                "Please wait for it to complete before starting a new one.")
-            return
-            
         if self.selected_in_idx is None or self.selected_out_idx is None:
             QMessageBox.warning(self, "Audio Not Set Up",
                 "We can't hear anything!\n\n"
@@ -4362,6 +4365,13 @@ class MainWindow(QMainWindow):
             self.btn_rta_raw.setChecked(False)
             self.btn_iec_guide.setChecked(False)
             self.toggle_live_seal(False)
+            
+        # UI Hardening: block concurrent sweep attempts
+        if self.is_measuring:
+            QMessageBox.warning(self, "Measurement Running",
+                "A measurement is already in progress.\n\n"
+                "Please wait for it to complete before starting a new one.")
+            return
         
         # --- PREFLIGHT LEVEL CHECK ---
         # Compare current recording level against calibration reference.
@@ -4370,6 +4380,16 @@ class MainWindow(QMainWindow):
             passed, peak_dbfs, pf_msg = self.audio_engine.preflight_check(
                 self.selected_in_idx, self.selected_out_idx, target_ch
             )
+            
+            # --- AUTO-HEAL: If macOS changed device indices (hot-plug), re-populate and retry! ---
+            if not passed and peak_dbfs == -9986.0:
+                print("[AUTO-HEAL] PortAudio stream failed. Re-populating device list...")
+                self.populate_audio_devices()
+                # Retry preflight with potentially updated indices
+                if self.selected_in_idx is not None and self.selected_out_idx is not None:
+                    passed, peak_dbfs, pf_msg = self.audio_engine.preflight_check(
+                        self.selected_in_idx, self.selected_out_idx, target_ch
+                    )
             if not passed:
                 from PySide6.QtCore import Qt
                 msg_box = QMessageBox(self)

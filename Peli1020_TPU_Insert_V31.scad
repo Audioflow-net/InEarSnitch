@@ -467,11 +467,11 @@ module cutouts() {
     // Exakt 4.0mm tiefe Ausstanzung (Logo + Wellen + Verbindungsbrücken).
     // Kein offset(), keine Toleranz, sitzt 1:1 stramm im weichen Gummi!
     translate([logo_x, logo_y, depth + flange_t - 4.0])
-        linear_extrude(height=4.0 + 2*eps) {
-            scale([logo_scale, logo_scale]) custom_logo_2d();
-            scale([logo_scale, logo_scale]) waves_block();
-            scale([logo_scale, logo_scale]) logo_bridges_2d();
-        }
+        union() {
+        linear_extrude(height=4.0 + 2*eps) scale([logo_scale, logo_scale]) custom_logo_2d();
+        linear_extrude(height=4.0 + 2*eps) scale([logo_scale, logo_scale]) waves_block();
+        linear_extrude(height=4.0 + 2*eps) scale([logo_scale, logo_scale]) logo_bridges_2d();
+    }
 }
 
 // ==========================================
@@ -769,23 +769,32 @@ if (show_test_print) {
 // ==========================================
 
 module logo_bridges_2d() {
-    // Verbindungsstege auf der Oberfläche, damit das PETG ein durchgehendes Teil ist!
+    // 1. Hinterkopf zu Hut (HINTEN, weit weg vom Auge!)
     hull() {
-        translate([-0.2, 0.3]) circle(r=0.25, $fn=16);
-        translate([1.2, 0.6]) circle(r=0.25, $fn=16);
+        translate([-1.0, 0.0]) circle(r=0.2, $fn=16);
+        translate([-1.0, 1.5]) circle(r=0.2, $fn=16);
     }
+    
+    // 2. Halstuch/Nacken zu Ohr (unten Mitte)
     hull() {
-        translate([-4.2, 1.2]) circle(r=0.25, $fn=16);
-        translate([-2.5, 2.3]) circle(r=0.25, $fn=16);
+        translate([-1.5, -2.0]) circle(r=0.2, $fn=16);
+        translate([0.0, -1.0]) circle(r=0.2, $fn=16);
+    }
+    
+    // 3. Ohr zu Funkwellen (rechts)
+    hull() {
+        translate([2.5, -1.5]) circle(r=0.2, $fn=16);
+        translate([5.0, -1.5]) circle(r=0.2, $fn=16);
     }
 }
+    
 
 module logo_medallion() {
     color("darkturquoise")
     // 4.0mm dickes, massives Logo (alles durch Brücken verbunden!)
-    linear_extrude(height=4.0) {
-        scale([logo_scale, logo_scale]) custom_logo_2d();
-        scale([logo_scale, logo_scale]) waves_block();
-        scale([logo_scale, logo_scale]) logo_bridges_2d();
+    union() {
+        linear_extrude(height=4.0) scale([logo_scale, logo_scale]) custom_logo_2d();
+        linear_extrude(height=4.0) scale([logo_scale, logo_scale]) waves_block();
+        linear_extrude(height=4.0) scale([logo_scale, logo_scale]) logo_bridges_2d();
     }
 }

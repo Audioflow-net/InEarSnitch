@@ -120,7 +120,12 @@ class AudioEngine:
                 in_chans = sd.query_devices(input_device_idx)['max_input_channels']
                 rec = run_stream(in_chans)
         except Exception as e:
-            return True, -999.0, f"Pre-flight skipped: {e}"
+            return False, -9986.0, (
+                f"Failed to open audio stream (Error: {str(e)[:50]}).\n\n"
+                "|TIP|🔌 Did you unplug your audio interface?\n\n"
+                "macOS has reassigned your audio devices in the background.\n"
+                "Please open Settings, click 'Refresh Device List', and select your Input/Output again."
+            )
         
         peak_amp = np.max(np.abs(rec))
         peak_dbfs = 20 * np.log10(peak_amp + 1e-12)
