@@ -792,7 +792,7 @@ class ProKitTipSelector(QPushButton):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("cb_prokit_tip")
-        self.setToolTip("Select ProKit Coupler Ear Tip")
+        self.setToolTip("Select ProKit Adapter Tip")
         self.setCursor(Qt.PointingHandCursor)
         self.items = []
         self._current_index = -1
@@ -805,6 +805,7 @@ class ProKitTipSelector(QPushButton):
         return super().blockSignals(b)
         
     def update_styling(self):
+        import theme
         bg = theme.get_color('bg_panel')
         fg = theme.get_color('text_primary')
         border = theme.get_color('border')
@@ -828,7 +829,7 @@ class ProKitTipSelector(QPushButton):
     def clear(self):
         self.items = []
         self._current_index = -1
-        self.setText("Select Tip...  ▼")
+        self.setText("Select Adapter...  ▼")
         
     def addItem(self, text, userData=None):
         self.items.append({'text': text, 'data': userData})
@@ -859,7 +860,8 @@ class ProKitTipSelector(QPushButton):
     def show_popup(self):
         from PySide6.QtWidgets import QDialog, QGridLayout, QVBoxLayout, QWidget, QLabel
         from PySide6.QtGui import QPixmap
-        import os
+        from PySide6.QtCore import Qt
+        import os, theme
         dialog = QDialog(self.window())
         dialog.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
         dialog.setAttribute(Qt.WA_TranslucentBackground)
@@ -897,16 +899,15 @@ class ProKitTipSelector(QPushButton):
         grid.setSpacing(10)
         grid.setContentsMargins(15, 15, 15, 15)
         
-        title = QLabel("Select Ear Tip")
-        title.setStyleSheet(f"font-weight: 900; font-size: 14px; color: {fg}; padding-bottom: 5px; border: none; background: transparent;")
-        grid.addWidget(title, 0, 0, 1, 4)
+        title = QLabel("Select Adapter Tip")
+        title.setStyleSheet(f"font-weight: 900; font-size: 16px; color: {fg}; padding-bottom: 5px; border: none; background: transparent;")
+        grid.addWidget(title, 0, 0, 1, 3)
         
         image_mapping = {
             "V27 Modular": "render_V27.png",
             "V29 Cone": "render_V29.png",
             "V30 Pro": "render_V30.png",
             "V31 XL Panzer": "render_V31.png",
-            "Nutless Flex": "render_NUTLESS.png",
             "Flare (6.0 mm)": "render_FLARE.png",
             "Flare (5.0 mm)": "render_FLARE_5.png",
             "Flare (Clamp C5)": "render_FLARE_C5.png"
@@ -915,14 +916,15 @@ class ProKitTipSelector(QPushButton):
         row, col = 1, 0
         for i, item in enumerate(self.items):
             btn = QPushButton()
-            btn.setFixedSize(110, 110)
+            # Make the tiles much larger
+            btn.setFixedSize(140, 140)
             btn.setCursor(Qt.PointingHandCursor)
             
             parts = item['text'].split(' ', 1)
             name = parts[1] if len(parts) > 1 else item['text']
             
             btn_layout = QVBoxLayout(btn)
-            btn_layout.setSpacing(2)
+            btn_layout.setSpacing(4)
             btn_layout.setContentsMargins(5, 5, 5, 5)
             
             img_name = image_mapping.get(name, None)
@@ -934,19 +936,20 @@ class ProKitTipSelector(QPushButton):
                 lbl_icon.setStyleSheet("border: none; background: transparent;")
                 pix = QPixmap(img_path)
                 if not pix.isNull():
-                    # Scale down the render to fit nicely inside the tile
-                    lbl_icon.setPixmap(pix.scaled(75, 75, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                    # Scale to fill most of the 140x140 tile
+                    lbl_icon.setPixmap(pix.scaled(110, 110, Qt.KeepAspectRatio, Qt.SmoothTransformation))
                 else:
                     lbl_icon.setText("?")
             else:
                 lbl_icon = QLabel(parts[0] if len(parts) > 1 else "?")
                 lbl_icon.setAlignment(Qt.AlignCenter)
-                lbl_icon.setStyleSheet("font-size: 32px; color: #0ea5e9; border: none; background: transparent;")
+                # Much bigger text icon for Unbekannt/Kein Aufsatz
+                lbl_icon.setStyleSheet("font-size: 48px; color: #0ea5e9; border: none; background: transparent;")
             
             lbl_name = QLabel(name)
             lbl_name.setAlignment(Qt.AlignCenter)
             lbl_name.setWordWrap(True)
-            lbl_name.setStyleSheet(f"font-size: 11px; font-weight: bold; color: {fg}; border: none; background: transparent;")
+            lbl_name.setStyleSheet(f"font-size: 13px; font-weight: bold; color: {fg}; border: none; background: transparent;")
             
             btn_layout.addWidget(lbl_icon)
             btn_layout.addWidget(lbl_name)
@@ -970,7 +973,8 @@ class ProKitTipSelector(QPushButton):
             
             grid.addWidget(btn, row, col)
             col += 1
-            if col > 3:
+            # Wrap at 3 columns for a nice 3x3 grid
+            if col > 2:
                 col = 0
                 row += 1
                 

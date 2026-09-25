@@ -130,7 +130,13 @@ class AudioEngine:
             return False, peak_dbfs, "Recording is clipping! Lower your system volume."
         
         if peak_dbfs < -55.0:
-            return False, peak_dbfs, "No signal detected. Check IEM connection and system volume."
+            ch_name = "Left" if target_channel == 'L' else "Right"
+            return False, peak_dbfs, (
+                f"No acoustic signal detected (measured {peak_dbfs:.0f} dBFS).\n\n"
+                f"💡 Are you testing the correct ear?\n"
+                f"The app is playing sound out of the '{ch_name}' channel, but the microphone is recording silence.\n"
+                f"Please verify your L/R selection, cable connection, and system volume."
+            )
         
         # Check drift: scale expected peak by the ratio of probe amp to calibrated sweep amp
         cal_rec_peak = getattr(self, 'calibration_rec_peak', None)
@@ -140,11 +146,21 @@ class AudioEngine:
             expected_probe_peak = cal_rec_peak + 20 * np.log10(probe_amp / cal_sweep_amp + 1e-12)
             drift = abs(peak_dbfs - expected_probe_peak)
             if drift > 6.0:
-                return False, peak_dbfs, (
+                msg = (
                     f"Level shifted by {drift:.0f} dB since calibration "
-                    f"(expected {expected_probe_peak:.0f}, got {peak_dbfs:.0f} dBFS). "
+                    f"(expected {expected_probe_peak:.0f}, got {peak_dbfs:.0f} dBFS).\n"
                     f"Re-calibrate or restore your system volume."
                 )
+                
+                # If it's a massive drop (> 15 dB), they likely selected the wrong channel!
+                if expected_probe_peak - peak_dbfs > 15.0:
+                    ch_name = "Left" if target_channel == 'L' else "Right"
+                    msg += (
+                        f"\n\n💡 Are you testing the correct ear?\n"
+                        f"You selected '{ch_name}', but the recording is extremely quiet (possibly just crosstalk from the other earpiece)."
+                    )
+                    
+                return False, peak_dbfs, msg
         
         return True, peak_dbfs, f"Level OK ({peak_dbfs:.0f} dBFS)"
 

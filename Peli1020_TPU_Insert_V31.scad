@@ -469,13 +469,9 @@ module cutouts() {
             offset(r=0.2) custom_logo_2d();
             offset(r=0.2) waves_block();
         }
-    // 0.6mm tiefe, ovale Aussparung GANZ UNTEN für die verbindende Trägerplatte.
-    // Das TPU wird beim Drucken über diese winzige 0.6mm Lücke "bridgen". 
-    // Es wird minimal durchhängen, fängt sich aber sofort am massiven Boden darunter auf!
-    translate([logo_x, logo_y, depth + flange_t - 4.6])
-        linear_extrude(height=0.6 + eps) {
-            offset(r=0.2) logo_tower_2d();
-        }
+    // Der geniale FDM-Trick: Keine Aussparung für die Trägerplatte!
+    // Das TPU ist hier unten zu 100% massiv. Beim Einsetzen quetscht die 0.4mm 
+    // dicke PETG-Platte das weiche Gummi einfach leicht ein und klemmt bombenfest!
 }
 
 // ==========================================
