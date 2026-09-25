@@ -513,7 +513,6 @@ class IEMCardWidget(QFrame):
 
     def _copy_to_local_images(self, source_path):
         if not source_path or not os.path.exists(source_path): return ""
-        import os, uuid, shutil
         img_dir = os.path.join(os.getcwd(), "images")
         os.makedirs(img_dir, exist_ok=True)
         ext = os.path.splitext(source_path)[1]
