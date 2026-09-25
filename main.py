@@ -3047,18 +3047,17 @@ class MainWindow(QMainWindow):
                     continue
                 c.is_selected_state = is_sel
                 
-                card_bg = theme.get_color('card_bg')
-                card_border = theme.get_color('border')
-                accent = theme.get_color('accent')
+                bg_hover = theme.get_color('bg_hover')
+                accent_glow = theme.get_color('accent_glow')
+                accent_edge = theme.get_color('accent_edge')
                 
                 if is_sel:
-                    # 2px border for selected state, matching accent color
-                    c.setStyleSheet(f"#musicianCardObj {{ background-color: {card_bg}; border-radius: 6px; border: 2px solid {accent}; outline: none; }}")
+                    # 2026 Modern Style: Glowing tinted background with a sharp edge, generous 12px rounding
+                    c.setStyleSheet(f"#musicianCardObj {{ background-color: {accent_glow}; border-radius: 12px; border: 1px solid {accent_edge}; outline: none; }}")
                 else:
-                    # 1px border for unselected state + 1px padding/margin equivalent to prevent layout shift
-                    c.setStyleSheet(f"#musicianCardObj {{ background-color: {card_bg}; border-radius: 6px; border: 1px solid {card_border}; margin: 1px; outline: none; }}")
+                    # 2026 Modern Style: Ghost cards (transparent) that only light up on hover
+                    c.setStyleSheet(f"#musicianCardObj {{ background-color: transparent; border-radius: 12px; border: 1px solid transparent; outline: none; }} #musicianCardObj:hover {{ background-color: {bg_hover}; border: 1px solid transparent; }}")
                 
-                # Remove muddy drop shadows completely for a clean, modern flat design
                 c.setGraphicsEffect(None)
                     
             self.on_profile_selected(card)
