@@ -1857,3 +1857,18 @@
 - **Betroffenes Bauteil:** TPU Insert (Logo Cutout) und PETG Inlay
 - **Maße / Änderungen:** Umstieg auf "Tactical Patch" (Organische Kontur). Das Logo wird nicht mehr als einzelne Inseln aus dem TPU ausgeschnitten, sondern es wird ein großer, massiver organischer Block (`offset(r=-1) offset(r=4)`) um das Logo gezogen. 
 - **Die Idee / Der Grund:** Die ursprünglichen 15 winzigen Einzelteile waren viel zu filigran und ließen sich nicht in das harte 95A TPU drücken ("Debugging des Todes"). Der Tactical Patch löst das, indem er als ein einziger robuster 4mm dicker Block gedruckt wird, der mühelos in das TPU flutscht. Die feinen Details werden einfach erhaben (Z=3.0 bis 4.0) auf diesen Block gedruckt.
+
+### V40 - 2026-09-25
+- **Betroffenes Bauteil:** TPU Insert (Logo Cutout) und PETG Inlay
+- **Maße / Änderungen:** Umstieg auf "Stencil Puck" (Negativ-Schablone). Das PETG-Teil ist jetzt ein runder Puck (d=20.5 mm, exakt wie die Tip-Molds). Das Logo wird per Differenz als Loch komplett aus dem Puck ausgestanzt.
+- **Die Idee / Der Grund:** Der User bevorzugte die Schablonen-Optik (Stencil). Da das Auge und das innere Ohr als Inseln ohnehin herausfallen, war der Kompromiss voll in Ordnung. Dies erlaubt einen einfarbigen Druck des Pucks (z.B. in Grün), durch den das darunterliegende schwarze TPU des Hauptblocks hindurchscheint. Kein M600-Farbwechsel mehr nötig.
+
+### V41 - 2026-09-25
+- **Betroffenes Bauteil:** TPU Insert & PETG Stencil Puck (Logo)
+- **Maße / Änderungen:** 
+  - Puck-Durchmesser (`logo_puck_d`) um 10% verkleinert (von 20.5 mm auf 18.5 mm).
+  - Position weiter nach innen verlegt (`X=16.0, Y=78.0`), um den kritischen Gehäuserand (Snap-Fit zum Peli 1020) sicher auszusparen.
+  - Höhe von 4.0 mm auf 2.5 mm reduziert.
+  - **Klick-Profil:** Der Zylinder wurde zu einer Stufe umgebaut (unten 1.0 mm hoch und 1.5 mm breiter als der Schaft), wodurch der Puck im flexiblen TPU formschlüssig einrastet.
+  - **Funkwellen:** Die Funkwellen des Logos wurden gezielt über `offset(r=0.4)` (also insgesamt 0.8 mm dicker) angefettet, um die visuelle Präsenz beim Druck massiv zu erhöhen.
+- **Die Idee / Der Grund:** Ein flacherer Puck (2.5 mm) spart Material, die Stufe sorgt für perfekten Halt ohne Herausfallen (Klick-Mechanismus). Die Verschiebung schützt die äußere Gehäusewand des TPUs. Durch die Anfetten-Funktion bleiben kleine Inseln fern, aber die dünnen SVG-Wellen werden nun satt und stark gedruckt.
