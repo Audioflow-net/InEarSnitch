@@ -3047,31 +3047,19 @@ class MainWindow(QMainWindow):
                     continue
                 c.is_selected_state = is_sel
                 
-                if is_sel:
-                    if theme.CURRENT_MODE == "light":
-                        c.setStyleSheet("#musicianCardObj { background-color: #f4f4f5; border-radius: 8px; border: 1px solid #e4e4e7; border-left: 4px solid #3b82f6; outline: none; }")
-                    else:
-                        c.setStyleSheet("#musicianCardObj { background-color: #3f3f46; border-radius: 8px; border: 1px solid #52525b; border-left: 4px solid #3b82f6; outline: none; }")
-                else:
-                    if theme.CURRENT_MODE == "light":
-                        c.setStyleSheet("#musicianCardObj { background-color: #ffffff; border-radius: 8px; border: 1px solid transparent; outline: none; }")
-                    else:
-                        c.setStyleSheet("#musicianCardObj { background-color: #2d2d34; border-radius: 8px; border: 1px solid transparent; outline: none; }")
+                card_bg = theme.get_color('card_bg')
+                card_border = theme.get_color('border')
+                accent = theme.get_color('accent')
                 
                 if is_sel:
-                    shadow = QGraphicsDropShadowEffect(c)
-                    if theme.CURRENT_MODE == "light":
-                        shadow.setBlurRadius(20)
-                        shadow.setColor(QColor(0, 0, 0, 70))
-                        shadow.setOffset(0, 6)
-                    else:
-                        # Subtle modern blue glow in dark mode
-                        shadow.setBlurRadius(30)
-                        shadow.setColor(QColor(59, 130, 246, 40))
-                        shadow.setOffset(0, 0)
-                    c.setGraphicsEffect(shadow)
+                    # 2px border for selected state, matching accent color
+                    c.setStyleSheet(f"#musicianCardObj {{ background-color: {card_bg}; border-radius: 6px; border: 2px solid {accent}; outline: none; }}")
                 else:
-                    c.setGraphicsEffect(None)
+                    # 1px border for unselected state + 1px padding/margin equivalent to prevent layout shift
+                    c.setStyleSheet(f"#musicianCardObj {{ background-color: {card_bg}; border-radius: 6px; border: 1px solid {card_border}; margin: 1px; outline: none; }}")
+                
+                # Remove muddy drop shadows completely for a clean, modern flat design
+                c.setGraphicsEffect(None)
                     
             self.on_profile_selected(card)
         except Exception as e:
@@ -3841,16 +3829,22 @@ class MainWindow(QMainWindow):
         
         mask = (freqs >= 20) & (freqs <= 20000)
         
-        mask_1k = (freqs >= 500) & (freqs <= 2000)
-        current_mean = np.mean(mag_db[mask_1k])
-        target_db = 85.0
-        
-        calculated_shift = np.clip(target_db - current_mean, 50.0, 180.0)
-        
-        if not hasattr(self, '_rta_shift'):
-            self._rta_shift = calculated_shift
-        else:
-            self._rta_shift = 0.92 * self._rta_shift + 0.08 * calculated_shift
+        from eq_math import dsp_engine
+        if not getattr(dsp_engine, 'master_enabled', False):
+            mask_1k = (freqs >= 500) & (freqs <= 2000)
+            current_mean = np.mean(mag_db[mask_1k])
+            target_db = 85.0
+            
+            calculated_shift = np.clip(target_db - current_mean, 50.0, 180.0)
+            
+            if not hasattr(self, '_rta_shift'):
+                self._rta_shift = calculated_shift
+            else:
+                self._rta_shift = 0.92 * self._rta_shift + 0.08 * calculated_shift
+        elif not hasattr(self, '_rta_shift'):
+            # Fallback if EQ was enabled BEFORE RTA started
+            mask_1k = (freqs >= 500) & (freqs <= 2000)
+            self._rta_shift = 85.0 - np.mean(mag_db[mask_1k])
             
         self.live_rta_line.setData(freqs[mask], mag_db[mask] + self._rta_shift)
         
