@@ -1684,6 +1684,7 @@ class MainWindow(QMainWindow):
         left_group.addWidget(chan_widget)
         
         right_group = QHBoxLayout()
+        right_group.setAlignment(Qt.AlignRight | Qt.AlignBottom)
         right_group.setSpacing(7) # Pushes RTA 8px to the right to align with the visual edge of the QTabWidget above
         # Tip selector aligned to bottom (next to Depth)
         right_group.addWidget(self.tip_container)
