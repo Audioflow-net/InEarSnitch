@@ -6,6 +6,22 @@ from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QL
 from PySide6.QtCore import Qt, Signal, QTimer
 import pyqtgraph as pg
 
+class HelpHoverButton(QPushButton):
+    def __init__(self, text, target_widget, parent=None):
+        super().__init__(text, parent)
+        self.target_widget = target_widget
+        self.setFixedSize(24, 24)
+        self.setStyleSheet("QPushButton { border-radius: 12px; background: #3f3f46; color: white; font-weight: bold; font-size: 13px; border: none; } QPushButton:hover { background: #0ea5e9; }")
+        self.setCursor(Qt.PointingHandCursor)
+        
+    def enterEvent(self, event):
+        self.target_widget.show()
+        super().enterEvent(event)
+        
+    def leaveEvent(self, event):
+        self.target_widget.hide()
+        super().leaveEvent(event)
+
 class FreqAxisItem(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
         if not values: return []

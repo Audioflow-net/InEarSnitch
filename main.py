@@ -2935,6 +2935,7 @@ class MainWindow(QMainWindow):
                 self.selected_in_idx, self.selected_out_idx, target_ch
             )
             if not passed:
+                from PySide6.QtCore import Qt
                 msg_box = QMessageBox(self)
                 msg_box.setIcon(QMessageBox.Warning)
                 msg_box.setWindowTitle("Level Check Failed")
