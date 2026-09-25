@@ -3929,12 +3929,18 @@ class MainWindow(QMainWindow):
                     else:
                         self._iec_status_counter = 0
                     
+                    
+                    c_ok = "#059669" if theme.is_light() else "#10b981"
+                    c_warn = "#d97706" if theme.is_light() else "#eab308"
+                    c_err = "#dc2626" if theme.is_light() else "#ef4444"
+                    c_gray = "#52525b" if theme.is_light() else "gray"
+
                     if self._iec_last_ok:
-                        depth_html = "<span style='color: #10b981; font-weight: bold;'>Depth OK ({:.1f}kHz)</span>".format(peak_freq/1000)
+                        depth_html = f"<span style='color: {c_ok}; font-weight: bold;'>Depth OK ({peak_freq/1000:.1f}kHz)</span>"
                     elif peak_freq < 7000:
-                        depth_html = "<span style='color: #eab308; font-weight: bold;'>Push Deeper (Peak: {:.1f}kHz)</span>".format(peak_freq/1000)
+                        depth_html = f"<span style='color: {c_warn}; font-weight: bold;'>Push Deeper (Peak: {peak_freq/1000:.1f}kHz)</span>"
                     else:
-                        depth_html = "<span style='color: #eab308; font-weight: bold;'>Pull Out Slightly (Peak: {:.1f}kHz)</span>".format(peak_freq/1000)
+                        depth_html = f"<span style='color: {c_warn}; font-weight: bold;'>Pull Out Slightly (Peak: {peak_freq/1000:.1f}kHz)</span>"
                 else:
                     depth_html = ""
                     if hasattr(self, 'rta_peak_line') and self.rta_peak_line is not None:
@@ -3947,19 +3953,19 @@ class MainWindow(QMainWindow):
                     val_40 = np.mean(mag_db[mask_40])
                     val_500 = np.mean(mag_db[mask_500])
                     if val_40 < val_500 - 12:
-                        seal_html = f"<span style='color: #ef4444; font-weight: bold;'>🔴 Bass Leak!</span> <span style='color: gray; font-size: 14px;'>[{current_mean:.1f} dB]</span>"
+                        seal_html = f"<span style='color: {c_err}; font-weight: bold;'>🔴 Bass Leak!</span> <span style='color: {c_gray}; font-size: 14px;'>[{current_mean:.1f} dB]</span>"
                         if hasattr(self, 'rta_bass_line') and self.rta_bass_line is not None:
                             import pyqtgraph as pg
-                            self.rta_bass_line.setPen(pg.mkPen('#ef4444', width=4))
+                            self.rta_bass_line.setPen(pg.mkPen(c_err, width=4))
                             if self.btn_iec_guide.isChecked(): self.rta_bass_line.show()
                     else:
-                        seal_html = f"<span style='color: #10b981; font-weight: bold;'>🟢 Bass Seal OK</span> <span style='color: gray; font-size: 14px;'>[{current_mean:.1f} dB]</span>"
+                        seal_html = f"<span style='color: {c_ok}; font-weight: bold;'>🟢 Bass Seal OK</span> <span style='color: {c_gray}; font-size: 14px;'>[{current_mean:.1f} dB]</span>"
                         if hasattr(self, 'rta_bass_line') and self.rta_bass_line is not None:
                             import pyqtgraph as pg
-                            self.rta_bass_line.setPen(pg.mkPen('#10b981', width=4))
+                            self.rta_bass_line.setPen(pg.mkPen(c_ok, width=4))
                             if self.btn_iec_guide.isChecked(): self.rta_bass_line.show()
                 else:
-                    seal_html = f"<span style='color: gray; font-size: 14px;'>[{current_mean:.1f} dB]</span>"
+                    seal_html = f"<span style='color: {c_gray}; font-size: 14px;'>[{current_mean:.1f} dB]</span>"
                     if hasattr(self, 'rta_bass_line') and self.rta_bass_line is not None:
                         self.rta_bass_line.hide()
             
@@ -3991,7 +3997,8 @@ class MainWindow(QMainWindow):
             # Anchor is (0.5, 1.0) - bottom center
             self.rta_big_lbl.setPos(w/2, rect.height() - 20)
             divider = "<br>" if seal_html and depth_html else ""
-            self.rta_big_lbl.setHtml(f"<div style='font-family: Arial; font-size: {font_size}px; background-color: rgba(0,0,0,150); padding: 8px; border-radius: 8px;'><center>{seal_html}{divider}{depth_html}</center></div>")
+            bg_css = "transparent"
+            self.rta_big_lbl.setHtml(f"<div style='font-family: Arial; font-size: {font_size}px; background-color: {bg_css}; padding: 8px; border-radius: 8px;'><center>{seal_html}{divider}{depth_html}</center></div>")
             
             # Hide it if helper is off or if there is no text to show
             if not seal_html and not depth_html:
