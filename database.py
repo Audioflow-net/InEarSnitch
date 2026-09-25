@@ -76,15 +76,19 @@ class DatabaseManager:
 
         # Populate or update TipProfiles with the 7 real tips deterministically with IDs 1 to 7
         default_tips = [
-            # id=1 MUST be "Unknown" (legacy fallback) — DO NOT CHANGE
             (1, "Unknown", "Legacy measurement without tip info", "", "#444444", "?", 0),
-            (2, "No Tip", "Measured directly without tip", "", "#555555", "○", 0),
-            (3, "V26 Straight", "Best all-rounder — straight 90° edge", "Silicone", "#22c55e", "▮", 1),
-            (4, "V27 Rounded", "Comfort update — 2mm rounded tip", "Silicone", "#3b82f6", "▮", 0),
-            (5, "V29-C Cone", "Conical shape — extreme seal via deep insertion", "Silicone", "#f97316", "◆", 0),
-            (6, "V30-C Pro", "9mm torus lip, 4mm hole — stability upgrade", "Silicone", "#3b82f6", "◉", 0),
-            (7, "V31-XL Panzer", "10mm lip, 6mm hole — for large Custom In-Ears", "Silicone", "#f97316", "◉", 0),
+            (2, "No Adapter", "Measured directly without tip", "", "#555555", "○", 0),
+            (4, "V27 Modular", "Modular comfort tip", "Silicone", "#3b82f6", "▮", 1),
+            (5, "V29 Cone", "Conical shape", "Silicone", "#f97316", "◆", 0),
+            (6, "V30 Pro", "Pro stability", "Silicone", "#3b82f6", "◉", 0),
+            (7, "V31 XL Panzer", "XL Custom In-Ears", "Silicone", "#f97316", "◉", 0),
+            (9, "Flare (6.0 mm)", "Grip-Test Flare", "Silicone", "#ef4444", "●", 0),
+            (10, "Flare (5.0 mm)", "Grip-Test Flare", "Silicone", "#ef4444", "●", 0),
+            (11, "Flare (Clamp C5)", "Grip-Test Clamp", "Silicone", "#ef4444", "●", 0),
         ]
+        # Clean up legacy profiles
+        cursor.execute("DELETE FROM TipProfiles WHERE name IN ('V26 Straight', 'Nutless Flex', 'Unbekannt', 'Kein Aufsatz')")
+        
         for tip in default_tips:
             cursor.execute("""
                 INSERT INTO TipProfiles (id, name, description, material, color_hex, icon_char, is_default)
@@ -96,7 +100,7 @@ class DatabaseManager:
                     color_hex=excluded.color_hex,
                     icon_char=excluded.icon_char,
                     is_default=excluded.is_default
-                WHERE TipProfiles.name IN ('', 'Unknown', 'No Tip', 'Standard Foam', 'ProKit V1', 'ProKit V2', 'V26 Straight', 'V27 Rounded', 'V29-C Cone', 'V30-C Pro', 'V31-XL Panzer')
+                WHERE 1=1
             """, tip)
 
         # Historical measurements for reference overlays
