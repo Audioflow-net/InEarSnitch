@@ -1423,6 +1423,8 @@ class MainWindow(QMainWindow):
         from analysis_ui import AnalysisWidget
         self.page_ana = AnalysisWidget()
         self.page_ana.main_window = self
+        self.page_ana.init_eq_db()
+        self.page_ana.load_eq_presets()
         self.page_ana.request_measurement.connect(self.run_measurement)
         self.page_ana.request_stress_test.connect(self.run_stress_test)
 
@@ -3864,12 +3866,13 @@ class MainWindow(QMainWindow):
             cal_peak = float(s.value("audio/calibration_rec_peak", -999.0))
             
             if cal_peak > -100:
-                # Normal Pink Noise RMS (mids only) is ~88 dB below cal_peak.
-                floor_threshold = cal_peak - 96.0   # Below this = Room Noise (Not Detected)
-                ceil_threshold = cal_peak - 75.0    # Above this = Tapping/Pushing (Overload)
+                # Normal Pink Noise RMS (mids only) in log-binned FFT is ~52 dB below cal_peak.
+                # Example: cal_peak = -15 -> Normal RMS = -67 dB.
+                floor_threshold = cal_peak - 70.0   # Below this = Room Noise / Bad Seal (Not Detected)
+                ceil_threshold = cal_peak - 30.0    # Above this = Tapping/Pushing (Overload)
             else:
-                floor_threshold = -115.0
-                ceil_threshold = -90.0
+                floor_threshold = -85.0
+                ceil_threshold = -45.0
 
             if broadband_rms > ceil_threshold:
                 seal_html = f"<span style='color: #f59e0b; font-weight: bold;'>Overload / Handling Noise ({broadband_rms:.0f}dB)</span>"

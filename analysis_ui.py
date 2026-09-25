@@ -1038,8 +1038,6 @@ class AnalysisWidget(QWidget):
         self.split_layout.setStretchFactor(0, 1)
         self.split_layout.setStretchFactor(1, 0)
         
-        self.init_eq_db()
-        self.load_eq_presets()
         self.btn_save_eq.clicked.connect(self.save_eq_preset)
         self.update_theme()
         self._initial_shown = False  # Flag for first showEvent
