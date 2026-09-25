@@ -2946,11 +2946,11 @@ class MainWindow(QMainWindow):
                 info_append_html = "<br><br>The Stress Test uses a higher output level than normal sweeps.<br>Running with incorrect levels will produce invalid results."
                 info_append_plain = "\n\nThe Stress Test uses a higher output level than normal sweeps.\nRunning with incorrect levels will produce invalid results.\n\nDo you want to continue anyway?"
                 
-                if "💡" in pf_msg:
-                    parts = pf_msg.split("💡")
+                if "|TIP|" in pf_msg:
+                    parts = pf_msg.split("|TIP|")
                     tech_details = parts[0].strip()
                     main_tip_lines = parts[1].strip().split('\n')
-                    main_title = "💡 " + main_tip_lines[0]
+                    main_title = main_tip_lines[0]
                     main_expl = "<br>".join(main_tip_lines[1:])
                     
                     html = f"""
@@ -4309,11 +4309,11 @@ class MainWindow(QMainWindow):
                 msg_box.setIcon(QMessageBox.Warning)
                 msg_box.setWindowTitle("Level Check Failed")
                 
-                if "💡" in pf_msg:
-                    parts = pf_msg.split("💡")
+                if "|TIP|" in pf_msg:
+                    parts = pf_msg.split("|TIP|")
                     tech_details = parts[0].strip()
                     main_tip_lines = parts[1].strip().split('\n')
-                    main_title = "💡 " + main_tip_lines[0]
+                    main_title = main_tip_lines[0]
                     main_expl = "<br>".join(main_tip_lines[1:])
                     
                     html = f"""

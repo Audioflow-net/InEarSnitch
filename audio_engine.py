@@ -127,13 +127,13 @@ class AudioEngine:
         
         # Only block on actual clipping (> -1 dBFS at half amplitude = guaranteed clip at full)
         if peak_dbfs > -1.0:
-            return False, peak_dbfs, "Recording is clipping (0 dBFS).\n\n💡 Did you change the volume?\nYour system volume is too loud and clipping the microphone."
+            return False, peak_dbfs, "Recording is clipping (0 dBFS).\n\n|TIP|🔊 Did you change the volume?\n\nYour system volume is too loud and clipping the microphone."
         
         if peak_dbfs < -55.0:
             ch_name = "Left" if target_channel == 'L' else "Right"
             return False, peak_dbfs, (
                 f"No acoustic signal detected (measured {peak_dbfs:.0f} dBFS).\n\n"
-                f"💡 Are you testing the correct ear? Or is the volume muted?\n"
+                f"|TIP|👂 Are you testing the correct ear?<br><br>🔊 Or is the volume muted?\n\n"
                 f"The app is playing sound out of the '{ch_name}' channel, but the microphone is recording silence."
             )
         
@@ -154,12 +154,12 @@ class AudioEngine:
                 if expected_probe_peak - peak_dbfs > 10.0:
                     ch_name = "Left" if target_channel == 'L' else "Right"
                     msg += (
-                        f"\n\n💡 Are you testing the correct ear?<br>Or did you change the volume?\n"
+                        f"\n\n|TIP|👂 Are you testing the correct ear?<br><br>🔊 Or did you change the volume?\n\n"
                         f"You selected '{ch_name}', but the recording is extremely quiet (possibly just crosstalk)."
                     )
                 else:
                     msg += (
-                        f"\n\n💡 Did you change the system volume?\n"
+                        f"\n\n|TIP|🔊 Did you change the system volume?\n\n"
                         f"The volume does not match your calibration. Please restore your volume or re-calibrate."
                     )
                     

@@ -18,8 +18,9 @@ show_cross_section = false;
 show_test_print = true; // TEST-DRUCK FÜR DIE LOGO ECKE // TEST-DRUCK FÜR DIE LASCHE
 
 // --- 1. Design Parameters ---
-logo_x = 12.0;
-logo_y = 84.0;
+logo_x = 13.5;
+logo_y = 83.5;
+logo_scale = 1.2; // Das Logo ist jetzt 20% größer!
 
 // Peli 1020 Internal Dimensions (Drafted)
 // MASSIVE BREAKTHROUGH: 132.84 x 88.39 are the BOTTOM floor dimensions!
@@ -466,12 +467,16 @@ module cutouts() {
     // 4.0mm tiefe, exakte Ausstanzung für das Logo (Sichtbarer Bereich)
     translate([logo_x, logo_y, depth + flange_t - 4.0])
         linear_extrude(height=4.0 + 2*eps) {
-            offset(r=0.2) custom_logo_2d();
-            offset(r=0.2) waves_block();
+            offset(r=0.2) scale([logo_scale, logo_scale]) custom_logo_2d();
+            offset(r=0.2) scale([logo_scale, logo_scale]) waves_block();
         }
-    // Der geniale FDM-Trick: Keine Aussparung für die Trägerplatte!
-    // Das TPU ist hier unten zu 100% massiv. Beim Einsetzen quetscht die 0.4mm 
-    // dicke PETG-Platte das weiche Gummi einfach leicht ein und klemmt bombenfest!
+    // 0.6mm tiefe, ovale Aussparung GANZ UNTEN für die verbindende Trägerplatte.
+    // Das TPU wird beim Drucken über diese winzige 0.6mm Lücke "bridgen". 
+    // Es wird minimal durchhängen, fängt sich aber sofort am massiven Boden darunter auf!
+    translate([logo_x, logo_y, depth + flange_t - 4.6])
+        linear_extrude(height=0.6 + eps) {
+            offset(r=0.2) scale([logo_scale, logo_scale]) logo_tower_2d();
+        }
 }
 
 // ==========================================
@@ -770,12 +775,12 @@ module logo_medallion() {
     color("darkturquoise")
     union() {
         // 0.4mm dicke ovale Bodenplatte (Druckt als allererstes, verbindet alle losen Teile!)
-        linear_extrude(height=0.4)
+        linear_extrude(height=0.4) scale([logo_scale, logo_scale])
             logo_tower_2d();
             
         // 4.0mm dicke Logo-Elemente darauf
         translate([0, 0, 0.4 - eps])
-        linear_extrude(height=4.0 + eps) {
+        linear_extrude(height=4.0 + eps) scale([logo_scale, logo_scale]) {
             custom_logo_2d();
             waves_block();
         }
