@@ -1724,6 +1724,10 @@ class MainWindow(QMainWindow):
         self.cb_smooth.setStyleSheet("QComboBox { background-color: #222; color: white; border: 1px solid #444; padding: 2px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; min-height: 20px; }")
         view_layout.addWidget(self.cb_smooth)
         view_layout.addWidget(self.btn_reset_view)
+        
+        self.btn_global_help = GlobalHelpButton(self.page_ana.graph_tabs, self)
+        view_layout.addWidget(self.btn_global_help)
+        
         corner_layout.addWidget(view_widget)
         
 

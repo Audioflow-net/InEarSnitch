@@ -744,12 +744,13 @@ module assembly() {
 // RENDER OUTPUT
 // ==========================================
 module test_print(part="tpu") {
-    // Schneidet exakt die obersten 7mm der TPU-Ecke ab und legt sie flach aufs Bett
+    // Ultra-minimaler Testdruck (Ohne die dicken Gehäusewände)
+    // Nur ein 28x20mm Block exakt um das Logo herum!
     translate([0, 0, -(23.62 + 1.5 - 7.0)]) {
         intersection() {
             tpu_insert_full();
-            translate([-5.0, 60.0, 23.62 + 1.5 - 7.0])
-                cube([45.0, 35.0, 7.0]);
+            translate([logo_x - 14.0, logo_y - 10.0, 23.62 + 1.5 - 7.0])
+                cube([28.0, 20.0, 7.0]);
         }
     }
 }
