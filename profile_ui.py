@@ -1,3 +1,5 @@
+import uuid
+import shutil
 import os
 import sqlite3
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
@@ -153,17 +155,17 @@ class ProfilePicWidget(QWidget):
             """)
             
             action_upload = QAction("Upload Photo", self)
-            action_upload.triggered.connect(self.clicked.emit)
+            action_upload.triggered.connect(lambda *args: self.clicked.emit())
             menu.addAction(action_upload)
             
             if self.enable_color:
                 action_color = QAction("Set Color", self)
-                action_color.triggered.connect(self.color_clicked.emit)
+                action_color.triggered.connect(lambda *args: self.color_clicked.emit())
                 menu.addAction(action_color)
             
             if self.has_image:
                 action_delete = QAction("Remove Photo", self)
-                action_delete.triggered.connect(self.delete_clicked.emit)
+                action_delete.triggered.connect(lambda *args: self.delete_clicked.emit())
                 menu.addAction(action_delete)
                 
             menu.exec(event.globalPosition().toPoint())
@@ -509,11 +511,25 @@ class IEMCardWidget(QFrame):
         self.apply_color()
         self.data_changed.emit()
 
+    def _copy_to_local_images(self, source_path):
+        if not source_path or not os.path.exists(source_path): return ""
+        import os, uuid, shutil
+        img_dir = os.path.join(os.getcwd(), "images")
+        os.makedirs(img_dir, exist_ok=True)
+        ext = os.path.splitext(source_path)[1]
+        new_filename = str(uuid.uuid4()) + ext
+        dest_path = os.path.join(img_dir, new_filename)
+        try:
+            shutil.copy2(source_path, dest_path)
+            return os.path.join("images", new_filename)
+        except Exception:
+            return source_path
+
     def choose_pic(self):
         from PySide6.QtWidgets import QFileDialog
         file_path, _ = QFileDialog.getOpenFileName(self, "Select IEM Photo", "", "Images (*.png *.jpg *.jpeg)")
         if file_path:
-            self.pic_path = file_path
+            self.pic_path = self._copy_to_local_images(file_path)
             self.pic_widget.set_image(self.pic_path)
             self.apply_color() # Re-evaluate
             self.data_changed.emit()
@@ -800,11 +816,26 @@ class ProfileWidget(QWidget):
         self.recalc_avatar_sizes()
         conn.close()
 
+    def _copy_to_local_images(self, source_path):
+        if not source_path or not os.path.exists(source_path): return ""
+        img_dir = os.path.join(os.getcwd(), "images")
+        os.makedirs(img_dir, exist_ok=True)
+        ext = os.path.splitext(source_path)[1]
+        new_filename = str(uuid.uuid4()) + ext
+        dest_path = os.path.join(img_dir, new_filename)
+        try:
+            shutil.copy2(source_path, dest_path)
+            return os.path.join("images", new_filename)
+        except Exception as e:
+            print("Failed to copy image:", e)
+            return source_path
+
     def choose_pic(self):
         options = QFileDialog.Options()
         file_path, _ = QFileDialog.getOpenFileName(self, "Select Musician Photo", "", "Images (*.png *.jpg *.jpeg);;All Files (*)", options=options)
         if file_path:
-            self.pic_widget.set_image(file_path)
+            local_path = self._copy_to_local_images(file_path)
+            self.pic_widget.set_image(local_path)
             self.save_all()
 
     def remove_pic(self):
