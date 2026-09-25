@@ -1091,8 +1091,6 @@ class MainWindow(QMainWindow):
         self.audio_engine = AudioEngine()
         self.db = DatabaseManager()
         self.current_iem_id = None
-            if hasattr(self, "page_prof"): self.page_prof.current_musician_id = None
-            if hasattr(self, "page_hist"): self.page_hist.last_m_id = None
         self.settings_panel = None
         self.selected_in_idx = 0
         self.selected_out_idx = 0

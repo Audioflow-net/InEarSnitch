@@ -1863,12 +1863,11 @@
 - **Maße / Änderungen:** Umstieg auf "Stencil Puck" (Negativ-Schablone). Das PETG-Teil ist jetzt ein runder Puck (d=20.5 mm, exakt wie die Tip-Molds). Das Logo wird per Differenz als Loch komplett aus dem Puck ausgestanzt.
 - **Die Idee / Der Grund:** Der User bevorzugte die Schablonen-Optik (Stencil). Da das Auge und das innere Ohr als Inseln ohnehin herausfallen, war der Kompromiss voll in Ordnung. Dies erlaubt einen einfarbigen Druck des Pucks (z.B. in Grün), durch den das darunterliegende schwarze TPU des Hauptblocks hindurchscheint. Kein M600-Farbwechsel mehr nötig.
 
-### V41 - 2026-09-25
+### V41.1 - 2026-09-25
 - **Betroffenes Bauteil:** TPU Insert & PETG Stencil Puck (Logo)
 - **Maße / Änderungen:** 
-  - Puck-Durchmesser (`logo_puck_d`) auf 17.5 mm verkleinert.
-  - Position präzise in die obere linke Ecke verlegt (`X=11.5, Y=82.5`), um eine Kollision mit dem unteren Kabelkanal absolut zu verhindern und den Randflansch intakt zu lassen.
-  - Höhe von 4.0 mm auf 2.5 mm reduziert.
-  - **Klick-Profil:** Der Zylinder wurde zu einer Stufe umgebaut (unten 1.0 mm hoch und 1.5 mm breiter als der Schaft), wodurch der Puck im flexiblen TPU formschlüssig einrastet.
-  - **Funkwellen:** Die Funkwellen wurden vom Hauptlogo isoliert, vom Ohr-Ursprung aus um den Faktor 1.4x nach außen skaliert (um die Lücken zu vergrößern) und dann mit einem leichten `offset(r=0.15)` angefettet. 
-- **Die Idee / Der Grund:** Die Positionierung bei Y=82.5 mit dem 17.5mm Puck garantiert, dass der Kabelkanal (Y=73.25) nicht mehr angeschnitten wird. Das Skalieren der Wellen löst das "Blob"-Problem beim 3D-Druck, weil dadurch die feinen SVG-Striche zwischen den Wellen erhalten bleiben und gleichzeitig "Inverted Normals"-Fehler im Slicer (durch zu hohes `offset`) eliminiert werden.
+  - Puck-Durchmesser (`logo_puck_d`) auf 15.5 mm verkleinert.
+  - Position extrem in die obere linke Ecke verlegt (`X=10.0, Y=82.0`), passgenau an den Radius der inneren Gehäusewand angeschmiegt, um Kollisionen mit dem Kabelkanal (`Y=73.25`) komplett auszuschließen.
+  - Höhe von 4.0 mm auf 2.5 mm reduziert, plus Stufe (Klick-Mechanismus, 1 mm hoch, 1.5 mm breiter).
+  - Das Logo (`logo_scale = 0.8`) wurde zusätzlich um `1.8 mm` nach links innerhalb des Pucks verschoben, damit die verbreiterten SVG-Wellen nicht unter die verdeckte Flansch-Lippe geraten.
+- **Die Idee / Der Grund:** Dateisystem-Sync. Die Änderungen aus der Stencil-Datei wurden nun in die aktive `V41_Fit` Datei portiert. Mit 15.5 mm ist der Puck noch kleiner und hat massig Platz (mehr als 1 mm) zum Kabelgraben. Das Linksschieben des Logos verhindert visuelles Abschneiden der Wellen durch den Klick-Rand.
