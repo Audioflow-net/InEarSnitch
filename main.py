@@ -433,14 +433,20 @@ class MusicianCard(QWidget):
         from PySide6.QtWidgets import QBoxLayout
         # Always show avatar, but hide role if too compact
         self.avatar.show()
-        if width < 140:
-            self.role_lbl.hide()
+        if width < 185:
+            # Compact Mode: Avatar on top, centered text, grid below
+            self.role_lbl.show()
             self.layout.setDirection(QBoxLayout.TopToBottom)
+            self.layout.setAlignment(self.avatar, Qt.AlignCenter)
             self.name_lbl.setAlignment(Qt.AlignCenter)
+            self.role_lbl.setAlignment(Qt.AlignCenter)
         else:
+            # Normal Mode: Avatar left, text & grid right
             self.role_lbl.show()
             self.layout.setDirection(QBoxLayout.LeftToRight)
+            self.layout.setAlignment(self.avatar, Qt.AlignLeft | Qt.AlignTop)
             self.name_lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            self.role_lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         
         import theme
         if theme.CURRENT_MODE == "light":
@@ -1286,8 +1292,8 @@ class MainWindow(QMainWindow):
         # SIDEBAR 2 (Profiles)
         self.profile_bar = QWidget()
         profile_bar = self.profile_bar
-        profile_bar.setMinimumWidth(170)
-        profile_bar.setMaximumWidth(280)
+        profile_bar.setMinimumWidth(240)
+        profile_bar.setMaximumWidth(340)
         profile_bar.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         
         profile_bar.setObjectName("ProfileBar")
