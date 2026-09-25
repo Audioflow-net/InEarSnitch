@@ -462,12 +462,19 @@ module cutouts() {
         }
     }
     
-            // 5. DAS INTEGRIERTE LOGO (Top Left) - NEUES MEDAILLON DESIGN!
-    // Nur noch 2.0mm tief in die Oberfläche gestanzt. Kein Durchbruch mehr!
-    translate([logo_x, logo_y, depth + flange_t - 2.0])
-        linear_extrude(height=2.0 + 2*eps) {
+            // 5. DAS INTEGRIERTE LOGO (Top Left) - TIEFES MEDAILLON MIT TRÄGERPLATTE!
+    // 4.0mm tiefe, exakte Ausstanzung für das Logo (Sichtbarer Bereich)
+    translate([logo_x, logo_y, depth + flange_t - 4.0])
+        linear_extrude(height=4.0 + 2*eps) {
             offset(r=0.2) custom_logo_2d();
             offset(r=0.2) waves_block();
+        }
+    // 0.6mm tiefe, ovale Aussparung GANZ UNTEN für die verbindende Trägerplatte.
+    // Das TPU wird beim Drucken über diese winzige 0.6mm Lücke "bridgen". 
+    // Es wird minimal durchhängen, fängt sich aber sofort am massiven Boden darunter auf!
+    translate([logo_x, logo_y, depth + flange_t - 4.6])
+        linear_extrude(height=0.6 + eps) {
+            offset(r=0.2) logo_tower_2d();
         }
 }
 
@@ -736,12 +743,12 @@ module assembly() {
 // RENDER OUTPUT
 // ==========================================
 module test_print(part="tpu") {
-    // Schneidet exakt die obersten 6mm der TPU-Ecke ab und legt sie flach aufs Bett
-    translate([0, 0, -(23.62 + 1.5 - 6.0)]) {
+    // Schneidet exakt die obersten 7mm der TPU-Ecke ab und legt sie flach aufs Bett
+    translate([0, 0, -(23.62 + 1.5 - 7.0)]) {
         intersection() {
             tpu_insert_full();
-            translate([-5.0, 60.0, 23.62 + 1.5 - 6.0])
-                cube([45.0, 35.0, 6.0]);
+            translate([-5.0, 60.0, 23.62 + 1.5 - 7.0])
+                cube([45.0, 35.0, 7.0]);
         }
     }
 }
@@ -765,8 +772,16 @@ if (show_test_print) {
 // ==========================================
 module logo_medallion() {
     color("darkturquoise")
-    linear_extrude(height=2.0) {
-        custom_logo_2d();
-        waves_block();
+    union() {
+        // 0.4mm dicke ovale Bodenplatte (Druckt als allererstes, verbindet alle losen Teile!)
+        linear_extrude(height=0.4)
+            logo_tower_2d();
+            
+        // 4.0mm dicke Logo-Elemente darauf
+        translate([0, 0, 0.4 - eps])
+        linear_extrude(height=4.0 + eps) {
+            custom_logo_2d();
+            waves_block();
+        }
     }
 }

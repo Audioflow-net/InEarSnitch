@@ -858,6 +858,8 @@ class ProKitTipSelector(QPushButton):
                 
     def show_popup(self):
         from PySide6.QtWidgets import QDialog, QGridLayout, QVBoxLayout, QWidget, QLabel
+        from PySide6.QtGui import QPixmap
+        import os
         dialog = QDialog(self.window())
         dialog.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
         dialog.setAttribute(Qt.WA_TranslucentBackground)
@@ -899,27 +901,52 @@ class ProKitTipSelector(QPushButton):
         title.setStyleSheet(f"font-weight: 900; font-size: 14px; color: {fg}; padding-bottom: 5px; border: none; background: transparent;")
         grid.addWidget(title, 0, 0, 1, 4)
         
+        image_mapping = {
+            "V27 Modular": "render_V27.png",
+            "V29 Cone": "render_V29.png",
+            "V30 Pro": "render_V30.png",
+            "V31 XL Panzer": "render_V31.png",
+            "Nutless Flex": "render_NUTLESS.png",
+            "Flare (6.0 mm)": "render_FLARE.png",
+            "Flare (5.0 mm)": "render_FLARE_5.png",
+            "Flare (Clamp C5)": "render_FLARE_C5.png"
+        }
+        
         row, col = 1, 0
         for i, item in enumerate(self.items):
             btn = QPushButton()
-            btn.setFixedSize(90, 90)
+            btn.setFixedSize(110, 110)
             btn.setCursor(Qt.PointingHandCursor)
             
             parts = item['text'].split(' ', 1)
-            icon = parts[0] if len(parts) > 1 else ""
             name = parts[1] if len(parts) > 1 else item['text']
             
             btn_layout = QVBoxLayout(btn)
-            btn_layout.setSpacing(4)
+            btn_layout.setSpacing(2)
+            btn_layout.setContentsMargins(5, 5, 5, 5)
             
-            lbl_icon = QLabel(icon)
-            lbl_icon.setAlignment(Qt.AlignCenter)
-            lbl_icon.setStyleSheet("font-size: 32px; color: #0ea5e9; border: none; background: transparent;")
+            img_name = image_mapping.get(name, None)
+            img_path = os.path.join("assets", "tips", img_name) if img_name else None
+            
+            if img_path and os.path.exists(img_path):
+                lbl_icon = QLabel()
+                lbl_icon.setAlignment(Qt.AlignCenter)
+                lbl_icon.setStyleSheet("border: none; background: transparent;")
+                pix = QPixmap(img_path)
+                if not pix.isNull():
+                    # Scale down the render to fit nicely inside the tile
+                    lbl_icon.setPixmap(pix.scaled(75, 75, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                else:
+                    lbl_icon.setText("?")
+            else:
+                lbl_icon = QLabel(parts[0] if len(parts) > 1 else "?")
+                lbl_icon.setAlignment(Qt.AlignCenter)
+                lbl_icon.setStyleSheet("font-size: 32px; color: #0ea5e9; border: none; background: transparent;")
             
             lbl_name = QLabel(name)
             lbl_name.setAlignment(Qt.AlignCenter)
             lbl_name.setWordWrap(True)
-            lbl_name.setStyleSheet(f"font-size: 10px; font-weight: bold; color: {fg}; border: none; background: transparent;")
+            lbl_name.setStyleSheet(f"font-size: 11px; font-weight: bold; color: {fg}; border: none; background: transparent;")
             
             btn_layout.addWidget(lbl_icon)
             btn_layout.addWidget(lbl_name)
