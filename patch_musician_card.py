@@ -1,24 +1,40 @@
 import re
 
 with open("main.py", "r") as f:
-    code = f.read()
+    content = f.read()
 
-code = code.replace(
-    'self.current_iem_name = iems[0][1] if iems else "Unknown IEM"',
-    'self.current_iem_name = (iems[0][4] if (iems and len(iems[0])>4 and iems[0][4]) else iems[0][1]) if iems else "Unknown IEM"'
-)
+old_layout = """    def _update_layout(self, width):
+        from PySide6.QtWidgets import QBoxLayout
+        # print(f"MusicianCard width: {width}")
+        if width < 200:
+            self.avatar.hide()
+            self.role_lbl.hide()
+            self.layout.setDirection(QBoxLayout.TopToBottom)
+            self.name_lbl.setAlignment(Qt.AlignCenter)
+        else:
+            self.avatar.show()
+            self.role_lbl.show()
+            self.layout.setDirection(QBoxLayout.LeftToRight)
+            self.name_lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        
+        import theme"""
 
-code = code.replace(
-    'for iem_id, iem_name, pic_path, abbr in iems:',
-    'for iem_id, iem_name, pic_path, abbr, custom_name in iems:'
-)
+new_layout = """    def _update_layout(self, width):
+        from PySide6.QtWidgets import QBoxLayout
+        # Always show avatar, but hide role if too compact
+        self.avatar.show()
+        if width < 140:
+            self.role_lbl.hide()
+            self.layout.setDirection(QBoxLayout.TopToBottom)
+            self.name_lbl.setAlignment(Qt.AlignCenter)
+        else:
+            self.role_lbl.show()
+            self.layout.setDirection(QBoxLayout.LeftToRight)
+            self.name_lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        
+        import theme"""
 
-code = code.replace(
-    'btn = AvatarButton(iem_id, iem_name, pic_path, abbr, self)',
-    'display_name = custom_name if custom_name else iem_name\n            btn = AvatarButton(iem_id, display_name, pic_path, abbr, self)'
-)
+content = content.replace(old_layout, new_layout)
 
 with open("main.py", "w") as f:
-    f.write(code)
-
-print("Musician card patched.")
+    f.write(content)
