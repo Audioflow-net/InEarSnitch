@@ -201,10 +201,11 @@ class DatabaseManager:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         try:
+            # Sort so that normal tips appear first, and Unknown/No Adapter (ids 1 and 2) appear at the very end
             if include_unknown:
-                cursor.execute("SELECT id, name, description, material, color_hex, icon_char, is_default FROM TipProfiles ORDER BY id ASC")
+                cursor.execute("SELECT id, name, description, material, color_hex, icon_char, is_default FROM TipProfiles ORDER BY CASE WHEN id IN (1, 2) THEN 1 ELSE 0 END ASC, id ASC")
             else:
-                cursor.execute("SELECT id, name, description, material, color_hex, icon_char, is_default FROM TipProfiles WHERE id != 1 ORDER BY id ASC")
+                cursor.execute("SELECT id, name, description, material, color_hex, icon_char, is_default FROM TipProfiles WHERE id != 1 ORDER BY CASE WHEN id IN (1, 2) THEN 1 ELSE 0 END ASC, id ASC")
             rows = cursor.fetchall()
             return [
                 {

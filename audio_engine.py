@@ -127,15 +127,14 @@ class AudioEngine:
         
         # Only block on actual clipping (> -1 dBFS at half amplitude = guaranteed clip at full)
         if peak_dbfs > -1.0:
-            return False, peak_dbfs, "Recording is clipping! Lower your system volume."
+            return False, peak_dbfs, "Recording is clipping (0 dBFS).\n\n💡 Did you change the volume?\nYour system volume is too loud and clipping the microphone."
         
         if peak_dbfs < -55.0:
             ch_name = "Left" if target_channel == 'L' else "Right"
             return False, peak_dbfs, (
                 f"No acoustic signal detected (measured {peak_dbfs:.0f} dBFS).\n\n"
-                f"💡 Are you testing the correct ear?\n"
-                f"The app is playing sound out of the '{ch_name}' channel, but the microphone is recording silence.\n"
-                f"Please verify your L/R selection, cable connection, and system volume."
+                f"💡 Are you testing the correct ear? Or is the volume muted?\n"
+                f"The app is playing sound out of the '{ch_name}' channel, but the microphone is recording silence."
             )
         
         # Check drift: scale expected peak by the ratio of probe amp to calibrated sweep amp
@@ -148,16 +147,20 @@ class AudioEngine:
             if drift > 6.0:
                 msg = (
                     f"Level shifted by {drift:.0f} dB since calibration "
-                    f"(expected {expected_probe_peak:.0f}, got {peak_dbfs:.0f} dBFS).\n"
-                    f"Re-calibrate or restore your system volume."
+                    f"(expected {expected_probe_peak:.0f}, got {peak_dbfs:.0f} dBFS)."
                 )
                 
                 # If it's a massive drop (> 15 dB), they likely selected the wrong channel!
                 if expected_probe_peak - peak_dbfs > 15.0:
                     ch_name = "Left" if target_channel == 'L' else "Right"
                     msg += (
-                        f"\n\n💡 Are you testing the correct ear?\n"
-                        f"You selected '{ch_name}', but the recording is extremely quiet (possibly just crosstalk from the other earpiece)."
+                        f"\n\n💡 Are you testing the correct ear? Or did you change the volume?\n"
+                        f"You selected '{ch_name}', but the recording is extremely quiet (possibly just crosstalk)."
+                    )
+                else:
+                    msg += (
+                        f"\n\n💡 Did you change the system volume?\n"
+                        f"The volume does not match your calibration. Please restore your volume or re-calibrate."
                     )
                     
                 return False, peak_dbfs, msg

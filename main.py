@@ -2935,13 +2935,26 @@ class MainWindow(QMainWindow):
                 self.selected_in_idx, self.selected_out_idx, target_ch
             )
             if not passed:
-                reply = QMessageBox.warning(
-                    self, "Level Check Failed",
-                    f"{pf_msg}\n\nThe Stress Test uses a higher output level than normal sweeps.\n"
-                    f"Running with incorrect levels will produce invalid results.\n\n"
-                    f"Do you want to continue anyway?",
-                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No
-                )
+                msg_box = QMessageBox(self)
+                msg_box.setIcon(QMessageBox.Warning)
+                msg_box.setWindowTitle("Level Check Failed")
+                
+                info_append = "\n\nThe Stress Test uses a higher output level than normal sweeps.\nRunning with incorrect levels will produce invalid results.\n\nDo you want to continue anyway?"
+                
+                if "💡" in pf_msg:
+                    parts = pf_msg.split("💡")
+                    tech_details = parts[0].strip()
+                    main_tip = "💡 " + parts[1].strip()
+                    msg_box.setText(main_tip)
+                    msg_box.setInformativeText(f"Technical details:\n{tech_details}{info_append}")
+                else:
+                    msg_box.setText("Level Check Failed")
+                    msg_box.setInformativeText(f"{pf_msg}{info_append}")
+                    
+                msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                msg_box.setDefaultButton(QMessageBox.No)
+                reply = msg_box.exec()
+                
                 if reply != QMessageBox.Yes:
                     return
         except Exception as e:
@@ -4268,11 +4281,25 @@ class MainWindow(QMainWindow):
                 self.selected_in_idx, self.selected_out_idx, target_ch
             )
             if not passed:
-                reply = QMessageBox.warning(
-                    self, "Level Check Failed",
-                    f"{pf_msg}\n\nDo you want to continue anyway?",
-                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No
-                )
+                msg_box = QMessageBox(self)
+                msg_box.setIcon(QMessageBox.Warning)
+                msg_box.setWindowTitle("Level Check Failed")
+                
+                # If there's a specific '💡' tip, make it the main big bold text!
+                if "💡" in pf_msg:
+                    parts = pf_msg.split("💡")
+                    tech_details = parts[0].strip()
+                    main_tip = "💡 " + parts[1].strip()
+                    msg_box.setText(main_tip)
+                    msg_box.setInformativeText(f"Do you want to continue anyway?\n\nTechnical details:\n{tech_details}")
+                else:
+                    msg_box.setText("Level Check Failed")
+                    msg_box.setInformativeText(f"{pf_msg}\n\nDo you want to continue anyway?")
+                    
+                msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                msg_box.setDefaultButton(QMessageBox.No)
+                reply = msg_box.exec()
+                
                 if reply != QMessageBox.Yes:
                     return
         except Exception as e:
