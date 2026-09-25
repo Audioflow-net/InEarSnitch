@@ -276,7 +276,7 @@ class TipAnalysisCardWidget(QFrame):
         # Left Peak Box
         self.lbl_peak_l = QLabel("L: — Hz")
         self.lbl_peak_l.setObjectName("lbl_peak_l")
-        self.lbl_peak_l.setStyleSheet("color: #ffffff; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+        self.lbl_peak_l.setStyleSheet(f"color: {theme.get_color('text_primary')}; font-size: 11px; font-weight: bold; background: transparent; border: none;")
         self.badge_peak_delta_l = QLabel("—")
         self.badge_peak_delta_l.setStyleSheet("background: #1a1a1e; color: #666666; border-radius: 3px; padding: 1px 4px; font-size: 9px;")
         box_l = QVBoxLayout()
@@ -288,7 +288,7 @@ class TipAnalysisCardWidget(QFrame):
         # Right Peak Box
         self.lbl_peak_r = QLabel("R: — Hz")
         self.lbl_peak_r.setObjectName("lbl_peak_r")
-        self.lbl_peak_r.setStyleSheet("color: #ffffff; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+        self.lbl_peak_r.setStyleSheet(f"color: {theme.get_color('text_primary')}; font-size: 11px; font-weight: bold; background: transparent; border: none;")
         self.badge_peak_delta_r = QLabel("—")
         self.badge_peak_delta_r.setStyleSheet("background: #1a1a1e; color: #666666; border-radius: 3px; padding: 1px 4px; font-size: 9px;")
         box_r = QVBoxLayout()
@@ -343,10 +343,10 @@ class TipAnalysisCardWidget(QFrame):
 
         self.lbl_score_l = QLabel("L: —")
         self.lbl_score_l.setObjectName("lbl_score_l")
-        self.lbl_score_l.setStyleSheet("color: #ffffff; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+        self.lbl_score_l.setStyleSheet(f"color: {theme.get_color('text_primary')}; font-size: 11px; font-weight: bold; background: transparent; border: none;")
         self.lbl_score_r = QLabel("R: —")
         self.lbl_score_r.setObjectName("lbl_score_r")
-        self.lbl_score_r.setStyleSheet("color: #ffffff; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+        self.lbl_score_r.setStyleSheet(f"color: {theme.get_color('text_primary')}; font-size: 11px; font-weight: bold; background: transparent; border: none;")
 
         scores_layout.addWidget(self.lbl_score_l)
         scores_layout.addWidget(self.lbl_score_r)
@@ -369,9 +369,9 @@ class TipAnalysisCardWidget(QFrame):
         seal_grid.setSpacing(4)
 
         self.lbl_seal_summary_l = QLabel("L: —")
-        self.lbl_seal_summary_l.setStyleSheet("color: #ffffff; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+        self.lbl_seal_summary_l.setStyleSheet(f"color: {theme.get_color('text_primary')}; font-size: 11px; font-weight: bold; background: transparent; border: none;")
         self.lbl_seal_summary_r = QLabel("R: —")
-        self.lbl_seal_summary_r.setStyleSheet("color: #ffffff; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+        self.lbl_seal_summary_r.setStyleSheet(f"color: {theme.get_color('text_primary')}; font-size: 11px; font-weight: bold; background: transparent; border: none;")
 
         seal_grid.addWidget(self.lbl_seal_summary_l)
         seal_grid.addWidget(self.lbl_seal_summary_r)
@@ -439,6 +439,10 @@ class TipAnalysisCardWidget(QFrame):
         self.setStyleSheet(f"QFrame#tip_card {{ background-color: {bg}; border: 1px solid {border}; border-radius: 6px; }}")
         if hasattr(self, 'lbl_title'):
             self.lbl_title.setStyleSheet(f"color: {fg}; font-weight: bold; font-size: 13px; background: transparent; border: none;")
+            
+        for attr in ['lbl_peak_l', 'lbl_peak_r', 'lbl_score_l', 'lbl_score_r', 'lbl_seal_summary_l', 'lbl_seal_summary_r']:
+            if hasattr(self, attr):
+                getattr(self, attr).setStyleSheet(f"color: {fg}; font-size: 11px; font-weight: bold; background: transparent; border: none;")
         
         # We find children by object name instead of keeping references
         from PySide6.QtWidgets import QFrame
