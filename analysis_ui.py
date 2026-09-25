@@ -646,6 +646,18 @@ class TipAnalysisCardWidget(QFrame):
         self.trend_chips_layout.addStretch()
 
 
+class EQPresetCardWidget(QFrame):
+    def __init__(self, name, apply_callback, parent=None):
+        super().__init__(parent)
+        self.preset_name = name
+        self.apply_callback = apply_callback
+        from PySide6.QtCore import Qt
+        self.setCursor(Qt.PointingHandCursor)
+        
+    def mousePressEvent(self, event):
+        self.apply_callback(self.preset_name)
+        super().mousePressEvent(event)
+
 class AnalysisWidget(QWidget):
     request_measurement = Signal()
     request_stress_test = Signal()
@@ -1588,18 +1600,20 @@ class AnalysisWidget(QWidget):
                 name, data_str = row
                 bands = json.loads(data_str) if data_str else []
                 
-                card = QFrame()
+                card = EQPresetCardWidget(name, self.apply_eq_preset)
                 card.setFixedHeight(40)
-                card.setStyleSheet("QFrame { background: #222; border: 1px solid #333; border-radius: 6px; }")
+                card.setStyleSheet("QFrame { background: #222; border: 1px solid #333; border-radius: 6px; } QFrame:hover { border: 1px solid #0ea5e9; }")
                 cl = QHBoxLayout(card)
                 cl.setContentsMargins(8, 4, 8, 4)
                 
+                from PySide6.QtCore import Qt
                 lbl = QLabel(name)
-                lbl.setStyleSheet(f"font-weight: bold; font-size: 11px; color: {theme.get_color('text_primary')}; border: none;")
+                lbl.setStyleSheet(f"font-weight: bold; font-size: 11px; color: {theme.get_color('text_primary')}; border: none; background: transparent;")
+                lbl.setAttribute(Qt.WA_TransparentForMouseEvents)
                 
                 # Mini Graph
                 mini_plot = pg.PlotWidget()
-                mini_plot.setFixedSize(120, 28)
+                mini_plot.setFixedSize(110, 28)
                 mini_plot.hideAxis('bottom')
                 mini_plot.hideAxis('left')
                 mini_plot.setBackground(theme.get_color('bg_main'))
@@ -1608,6 +1622,7 @@ class AnalysisWidget(QWidget):
                 mini_plot.setLogMode(x=True, y=False)
                 mini_plot.setXRange(np.log10(20), np.log10(20000))
                 mini_plot.setYRange(-12, 12)
+                mini_plot.setAttribute(Qt.WA_TransparentForMouseEvents)
                 
                 temp_dsp = DSPEngine()
                 temp_filters = []
@@ -1625,17 +1640,13 @@ class AnalysisWidget(QWidget):
                 delta = temp_dsp.get_magnitude_response(f_mini, 48000)
                 mini_plot.plot(f_mini, delta, pen=pg.mkPen(theme.get_color('accent'), width=2))
                 
-                btn_load = QPushButton("Load")
-                btn_load.setProperty("class", "accent")
-                btn_load.clicked.connect(lambda checked, n=name: self.apply_eq_preset(n))
-                
-                btn_del = QPushButton("X")
-                btn_del.setProperty("class", "danger")
+                btn_del = QPushButton("🗑")
+                btn_del.setFixedSize(26, 26)
+                btn_del.setStyleSheet("QPushButton { background-color: #2a2a2f; color: #888; font-size: 14px; border-radius: 4px; border: 1px solid #3f3f46; } QPushButton:hover { background-color: #dc2626; color: white; border: 1px solid #b91c1c; }")
                 btn_del.clicked.connect(lambda checked, n=name: self.delete_eq_preset(n))
                 
                 cl.addWidget(lbl, stretch=1)
                 cl.addWidget(mini_plot)
-                cl.addWidget(btn_load)
                 cl.addWidget(btn_del)
                 
                 self.preset_cards_layout.addWidget(card)

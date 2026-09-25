@@ -3868,19 +3868,19 @@ class MainWindow(QMainWindow):
             if cal_peak > -100:
                 # Normal Pink Noise RMS (mids only) in log-binned FFT is ~52 dB below cal_peak.
                 # Example: cal_peak = -15 -> Normal RMS = -67 dB.
-                floor_threshold = cal_peak - 70.0   # Below this = Room Noise / Bad Seal (Not Detected)
-                ceil_threshold = cal_peak - 30.0    # Above this = Tapping/Pushing (Overload)
+                floor_threshold = cal_peak - 75.0   # Below this = Room Noise / Blocked Mic
+                ceil_threshold = cal_peak - 30.0    # Above this = Pressure Spike / Overload
             else:
-                floor_threshold = -85.0
+                floor_threshold = -90.0
                 ceil_threshold = -45.0
 
             if broadband_rms > ceil_threshold:
-                seal_html = f"<span style='color: #f59e0b; font-weight: bold;'>Overload / Handling Noise ({broadband_rms:.0f}dB)</span>"
+                seal_html = f"<span style='color: #f59e0b; font-weight: bold;'>Pressure Spike / Overload</span>"
                 depth_html = ""
                 if hasattr(self, 'rta_peak_line') and self.rta_peak_line is not None:
                     self.rta_peak_line.hide()
             elif broadband_rms < floor_threshold:
-                seal_html = f"<span style='color: #a8a29e; font-weight: bold;'>IEM Not Detected ({broadband_rms:.0f}dB)</span>"
+                seal_html = f"<span style='color: #a8a29e; font-weight: bold;'>Not Detected / Mic Blocked</span>"
                 depth_html = ""
                 if hasattr(self, 'rta_peak_line') and self.rta_peak_line is not None:
                     self.rta_peak_line.hide()
