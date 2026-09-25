@@ -947,7 +947,7 @@ class ProKitTipSelector(QPushButton):
             btn_layout.setContentsMargins(5, 5, 5, 5)
             
             img_name = image_mapping.get(name, None)
-            img_path = os.path.join("assets", "tips", img_name) if img_name else None
+            img_path = os.path.join(os.path.dirname(__file__), "assets", "tips", img_name) if img_name else None
             
             if img_path and os.path.exists(img_path):
                 lbl_icon = QLabel()
