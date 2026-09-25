@@ -467,8 +467,8 @@ module cutouts() {
     // 4.0mm tiefe, exakte Ausstanzung für das Logo (Sichtbarer Bereich)
     translate([logo_x, logo_y, depth + flange_t - 4.0])
         linear_extrude(height=4.0 + 2*eps) {
-            offset(r=0.2) scale([logo_scale, logo_scale]) custom_logo_2d();
-            offset(r=0.2) scale([logo_scale, logo_scale]) waves_block();
+            scale([logo_scale, logo_scale]) custom_logo_2d();
+            scale([logo_scale, logo_scale]) waves_block();
         }
     // 0.6mm tiefe, ovale Aussparung GANZ UNTEN für die verbindende Trägerplatte.
     // Das TPU wird beim Drucken über diese winzige 0.6mm Lücke "bridgen". 
@@ -744,13 +744,13 @@ module assembly() {
 // RENDER OUTPUT
 // ==========================================
 module test_print(part="tpu") {
-    // Ultra-minimaler Testdruck (Ohne die dicken Gehäusewände)
-    // Nur ein 28x20mm Block exakt um das Logo herum!
+    // Ultra-Micro Testdruck (ALLE WÄNDE WEG!)
+    // Nur ein 23x16mm Block exakt um das Logo herum, ohne den Gehäuserand!
     translate([0, 0, -(23.62 + 1.5 - 7.0)]) {
         intersection() {
             tpu_insert_full();
-            translate([logo_x - 14.0, logo_y - 10.0, 23.62 + 1.5 - 7.0])
-                cube([28.0, 20.0, 7.0]);
+            translate([2.5, 75.5, 23.62 + 1.5 - 7.0])
+                cube([23.0, 16.0, 7.0]);
         }
     }
 }
