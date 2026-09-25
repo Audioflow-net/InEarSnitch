@@ -26,6 +26,12 @@ datas = [
     (os.path.join(PROJECT_DIR, 'reference_targets'), 'reference_targets'),
     # Werksmäßige Mikrofonkalibrierungen
     (os.path.join(PROJECT_DIR, 'calibrations'), 'calibrations'),
+    # Assets (Tips 3D Renders)
+    (os.path.join(PROJECT_DIR, 'assets'), 'assets'),
+    # App Logos
+    (os.path.join(PROJECT_DIR, 'Final Logo InEar Snitch.png'), '.'),
+    (os.path.join(PROJECT_DIR, 'Final Logo InEar Snitch_Light.png'), '.'),
+    (os.path.join(PROJECT_DIR, 'Final Logo InEar Snitch_Transparent.png'), '.'),
 ]
 
 # ─── HIDDEN IMPORTS ────────────────────────────────────────────────────────────
