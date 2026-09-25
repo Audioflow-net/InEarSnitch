@@ -1866,9 +1866,9 @@
 ### V41 - 2026-09-25
 - **Betroffenes Bauteil:** TPU Insert & PETG Stencil Puck (Logo)
 - **Maße / Änderungen:** 
-  - Puck-Durchmesser (`logo_puck_d`) um 10% verkleinert (von 20.5 mm auf 18.5 mm).
-  - Position weiter nach innen verlegt (`X=16.0, Y=78.0`), um den kritischen Gehäuserand (Snap-Fit zum Peli 1020) sicher auszusparen.
+  - Puck-Durchmesser (`logo_puck_d`) auf 17.5 mm verkleinert.
+  - Position präzise in die obere linke Ecke verlegt (`X=11.5, Y=82.5`), um eine Kollision mit dem unteren Kabelkanal absolut zu verhindern und den Randflansch intakt zu lassen.
   - Höhe von 4.0 mm auf 2.5 mm reduziert.
   - **Klick-Profil:** Der Zylinder wurde zu einer Stufe umgebaut (unten 1.0 mm hoch und 1.5 mm breiter als der Schaft), wodurch der Puck im flexiblen TPU formschlüssig einrastet.
-  - **Funkwellen:** Die Funkwellen des Logos wurden gezielt über `offset(r=0.4)` (also insgesamt 0.8 mm dicker) angefettet, um die visuelle Präsenz beim Druck massiv zu erhöhen.
-- **Die Idee / Der Grund:** Ein flacherer Puck (2.5 mm) spart Material, die Stufe sorgt für perfekten Halt ohne Herausfallen (Klick-Mechanismus). Die Verschiebung schützt die äußere Gehäusewand des TPUs. Durch die Anfetten-Funktion bleiben kleine Inseln fern, aber die dünnen SVG-Wellen werden nun satt und stark gedruckt.
+  - **Funkwellen:** Die Funkwellen wurden vom Hauptlogo isoliert, vom Ohr-Ursprung aus um den Faktor 1.4x nach außen skaliert (um die Lücken zu vergrößern) und dann mit einem leichten `offset(r=0.15)` angefettet. 
+- **Die Idee / Der Grund:** Die Positionierung bei Y=82.5 mit dem 17.5mm Puck garantiert, dass der Kabelkanal (Y=73.25) nicht mehr angeschnitten wird. Das Skalieren der Wellen löst das "Blob"-Problem beim 3D-Druck, weil dadurch die feinen SVG-Striche zwischen den Wellen erhalten bleiben und gleichzeitig "Inverted Normals"-Fehler im Slicer (durch zu hohes `offset`) eliminiert werden.
