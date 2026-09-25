@@ -4778,6 +4778,10 @@ class MainWindow(QMainWindow):
                 if hasattr(self.page_hist, 'load_history'):
                     self.page_hist.load_history(self.active_card.m_id)
             
+            # Update Tip Analysis metrics
+            if hasattr(self, 'page_ana') and hasattr(self.page_ana, 'tip_analysis_card'):
+                self.page_ana.tip_analysis_card.refresh_metrics()
+            
             # Also update the history dropdowns so the user can select it for comparison immediately
             self.load_targets()
             

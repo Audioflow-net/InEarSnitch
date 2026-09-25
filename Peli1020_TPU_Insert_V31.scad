@@ -463,19 +463,14 @@ module cutouts() {
         }
     }
     
-            // 5. DAS INTEGRIERTE LOGO (Top Left) - TIEFES MEDAILLON MIT TRÄGERPLATTE!
-    // 4.0mm tiefe, exakte Ausstanzung für das Logo (Sichtbarer Bereich)
+            // 5. DAS INTEGRIERTE LOGO (Top Left) - OBERFLÄCHEN-VERBUND!
+    // Exakt 4.0mm tiefe Ausstanzung (Logo + Wellen + Verbindungsbrücken).
+    // Kein offset(), keine Toleranz, sitzt 1:1 stramm im weichen Gummi!
     translate([logo_x, logo_y, depth + flange_t - 4.0])
         linear_extrude(height=4.0 + 2*eps) {
             scale([logo_scale, logo_scale]) custom_logo_2d();
             scale([logo_scale, logo_scale]) waves_block();
-        }
-    // 0.6mm tiefe, ovale Aussparung GANZ UNTEN für die verbindende Trägerplatte.
-    // Das TPU wird beim Drucken über diese winzige 0.6mm Lücke "bridgen". 
-    // Es wird minimal durchhängen, fängt sich aber sofort am massiven Boden darunter auf!
-    translate([logo_x, logo_y, depth + flange_t - 4.6])
-        linear_extrude(height=0.6 + eps) {
-            offset(r=0.2) scale([logo_scale, logo_scale]) logo_tower_2d();
+            scale([logo_scale, logo_scale]) logo_bridges_2d();
         }
 }
 
@@ -772,18 +767,25 @@ if (show_test_print) {
 // ==========================================
 // SEPARATES LOGO-MEDAILLON (2mm Flat Print)
 // ==========================================
+
+module logo_bridges_2d() {
+    // Verbindungsstege auf der Oberfläche, damit das PETG ein durchgehendes Teil ist!
+    hull() {
+        translate([-0.2, 0.3]) circle(r=0.25, $fn=16);
+        translate([1.2, 0.6]) circle(r=0.25, $fn=16);
+    }
+    hull() {
+        translate([-4.2, 1.2]) circle(r=0.25, $fn=16);
+        translate([-2.5, 2.3]) circle(r=0.25, $fn=16);
+    }
+}
+
 module logo_medallion() {
     color("darkturquoise")
-    union() {
-        // 0.4mm dicke ovale Bodenplatte (Druckt als allererstes, verbindet alle losen Teile!)
-        linear_extrude(height=0.4) scale([logo_scale, logo_scale])
-            logo_tower_2d();
-            
-        // 4.0mm dicke Logo-Elemente darauf
-        translate([0, 0, 0.4 - eps])
-        linear_extrude(height=4.0 + eps) scale([logo_scale, logo_scale]) {
-            custom_logo_2d();
-            waves_block();
-        }
+    // 4.0mm dickes, massives Logo (alles durch Brücken verbunden!)
+    linear_extrude(height=4.0) {
+        scale([logo_scale, logo_scale]) custom_logo_2d();
+        scale([logo_scale, logo_scale]) waves_block();
+        scale([logo_scale, logo_scale]) logo_bridges_2d();
     }
 }
