@@ -873,9 +873,9 @@ class AnalysisWidget(QWidget):
         self.dsp_container.setWidget(self.dsp_container_widget)
         
 
-        
         # --- Master Bypass ---
         self.btn_dsp_master = QPushButton("DSP BYPASSED")
+        self.btn_dsp_master.setToolTip("Hardware EQ applies to Live RTA only. It is bypassed during sweeps.")
         self.btn_dsp_master.setCheckable(True)
         self.btn_dsp_master.setStyleSheet("QPushButton { background: #3f3f46; color: #a1a1aa; font-weight: bold; font-size: 11px; padding: 4px; border-radius: 4px; } QPushButton:checked { background: #059669; color: white; border: 2px solid #34d399; }")
         dsp_layout.addWidget(self.btn_dsp_master)
@@ -967,7 +967,7 @@ class AnalysisWidget(QWidget):
             
         
         def on_master_toggle(checked):
-            self.btn_dsp_master.setText("DSP ACTIVE (LIVE)" if checked else "DSP BYPASSED")
+            self.btn_dsp_master.setText("DSP ACTIVE (LIVE RTA)" if checked else "DSP BYPASSED")
             if hasattr(self, 'peq_bands') and len(self.peq_bands) > 0:
                 self.peq_bands[0]['on'].toggled.emit(self.peq_bands[0]['on'].isChecked())
                 
@@ -998,6 +998,11 @@ class AnalysisWidget(QWidget):
         self.preset_cards_layout.setAlignment(Qt.AlignTop)
         self.preset_cards_scroll.setWidget(self.preset_cards_container)
         dsp_layout.addWidget(self.preset_cards_scroll, stretch=1)
+        
+        lbl_eq_footer = QLabel("EQ is bypassed during measurement sweeps.")
+        lbl_eq_footer.setStyleSheet("color: #71717a; font-size: 10px; font-style: italic; border: none; padding-top: 4px;")
+        lbl_eq_footer.setAlignment(Qt.AlignCenter)
+        dsp_layout.addWidget(lbl_eq_footer)
         
         self.tools_tabs.addTab(self.dsp_container, "EQ")
         
@@ -1376,9 +1381,9 @@ class AnalysisWidget(QWidget):
         ref_type = 'target' if (tgt_freqs is not None and tgt_mags is not None) else 'history'
         
         if mag_l is None and mag_r is None:
-            report = [{'title': 'No Live Measurement', 'status': 'OK', 'desc': 'Run a measurement sweep to generate diagnostics.', 'band': None, 'category': 'FR'}]
+            report = [{'title': 'No Live Measurement', 'status': 'OK', 'desc': 'Run a measurement sweep to generate diagnostics.', 'band': None, 'category': 'ENV'}]
         elif sweep_count == "1x":
-            report = [{'title': 'Need 3x+ Sweeps for Diagnostics', 'status': 'WARN', 'desc': 'Diagnostics require at least 3 sweeps to reduce noise and false positives.', 'band': None, 'category': 'FR'}]
+            report = [{'title': 'Need 3x+ Sweeps for Diagnostics', 'status': 'WARN', 'desc': 'Diagnostics require at least 3 sweeps to reduce noise and false positives.', 'band': None, 'category': 'ENV'}]
         else:
             report = Analyzer.run_full_diagnostics(freqs, mag_l, mag_r, best_ref_l, best_ref_r, ir_l_f, ir_r_f, thd_data, csd_data, ref_type)
         
@@ -1554,7 +1559,7 @@ class AnalysisWidget(QWidget):
     def init_eq_db(self):
         import sqlite3
         try:
-            conn = sqlite3.connect(self.db.db_path)
+            conn = sqlite3.connect(self.main_window.db.db_path)
             c = conn.cursor()
             c.execute("CREATE TABLE IF NOT EXISTS eq_presets (id INTEGER PRIMARY KEY, name TEXT UNIQUE, data TEXT)")
             conn.commit()
@@ -1575,7 +1580,7 @@ class AnalysisWidget(QWidget):
             import json, numpy as np
             import pyqtgraph as pg
             from eq_math import DSPEngine
-            conn = sqlite3.connect(self.db.db_path)
+            conn = sqlite3.connect(self.main_window.db.db_path)
             c = conn.cursor()
             c.execute("SELECT name, data FROM eq_presets ORDER BY name")
             rows = c.fetchall()
@@ -1656,7 +1661,7 @@ class AnalysisWidget(QWidget):
                 'q': b['q'].value()
             })
         try:
-            conn = sqlite3.connect(self.db.db_path)
+            conn = sqlite3.connect(self.main_window.db.db_path)
             c = conn.cursor()
             c.execute("INSERT OR REPLACE INTO eq_presets (name, data) VALUES (?, ?)", (name, json.dumps(data)))
             conn.commit()
@@ -1672,7 +1677,7 @@ class AnalysisWidget(QWidget):
         import sqlite3
         if QMessageBox.question(self, "Delete EQ Preset", f"Are you sure you want to delete the preset '{name}'? This cannot be undone.") == QMessageBox.Yes:
             try:
-                conn = sqlite3.connect(self.db.db_path)
+                conn = sqlite3.connect(self.main_window.db.db_path)
                 c = conn.cursor()
                 c.execute("DELETE FROM eq_presets WHERE name = ?", (name,))
                 conn.commit()
@@ -1684,7 +1689,7 @@ class AnalysisWidget(QWidget):
     def apply_eq_preset(self, name):
         import sqlite3, json
         try:
-            conn = sqlite3.connect(self.db.db_path)
+            conn = sqlite3.connect(self.main_window.db.db_path)
             c = conn.cursor()
             c.execute("SELECT data FROM eq_presets WHERE name = ?", (name,))
             row = c.fetchone()

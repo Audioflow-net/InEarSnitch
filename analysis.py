@@ -110,7 +110,8 @@ class Analyzer:
                 'title': 'Insufficient Data',
                 'status': 'WARN',
                 'desc': 'Measure both Left and Right, or load a Target/Reference Curve to run diagnostics.',
-                'band': None
+                'band': None,
+                'category': 'ENV'
             })
             
         left_inv = False
@@ -132,9 +133,10 @@ class Analyzer:
             desc = 'Inverted polarity (often soundcard). Need both channels to check relative phase.' if inv else 'Acoustic polarity is correct.'
             report.append({'title': f'{ch} Polarity', 'status': 'OK', 'desc': desc, 'band': None})
                 
-        # Assign category FR to all existing checks
+        # Assign category FR to all existing checks (unless they are ENV)
         for r in report:
-            r['category'] = 'FR'
+            if 'category' not in r:
+                r['category'] = 'FR'
 
         # 5. Automated THD Diagnostics
         if thd_data is not None:

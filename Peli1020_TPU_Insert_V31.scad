@@ -11,11 +11,11 @@ eps = 0.05;
 // ==========================================
 // Stelle auf "true", um die einzelnen Teile zu rendern
 show_tpu_main = false;
-show_petg_chassis = true;
-show_tpu_sleeve = true;
+show_petg_chassis = false;
+show_tpu_sleeve = false;
 show_dummy_mic = false;
 show_cross_section = false;
-show_test_print = false; // TEST-DRUCK FÜR DIE LASCHE
+show_test_print = true; // TEST-DRUCK FÜR DIE LOGO ECKE // TEST-DRUCK FÜR DIE LASCHE
 
 // --- 1. Design Parameters ---
 // Peli 1020 Internal Dimensions (Drafted)
@@ -772,8 +772,11 @@ module test_print(part="tpu") {
                 // X=20 bis X=96 -> 76mm
                 // Y=50 (Kabelkanal-Wand) bis Y=85 -> 35mm
                 // Z=2.0 (Boden) bis Z=30 (über dem Mikrofon) -> 28mm
-                translate([20.0, 50.0, 2.0])
-                    cube([76.0, 35.0, 28.0]);
+                // Bounding Box EXAKT für das Logo links oben:
+                // X=-2 bis X=35 -> Deckt die Wand und das gesamte Logo ab
+                // Y=60 bis Y=95 -> Deckt die Wand oben und den Kabelgraben ab
+                translate([-2.0, 60.0, 2.0])
+                    cube([37.0, 35.0, 28.0]);
             }
         }
     }

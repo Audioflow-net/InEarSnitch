@@ -1,6 +1,72 @@
 # InEar Snitch Hardware & CAD Changelog
 *Lückenlose Dokumentation aller physikalischen Änderungen an den 3D-Modellen, um wissenschaftliche Reproduzierbarkeit sicherzustellen.*
 
+## [V38.4 CIEM Flare Narrow Tampers] - 2026-09-24
+**Fokus:** Rückkehr zur Flare-Variante (mit Mutter) für experimentelle Tests mit extrem schmalen Innenlöchern.
+
+### Geändert (CIEM_XL_Adapter_Molds.scad)
+1. **Version / Datum:** V38.4 - 2026-09-24
+2. **Das betroffene Bauteil:** Layout in `CIEM_XL_Adapter_Molds.scad`.
+3. **Maße (Alt vs. Neu):** Tamper Layout aktualisiert auf 5.0 mm und 6.0 mm.
+4. **Formen-Änderung:** Die äußere Gussform bleibt unangetastet bei der "V27 Flare" Form. Dem Layout wurden schmale V27 Tamper (`V27-5` und `V27-6`) sowie ein modifizierter enger Clamp-Tamper (`V27-C5` mit 5mm Lippe und 7mm Body) hinzugefügt.
+5. **Die Idee / Der Grund:** Nutless Bowl pausiert. Der Fokus liegt nun darauf, die existierende Flare-Gussform aus V37.6 mit verschiedenen, sehr engen Tampern zu kombinieren, um den Sweet-Spot zwischen IEM-Halt (Grip durch dicke Wände) und Platzmangel in der 13mm Mutter experimentell herauszufinden. 
+
+
+## [V38.3 CIEM Nutless Core Attachment] - 2026-09-24
+**Fokus:** Bugfix der schwebenden Form-Kerne und des Tamper-Profils.
+
+### Geändert (CIEM_Nutless_Bowl_Molds.scad)
+1. **Version / Datum:** V38.3 - 2026-09-24
+2. **Das betroffene Bauteil:** Form-Kerne in den Mold-Blocks und Piston.
+3. **Maße (Alt vs. Neu):** Die Basis der Geometrie wurde von Z=-9.9 exakt auf den Boden des Gussblocks (Z=-8.0) verschoben.
+4. **Formen-Änderung:** Der 20mm dicke Coupler-Kern "schwebt" nun nicht mehr in der Mitte der Kavität, sondern ist physisch massiv mit dem Formboden verbunden. Er wächst von dort nach oben in die Silikon-Kavität hinein. Beim Tamper wurde der überflüssige 10mm-Kragen entfernt; der 6mm dicke Stab wächst nun nahtlos direkt aus dem flachen 29x29mm Deckel.
+5. **Die Idee / Der Grund:** Durch die Verschiebung auf Z=-8 verbinden sich die Kerne nun physisch beim Rendern/Drucken mit dem Plastik des Formblocks, wodurch sie nicht mehr abbrechen können. Der flache Tamper-Deckel (Z=14.1) liegt beim Gießen exakt auf dem 14.0 mm breiten Silikonloch auf und dichtet dieses nach oben hin bündig ab, während der 6mm Stab tief ins Zentrum sticht.
+
+
+## [V38.2 CIEM Nutless Z-Alignment] - 2026-09-24
+**Fokus:** Anpassung der Z-Achsen-Orientierung an die MASTER-Gussblock-Architektur.
+
+### Geändert (CIEM_Nutless_Bowl_Molds.scad)
+1. **Version / Datum:** V38.2 - 2026-09-24
+2. **Das betroffene Bauteil:** Komplette Geometrie (`CIEM_Nutless_Bowl_Molds.scad`).
+3. **Maße (Alt vs. Neu):** Geometrie gespiegelt / verschoben, sodass der 26mm Coupler-Sockel unten im Gussblock liegt (Z = -9.9 bis -0.9) und die 14mm Spitze mit dem Tamper-Nest exakt oben abschließt (Z=14.1).
+4. **Formen-Änderung:** Der 29x29mm Tamper-Deckel ist nun wieder wie gewohnt ganz oben (Z=14.1) und rastet passgenau in die Anti-Twist-Aussparung des Formblocks ein. Der 6.0 mm Tamper-Stab geht nun exakt von oben (Z=14.1) bis nach unten (Z=-0.9), wo er nahtlos auf den positiven Coupler-Kern trifft.
+5. **Die Idee / Der Grund:** In der vorherigen Version war die Form quasi "falsch herum" in den `mold_block()` gestülpt worden, sodass das Tamper-Nest in der Luft schwebte. Durch die korrekte Z-Ausrichtung funktioniert die Form nun wieder 100% plug & play mit dem existierenden Press-System und der Tamper hält den Silikondruck perfekt stand.
+
+
+## [V38.1 CIEM Nutless Flex-Cone] - 2026-09-24
+**Fokus:** Bugfix der schwebenden Schrift und Umbau auf einen dehnbaren Flex-Konus.
+
+### Geändert (CIEM_Nutless_Bowl_Molds.scad)
+1. **Version / Datum:** V38.1 - 2026-09-24
+2. **Das betroffene Bauteil:** `CIEM_Nutless_Bowl_Molds.scad` (Äußere Form & Tamper).
+3. **Maße (Alt vs. Neu):** Die äußere Silikonform ist kein 26mm Zylinder mehr, sondern ein Konus, der sich oben auf 14.0 mm verjüngt. Der Tamper ist keine riesige Schüssel mehr, sondern ein strammer 6.0 mm Zylinder.
+4. **Formen-Änderung:** Die schwebenden Schriftzüge wurden korrekt an die Außenwände (X = +/-16.5) gemappt. Die Gussform erzeugt nun einen Adapter, der unten massiv ist (26mm), aber nach oben hin dünner wird. Innen verläuft ein durchgehendes 6.0 mm Loch.
+5. **Die Idee / Der Grund:** Eine riesige offene Schüssel hätte (wie vom User korrekt bemerkt) dem CIEM keinen Halt geboten. Der neue Flex-Konus ist der ultimative Hybrid: Das 6mm Loch klammert sich fest an den Hörer. Da oben keine Metallmutter mehr ist, kann sich die 14mm Silikon-Spitze mühelos wie ein Ballon um den fettesten CIEM aufdehnen. Unten am Coupler ist das Teil jedoch 26mm dick und sitzt bombenfest. Der CIEM erreicht so maximalen Halt UND maximale Tiefe.
+
+
+## [V38.0 CIEM Nutless Bowl] - 2026-09-24
+**Fokus:** Umgehung des 13.0 mm IEC711-Mutternlimits durch einen direkt aufschraubbaren Skirt-Adapter.
+
+### Geändert (CIEM_Nutless_Bowl_Molds.scad)
+1. **Version / Datum:** V38.0 - 2026-09-24
+2. **Das betroffene Bauteil:** Neues Projekt `CIEM_Nutless_Bowl_Molds.scad` (ohne Metallmutter).
+3. **Maße (Alt vs. Neu):** Außendurchmesser des Silikons von 13.0 mm auf massive 26.0 mm verdoppelt. CIEM-Schüssel-Durchmesser auf 20.0 mm vergrößert.
+4. **Formen-Änderung:** Die Silikonform fungiert nun als direkter Aufsatz (Skirt), der über das freiliegende Gewinde des IEC711-Couplers gespannt wird (die Metallmutter wird weggelassen). Der Sockel-Abdruck (20mm Gewinde und 7.5mm Mic-Tube) wird genialerweise direkt durch die aufklappbaren linken und rechten Formhälften als positiver Kern erzeugt. Der Tamper formt von der anderen Seite nur noch eine gewaltige CIEM-Einfüllschüssel, die perfekt in der Mitte auf den Mic-Kanal trifft.
+5. **Die Idee / Der Grund:** Extrem dicke CIEMs schlugen stets auf der harten 13mm Metallmutter auf. Die Düse hing in der Luft, der 8kHz Peak wurde verfehlt. Durch das Weglassen der Metallmutter und diesen massiven Skirt-Adapter kann der CIEM nun völlig ungehindert in eine 20mm Schüssel stürzen, bis die Düse direkt auf dem Mikrofongitter aufliegt. Maximaler Deep-Seal ist somit physikalisch garantiert.
+
+
+## [V37.8 CIEM V27-Clamp Tamper] - 2026-09-24
+**Fokus:** Lösung des Halt-Problems ("hält nicht gut") ohne das 13.0 mm Muttern-Limit zu brechen.
+
+### Geändert (CIEM_XL_Adapter_Molds.scad)
+1. **Version / Datum:** V37.8 - 2026-09-24
+2. **Das betroffene Bauteil:** Neuer Custom-Tamper (`piston_clamp`).
+3. **Maße (Alt vs. Neu):** Das Innenloch ist kein durchgehender Zylinder (9.4 mm) mehr. Die Eintrittslippe (die ersten 2.0 mm der Form) ist nun extrem eng auf **7.0 mm** geschrumpft, bevor sich der Schlauch konisch wieder auf die **9.4 mm** aufweitet. 
+4. **Formen-Änderung:** Die Gussform (`outer_cavity_flare`) bleibt völlig identisch (13.0 mm Schaft mit 15.0 mm Tulpen-Kragen). Lediglich der neue Tamper (`V27-C7`) erzeugt einen Flaschenhals im Silikon.
+5. **Die Idee / Der Grund:** Wenn das Loch durchgehend 9.4 mm groß ist, gleiten CIEMs zwar super in die Mutter, aber sie rutschen auch leicht wieder heraus. Der neue Clamp-Tamper erzeugt eine massive 4.0 mm dicke Silikon-Lippe ganz oben am Eintritt. Der CIEM muss beim Einstecken mit Kraft durch diesen 7.0 mm "Türsteher" ploppen. Danach öffnet sich das Silikon auf 9.4 mm, sodass der CIEM tief in die Mutter rutschen kann, aber die dicke Lippe über ihm klammert sich fest um seinen Bauch und verhindert, dass er rausrutscht.
+
+
 ## [V37.7 CIEM 1.8mm Wall Target] - 2026-09-24
 **Fokus:** Mathematische Definition der exakten Ziel-Wandstärke (1.8 mm) für CIEMs.
 

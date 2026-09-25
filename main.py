@@ -3813,16 +3813,29 @@ class MainWindow(QMainWindow):
         import numpy as np
         from scipy.ndimage import gaussian_filter1d
         
+        # Calculate broadband RMS of the raw mic signal, but ONLY above 200 Hz!
+        # When pushing the IEM deeper, handling noise creates massive sub-bass pressure spikes.
+        # By ignoring the bass, the insertion detector becomes immune to handling noise.
+        mask_mids = (freqs >= 200) & (freqs <= 10000)
+        raw_linear = 10 ** (mag_db[mask_mids] / 20.0)
+        broadband_rms = 20 * np.log10(np.mean(raw_linear) + 1e-12)
+        
         # Apply visual frequency-domain smoothing to eliminate pink noise variance
+        # sigma=4.0 provides a clean, readable graph without excessive wiggling
         mag_db = gaussian_filter1d(mag_db, sigma=4.0)
         
         # Pink Noise drops by 3dB per octave (-10*log10(f)). 
-        # Since the RTA plots raw mic output (not a Transfer Function like the Sweep),
-        # the RTA inherently shows this 3dB/oct bass boost.
         # We apply a +3dB/oct tilt normalized at 1kHz to perfectly match the Sweep Target!
         safe_freqs = np.clip(freqs, 1e-6, None)
         pn_comp = 10 * np.log10(safe_freqs / 1000.0)
         mag_db = mag_db + pn_comp
+        
+        # Temporal smoothing to prevent UI flicker
+        if not hasattr(self, '_prev_rta_mag'):
+            self._prev_rta_mag = mag_db
+        else:
+            mag_db = 0.6 * self._prev_rta_mag + 0.4 * mag_db
+        self._prev_rta_mag = mag_db
         
         mask = (freqs >= 20) & (freqs <= 20000)
         
@@ -3830,46 +3843,44 @@ class MainWindow(QMainWindow):
         current_mean = np.mean(mag_db[mask_1k])
         target_db = 85.0
         
-        # Calculate needed shift to reach 85dB, but strictly bound it!
-        # Normal raw mic signals are -45 to -15 dBFS -> Shift of +100 to +180
         calculated_shift = np.clip(target_db - current_mean, 50.0, 180.0)
         
         if not hasattr(self, '_rta_shift'):
             self._rta_shift = calculated_shift
         else:
-            # Fast adaptation (~0.5s convergence) so level settles quickly
             self._rta_shift = 0.92 * self._rta_shift + 0.08 * calculated_shift
             
         self.live_rta_line.setData(freqs[mask], mag_db[mask] + self._rta_shift)
         
         # --- Live IEC 711 Positioning Diagnostics ---
-        # Skip diagnostics during warmup (~0.8 seconds) while EMA settles
         warmup = getattr(self, '_rta_warmup', 0)
-        if warmup < 5:
+        if warmup < 20:
             self._rta_warmup = warmup + 1
+            self.live_rta_line.show()
             return
         try:
-            # Detect if IEM is pulled out (massive drop in volume from recent peak)
-            if not hasattr(self, '_max_rta_mean'):
-                self._max_rta_mean = current_mean
+            from PySide6.QtCore import QSettings
+            s = QSettings("InEarSnitch", "InEarSnitchApp")
+            cal_peak = float(s.value("audio/calibration_rec_peak", -999.0))
             
-            # Slowly decay the peak tracking; cap upward jumps to 2 dB/frame
-            # so single-frame transients (mic taps, cable bumps) can't spike it
-            if current_mean > self._max_rta_mean:
-                self._max_rta_mean = min(current_mean, self._max_rta_mean + 2.0)
+            if cal_peak > -100:
+                # Normal Pink Noise RMS (mids only) is ~88 dB below cal_peak.
+                floor_threshold = cal_peak - 96.0   # Below this = Room Noise (Not Detected)
+                ceil_threshold = cal_peak - 75.0    # Above this = Tapping/Pushing (Overload)
             else:
-                # Fast decay (~1 second recovery)
-                self._max_rta_mean = 0.95 * self._max_rta_mean + 0.05 * current_mean
+                floor_threshold = -115.0
+                ceil_threshold = -90.0
 
-            # Check 1: Absolute level too low (it's just room noise or acoustic bleed from the desk)
-            # Check 2: Relative level dropped massively (IEM was just pulled out)
-            # Threshold is -105 dBFS because a true seal is typically -50 to -70 dBFS, and desk bleed is < -120 dBFS.
-            if current_mean < -105.0 or current_mean < self._max_rta_mean - 25.0:
-                seal_html = "<span style='color: #a8a29e; font-weight: bold;'>IEM Not Detected (Silence)</span>"
+            if broadband_rms > ceil_threshold:
+                seal_html = f"<span style='color: #f59e0b; font-weight: bold;'>Overload / Handling Noise ({broadband_rms:.0f}dB)</span>"
                 depth_html = ""
                 if hasattr(self, 'rta_peak_line') and self.rta_peak_line is not None:
                     self.rta_peak_line.hide()
-                # Prevent auto-gain from boosting pure noise to 85dB
+            elif broadband_rms < floor_threshold:
+                seal_html = f"<span style='color: #a8a29e; font-weight: bold;'>IEM Not Detected ({broadband_rms:.0f}dB)</span>"
+                depth_html = ""
+                if hasattr(self, 'rta_peak_line') and self.rta_peak_line is not None:
+                    self.rta_peak_line.hide()
                 self.live_rta_line.hide()
             else:
                 self.live_rta_line.show()
@@ -3880,7 +3891,7 @@ class MainWindow(QMainWindow):
                     treble_mags = mag_db[mask_treble]
                     
                     # Exponential moving average on the treble spectrum
-                    alpha = 0.05  # Very smooth (~20 frame window)
+                    alpha = 0.4  # Fast tracking, minimal lag (~2 frames)
                     if not hasattr(self, '_iec_smooth_mags') or len(self._iec_smooth_mags) != len(treble_mags):
                         self._iec_smooth_mags = treble_mags.copy()
                     else:

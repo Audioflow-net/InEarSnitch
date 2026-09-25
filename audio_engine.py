@@ -31,17 +31,7 @@ class AudioEngine:
         window = np.ones_like(sweep)
         window[:fade_len] = np.linspace(0, 1, fade_len)
         window[-fade_len:] = np.linspace(1, 0, fade_len)
-        
         sweep = sweep * window * amplitude
-        # Apply Hardware DSP if enabled
-        from eq_math import dsp_engine
-        if dsp_engine.master_enabled:
-            sweep = dsp_engine.process(sweep, self.sample_rate)
-            # SAFETY: Re-apply amplitude ceiling AFTER DSP processing.
-            # Without this, a +12 dB EQ boost could push the signal to 4x
-            # the intended amplitude, potentially over-excursing BA drivers.
-            sweep = np.clip(sweep, -amplitude, amplitude)
-            
         return sweep, t
 
     def get_inverse_filter(self, sweep, duration, f_start=5.0, f_end=24000.0):
