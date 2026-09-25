@@ -18,6 +18,9 @@ show_cross_section = false;
 show_test_print = true; // TEST-DRUCK FÜR DIE LOGO ECKE // TEST-DRUCK FÜR DIE LASCHE
 
 // --- 1. Design Parameters ---
+logo_x = 12.0;
+logo_y = 84.0;
+
 // Peli 1020 Internal Dimensions (Drafted)
 // MASSIVE BREAKTHROUGH: 132.84 x 88.39 are the BOTTOM floor dimensions!
 base_x = 132.84;
@@ -459,21 +462,13 @@ module cutouts() {
         }
     }
     
-            // 5. DAS INTEGRIERTE LOGO (Top Left)
-    // A) Der massive Turm-Ausschnitt (von Z=2.0 bis Z=21.12)
-    translate([15.65, 80.75, 2.0 - eps])
-        linear_extrude(height=19.12 + eps)
-            offset(r=0.2) logo_tower_2d(); // 0.2mm Toleranz
-            
-        // B) Die filigranen Logo-Löcher (Hat, Face, Ear)
-    translate([15.65, 80.75, 21.12 - eps])
-        linear_extrude(height=depth + flange_t - 21.12 + 2*eps)
+            // 5. DAS INTEGRIERTE LOGO (Top Left) - NEUES MEDAILLON DESIGN!
+    // Nur noch 2.0mm tief in die Oberfläche gestanzt. Kein Durchbruch mehr!
+    translate([logo_x, logo_y, depth + flange_t - 2.0])
+        linear_extrude(height=2.0 + 2*eps) {
             offset(r=0.2) custom_logo_2d();
-            
-    // C) Der Ausschnitt im TPU für den massiven Wellen-Block!
-    translate([15.65, 80.75, 21.12 - eps])
-        linear_extrude(height=depth + flange_t - 21.12 + 2*eps)
             offset(r=0.2) waves_block();
+        }
 }
 
 // ==========================================
@@ -492,24 +487,7 @@ module petg_chassis(tol=0) {
             
                 
             
-                        // 3. DIE LOGO-STELZEN & TURM (Top Left Corner)
-            // A) Der massive Basis-Turm (Z=2.0 bis Z=21.12)
-            translate([15.65, 80.75, 2.0 - eps])
-                linear_extrude(height=19.12 + eps)
-                    logo_tower_2d();
-                    
-                        // B) Die filigranen Logo-Details (Hut, Gesicht, Ohr, Wellen)
-            translate([15.65, 80.75, 21.12 - eps])
-                color("darkturquoise")
-                linear_extrude(height=depth + flange_t - 21.12 + eps)
-                    custom_logo_2d();
-                    
-            // C) NEU: Der massive Block unter den Wellen (verhindert Abbrechen!)
-            // Geht nur bis Z=24.12, sodass die Wellen oben 1mm erhaben herausstechen!
-            translate([15.65, 80.75, 21.12 - eps])
-                color("darkturquoise")
-                linear_extrude(height=3.0)
-                    waves_block();
+                        // 3. LOGO-TURM WURDE ENTFERNT (Jetzt separates Medaillon)
             
             // Main PETG Tube (OD: 22mm)
             // GEKÜRZT AUF 41.5mm! (Absolute Decke der Peli-Kiste ist bei 42.42mm).
@@ -641,8 +619,8 @@ module petg_support_blocks(tol = 0) {
             translate([11.0, 11.0, 0]) petg_alignment_peg(15.0, 6.0, tol);
             
             // Ecke Oben Links (Neben dem Mikrofon-Schacht)
-            // GELÖSCHT: Der neue Logo-Turm bei X=15.65 übernimmt jetzt exakt diese Funktion 
-            // und dient als massiver Anker-Stift für die obere linke Ecke!
+            // WIEDER DA: Da das Logo jetzt nur noch ein flaches Medaillon ist, brauchen wir den Anker-Stift wieder!
+            translate([11.0, 77.0, 0]) petg_alignment_peg(15.0, 6.0, tol);
             
             // Ecke Oben Rechts (Neben dem Mikrofon-Kopf)
             translate([122.0, 77.0, 0]) petg_alignment_peg(15.0, 6.0, tol);
@@ -758,26 +736,12 @@ module assembly() {
 // RENDER OUTPUT
 // ==========================================
 module test_print(part="tpu") {
-    // =======================================================
-    // ULTRA-MINIMALER TESTDRUCK (So wenig Material wie möglich)
-    // =======================================================
-    
-    if (part == "tpu" || part == "both") {
-        // Wir schieben das TPU-Teil um 2mm nach unten (Z=-2.0),
-        // damit es flach auf dem Druckbett liegt (da das Original eine 2mm Lücke für die PETG-Bodenplatte hat!)
-        translate([0, 0, -2.0]) {
-            intersection() {
-                tpu_insert_full();
-                // Bounding Box EXAKT auf die Mulde zugeschnitten:
-                // X=20 bis X=96 -> 76mm
-                // Y=50 (Kabelkanal-Wand) bis Y=85 -> 35mm
-                // Z=2.0 (Boden) bis Z=30 (über dem Mikrofon) -> 28mm
-                // Bounding Box EXAKT für das Logo links oben:
-                // X=-2 bis X=35 -> Deckt die Wand und das gesamte Logo ab
-                // Y=60 bis Y=95 -> Deckt die Wand oben und den Kabelgraben ab
-                translate([-2.0, 60.0, 20.0])
-                    cube([37.0, 35.0, 6.0]);
-            }
+    // Schneidet exakt die obersten 6mm der TPU-Ecke ab und legt sie flach aufs Bett
+    translate([0, 0, -(23.62 + 1.5 - 6.0)]) {
+        intersection() {
+            tpu_insert_full();
+            translate([-5.0, 60.0, 23.62 + 1.5 - 6.0])
+                cube([45.0, 35.0, 6.0]);
         }
     }
 }
@@ -786,9 +750,6 @@ module test_print(part="tpu") {
 
 if (show_test_print) {
     color("Gold", 1.0) test_print();
-    if (show_dummy_mic) {
-        translate([108, 40, 44]) rotate([0, 180, 0]) dummy_coupler();
-    }
 } else if (show_cross_section) {
     difference() {
         assembly();
@@ -797,4 +758,15 @@ if (show_test_print) {
     }
 } else {
     assembly();
+}
+
+// ==========================================
+// SEPARATES LOGO-MEDAILLON (2mm Flat Print)
+// ==========================================
+module logo_medallion() {
+    color("darkturquoise")
+    linear_extrude(height=2.0) {
+        custom_logo_2d();
+        waves_block();
+    }
 }

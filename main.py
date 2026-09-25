@@ -173,7 +173,8 @@ class AvatarButton(QLabel):
         self.color = color if color else "#2a2a2a"
         self.parent_card = parent_card
         self.has_pic = False
-        self.update_style(False)
+        self.circ_pixmap = None
+        self.is_selected_state = False
         
         self.setFixedSize(36, 36)
         self.setToolTip(iem_name)
@@ -189,12 +190,40 @@ class AvatarButton(QLabel):
             reader.setAutoTransform(True)
             circ = create_circular_pixmap(reader, 36)
             if circ:
-                self.setPixmap(circ)
+                self.circ_pixmap = circ
                 self.has_pic = True
             else:
                 self.set_abbr_text()
         else:
             self.set_abbr_text()
+            
+        self.update_style(False)
+        
+    def paintEvent(self, event):
+        # If we have a pixmap, draw it manually so CSS doesn't break border-radius
+        if self.has_pic and self.circ_pixmap:
+            from PySide6.QtGui import QPainter
+            painter = QPainter(self)
+            painter.setRenderHint(QPainter.Antialiasing, True)
+            painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+            
+            # Draw the circular image
+            painter.drawPixmap(0, 0, self.circ_pixmap)
+            
+            # If selected, draw a clean circular border ON TOP of it using painter,
+            # bypassing QLabel's broken CSS border-radius over pixmaps.
+            if self.is_selected_state:
+                import theme
+                border_col = "#38bdf8" if theme.CURRENT_MODE == "dark" else "#1d4ed8"
+                from PySide6.QtGui import QPen, QColor
+                pen = QPen(QColor(border_col))
+                pen.setWidth(4)
+                painter.setPen(pen)
+                # Inset by half pen width so it doesn't get clipped by widget bounds
+                painter.drawEllipse(2, 2, 32, 32)
+            painter.end()
+        else:
+            super().paintEvent(event)
             
     def set_abbr_text(self):
         if self.abbr:

@@ -2,8 +2,10 @@
 SCAD="/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD"
 OUT_DIR="/Users/ben/.gemini/antigravity/brain/31bf4b28-6899-4300-afe9-4ba5def05658/img"
 
-MODES=("V27" "V29" "V30" "V31" "FLARE" "NUTLESS")
-CAMERA="0,0,5,70,0,45,50"
+MODES=("V27" "V29" "V30" "V31" "FLARE" "FLARE_5" "FLARE_C5" "NUTLESS")
+# Camera dist changed from 50 to 90 so the whole base is visible!
+# Pitch 65 instead of 70 for a slightly better isometric angle.
+CAMERA="0,0,0,65,0,45,90"
 
 for MODE in "${MODES[@]}"; do
     echo "Rendering $MODE with FULL CGAL..."

@@ -42,8 +42,9 @@ def create_circular_pixmap(image_reader, size):
     # 2. Scale exactly to target size
     scaled_img = square_img.scaled(size, size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
     
-    # 3. Create a transparent pixmap and draw a circle
-    target = QPixmap(size, size)
+    # 3. Create a transparent QImage (guaranteed alpha channel) and draw a circle
+    from PySide6.QtGui import QImage
+    target = QImage(size, size, QImage.Format_ARGB32_Premultiplied)
     target.fill(Qt.transparent)
     
     painter = QPainter(target)
@@ -54,10 +55,10 @@ def create_circular_pixmap(image_reader, size):
     path.addEllipse(0, 0, size, size)
     painter.setClipPath(path)
     
-    painter.drawPixmap(0, 0, QPixmap.fromImage(scaled_img))
+    painter.drawImage(0, 0, scaled_img)
     painter.end()
     
-    return target
+    return QPixmap.fromImage(target)
 
 
 
