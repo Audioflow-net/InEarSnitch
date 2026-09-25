@@ -1,34 +1,24 @@
 InEar SNITCH – How to Open on macOS
 =====================================
 
-macOS blocks apps from unknown developers by default.
-Here's how to open InEar SNITCH in 30 seconds:
+Because InEar SNITCH is in beta and built via cloud servers without an official Apple Developer Certificate yet, macOS will falsely claim the app is "damaged" and block you from opening it. 
+
+Here is the exact fix (takes 10 seconds):
 
 ──────────────────────────────────────────────────
-METHOD 1 – Quick (Right-Click)
+THE FIX (Using Terminal)
 ──────────────────────────────────────────────────
 1. Drag InEarSnitch.app into your Applications folder
-2. RIGHT-CLICK the app icon → select "Open"
-3. Click "Open" in the dialog that appears
-→ Done! The app opens normally every time after this.
+2. Open the "Terminal" app on your Mac (Press CMD+Space, type "Terminal" and hit Enter)
+3. Copy and paste the following exact command into the Terminal and press Enter:
 
-──────────────────────────────────────────────────
-METHOD 2 – Via System Settings
-──────────────────────────────────────────────────
-1. Drag InEarSnitch.app into your Applications folder
-2. Double-click the app (you'll see a warning – that's ok)
-3. Open: Apple Menu → System Settings → Privacy & Security
-4. Scroll down until you see:
-   "InEarSnitch was blocked..."
-5. Click "Open Anyway" → confirm
-→ Done! The app opens normally every time after this.
+xattr -cr /Applications/InEarSnitch.app
+
+4. Done! You can now double-click InEarSnitch in your Applications folder and it will open normally.
 
 ──────────────────────────────────────────────────
 WHY DOES THIS HAPPEN?
 ──────────────────────────────────────────────────
-InEar SNITCH is in early beta and not yet signed with
-an official Apple Developer certificate. This does NOT
-mean the app is dangerous – it simply means Apple has
-not yet verified the developer identity.
+When you download an app via a web browser, macOS adds a "quarantine" flag. Because the app does not have a paid Apple certificate yet, macOS overreacts to this flag and says the file is "damaged". The terminal command simply removes this web-download quarantine flag. 
 
 Questions? → audioflow.net
