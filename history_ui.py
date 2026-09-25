@@ -1118,8 +1118,9 @@ class HistoryWidget(QWidget):
         target_name, ok = QInputDialog.getText(self, "Save Target", "Target Name:", text=f"{iem} Target")
         if ok and target_name:
             try:
-                os.makedirs("Reference Targets", exist_ok=True)
-                target_path = os.path.join("Reference Targets", f"{target_name.replace('/', '_')}.csv")
+                target_dir = os.path.join("reference_targets", "Pro_Live_IEMs")
+                os.makedirs(target_dir, exist_ok=True)
+                target_path = os.path.join(target_dir, f"{target_name.replace('/', '_')}.csv")
                 with open(target_path, 'w') as f:
                     for i in range(len(freq)):
                         f.write(f"{freq[i]:.2f},{mag_to_save[i]:.2f}\n")
