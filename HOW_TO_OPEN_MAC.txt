@@ -17,8 +17,21 @@ xattr -cr /Applications/InEarSnitch.app
 4. Done! You can now double-click InEarSnitch in your Applications folder and it will open normally.
 
 ──────────────────────────────────────────────────
+APP NOT SHOWING UP IN SEARCH? (Spotlight/Launchpad)
+──────────────────────────────────────────────────
+If you cannot find the app using the macOS Spotlight search or Launchpad after installing:
+
+1. Open Terminal again
+2. Paste this command to force macOS to index the app:
+   mdimport /Applications/InEarSnitch.app
+3. Paste this command to restart the Launchpad:
+   killall Dock
+
+If it still doesn't show up, simply launch it manually by going to your Applications folder in Finder and double-clicking "InEarSnitch". You can also drag it from there directly into your Dock.
+
+──────────────────────────────────────────────────
 WHY DOES THIS HAPPEN?
 ──────────────────────────────────────────────────
 When you download an app via a web browser, macOS adds a "quarantine" flag. Because the app does not have a paid Apple certificate yet, macOS overreacts to this flag and says the file is "damaged". The terminal command simply removes this web-download quarantine flag. 
 
-Questions? → audioflow.net
+Questions? → info@audiopatch.net
