@@ -4844,12 +4844,12 @@ class MainWindow(QMainWindow):
             self.btn_tour.setStyleSheet(f"background-color: {theme.get_color('accent')}; color: #111; font-size: 14px; font-weight: bold; border-radius: 4px; padding: 4px 8px;")
         else:
             # Normal state
-            self.btn_tour.setStyleSheet("background-color: transparent; color: #888; font-size: 14px; font-weight: bold; border: none; padding: 0px;")
+            self.btn_tour.setStyleSheet("background-color: transparent; color: #888; font-size: 14px; font-weight: bold; border: none; padding: 4px 8px;")
 
     def start_guided_tour(self):
         if hasattr(self, '_tour_pulse_timer'):
             self._tour_pulse_timer.stop()
-            self.btn_tour.setStyleSheet("background-color: transparent; color: #888; font-size: 14px; font-weight: bold; border: none; padding: 0px;")
+            self.btn_tour.setStyleSheet("background-color: transparent; color: #888; font-size: 14px; font-weight: bold; border: none; padding: 4px 8px;")
             
         # Mark as permanently done
         import os
