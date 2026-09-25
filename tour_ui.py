@@ -278,10 +278,12 @@ class TourManager(QWidget):
     def end_tour(self):
         self.pulse_timer.stop()
         
-        # Reset UI back to Main Workspace
-        self._close_settings_and_go(1)
-        
+        # Hide immediately to prevent UI hanging feeling
         self.hide()
+        
+        # Reset UI back to Main Workspace (deferred slightly to allow instant hide)
+        QTimer.singleShot(10, lambda: self._close_settings_and_go(1))
+        
         self.finished.emit()
         self.deleteLater()
         

@@ -2046,8 +2046,27 @@ class MainWindow(QMainWindow):
         import os
         from config import get_data_dir
         flag_file = os.path.join(get_data_dir(), "tour_completed.flag")
-        if not os.path.exists(flag_file):
-            QTimer.singleShot(1500, self.start_guided_tour)
+        
+        flag_val = "0"
+        if os.path.exists(flag_file):
+            try:
+                with open(flag_file, "r") as f:
+                    flag_val = f.read().strip()
+            except: pass
+            
+        if flag_val == "0":
+            # First launch: Pulse the tour button and mark as launched once
+            try:
+                with open(flag_file, "w") as f:
+                    f.write("1")
+            except: pass
+            self._start_tour_pulse()
+        elif flag_val == "1":
+            # Second launch: stop pulsing forever
+            try:
+                with open(flag_file, "w") as f:
+                    f.write("done")
+            except: pass
 
     def on_log_message(self, text, is_error):
         if not hasattr(self, 'console_output'): return
@@ -4595,7 +4614,36 @@ class MainWindow(QMainWindow):
         msg.setInformativeText(f"Please check that your IEM is seated correctly in the coupler and that your audio interface is connected.\n\nTechnical detail: {str(err_msg)}")
         msg.exec()
 
+    def _start_tour_pulse(self):
+        self._tour_pulse_state = False
+        self._tour_pulse_timer = QTimer(self)
+        self._tour_pulse_timer.timeout.connect(self._animate_tour_button)
+        self._tour_pulse_timer.start(600)
+        
+    def _animate_tour_button(self):
+        self._tour_pulse_state = not self._tour_pulse_state
+        if self._tour_pulse_state:
+            # Highlight state
+            import theme
+            self.btn_tour.setStyleSheet(f"background-color: {theme.get_color('accent')}; color: #111; font-size: 14px; font-weight: bold; border-radius: 4px; padding: 4px 8px;")
+        else:
+            # Normal state
+            self.btn_tour.setStyleSheet("background-color: transparent; color: #888; font-size: 14px; font-weight: bold; border: none; padding: 0px;")
+
     def start_guided_tour(self):
+        if hasattr(self, '_tour_pulse_timer'):
+            self._tour_pulse_timer.stop()
+            self.btn_tour.setStyleSheet("background-color: transparent; color: #888; font-size: 14px; font-weight: bold; border: none; padding: 0px;")
+            
+        # Mark as permanently done
+        import os
+        from config import get_data_dir
+        flag_file = os.path.join(get_data_dir(), "tour_completed.flag")
+        try:
+            with open(flag_file, "w") as f:
+                f.write("done")
+        except: pass
+
         from tour_ui import TourManager
         if hasattr(self, 'active_tour') and self.active_tour is not None:
             return # Tour already running
@@ -4606,14 +4654,6 @@ class MainWindow(QMainWindow):
         
     def on_tour_finished(self):
         self.active_tour = None
-        import os
-        from config import get_data_dir
-        flag_file = os.path.join(get_data_dir(), "tour_completed.flag")
-        try:
-            with open(flag_file, "w") as f:
-                f.write("done")
-        except:
-            pass
 
     # ── ProKit Tip-Tracking Methods ───────────────────────────────────────────
     def prompt_prokit_unlock(self):
