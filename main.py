@@ -3051,12 +3051,15 @@ class MainWindow(QMainWindow):
                 accent_glow = theme.get_color('accent_glow')
                 accent_edge = theme.get_color('accent_edge')
                 
+                card_bg = theme.get_color('card_bg')
+                border_color = theme.get_color('border')
+                
                 if is_sel:
                     # 2026 Modern Style: Glowing tinted background with a sharp edge, generous 12px rounding
                     c.setStyleSheet(f"#musicianCardObj {{ background-color: {accent_glow}; border-radius: 12px; border: 1px solid {accent_edge}; outline: none; }}")
                 else:
-                    # 2026 Modern Style: Ghost cards (transparent) that only light up on hover
-                    c.setStyleSheet(f"#musicianCardObj {{ background-color: transparent; border-radius: 12px; border: 1px solid transparent; outline: none; }} #musicianCardObj:hover {{ background-color: {bg_hover}; border: 1px solid transparent; }}")
+                    # 2026 Modern Style: Distinct cards with subtle border
+                    c.setStyleSheet(f"#musicianCardObj {{ background-color: {card_bg}; border-radius: 12px; border: 1px solid {border_color}; outline: none; }} #musicianCardObj:hover {{ border-color: {accent_edge}; }}")
                 
                 c.setGraphicsEffect(None)
                     
