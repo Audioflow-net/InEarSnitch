@@ -732,7 +732,9 @@ class HistoryWidget(QWidget):
         self.plot_widget.setXRange(np.log10(20), np.log10(20000), padding=0.0)
         self.plot_widget.setYRange(40, 110, padding=0.0)
 
-    def load_history(self, m_id):
+    def load_history(self, m_id, force_reload=False):
+        if getattr(self, 'last_m_id', None) == m_id and not force_reload:
+            return
         self.last_m_id = m_id
         self.list_widget.blockSignals(True)
         self.list_widget.clear()

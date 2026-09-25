@@ -764,17 +764,23 @@ class ProfileWidget(QWidget):
         if self.current_musician_id:
             self.save_timer.start(500)
 
-    def load_profile(self, iem_id, m_id=None):
+    def load_profile(self, iem_id, m_id=None, force_reload=False):
         conn = sqlite3.connect("inearsnitch.db")
         cursor = conn.cursor()
         
-        self.current_musician_id = m_id
-        if not self.current_musician_id:
+        target_m_id = m_id
+        if not target_m_id:
             cursor.execute("SELECT musician_id FROM IEM_Models WHERE id = ?", (iem_id,))
             res = cursor.fetchone()
             if res:
-                self.current_musician_id = res[0]
+                target_m_id = res[0]
                 
+        if target_m_id == self.current_musician_id and not force_reload:
+            conn.close()
+            return
+            
+        self.current_musician_id = target_m_id
+        
         if not self.current_musician_id:
             self.content_widget.hide()
             self.empty_widget.show()

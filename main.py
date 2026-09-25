@@ -447,12 +447,7 @@ class MusicianCard(QWidget):
             self.layout.setAlignment(self.avatar, Qt.AlignLeft | Qt.AlignTop)
             self.name_lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             self.role_lbl.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        
-        import theme
-        if theme.CURRENT_MODE == "light":
-            self.setStyleSheet("#musicianCardObj { background-color: #ffffff; border-radius: 8px; border: none; outline: none; }")
-        else:
-            self.setStyleSheet("#musicianCardObj { background-color: #2d2d34; border-radius: 8px; border: none; outline: none; }")
+            
         # AvatarButtons keep their own click handlers (select_iem)
 
 from PySide6.QtCore import QObject
@@ -1096,6 +1091,8 @@ class MainWindow(QMainWindow):
         self.audio_engine = AudioEngine()
         self.db = DatabaseManager()
         self.current_iem_id = None
+            if hasattr(self, "page_prof"): self.page_prof.current_musician_id = None
+            if hasattr(self, "page_hist"): self.page_hist.last_m_id = None
         self.settings_panel = None
         self.selected_in_idx = 0
         self.selected_out_idx = 0
@@ -2746,6 +2743,8 @@ class MainWindow(QMainWindow):
             
             # Reload application state
             self.current_iem_id = None
+            if hasattr(self, "page_prof"): self.page_prof.current_musician_id = None
+            if hasattr(self, "page_hist"): self.page_hist.last_m_id = None
             self.current_musician_name = None
             self.current_iem_name = None
             self.update_watermark()
@@ -4827,7 +4826,7 @@ class MainWindow(QMainWindow):
             # Immediately update the history tab so it reflects the new save
             if hasattr(self, 'active_card') and self.active_card:
                 if hasattr(self.page_hist, 'load_history'):
-                    self.page_hist.load_history(self.active_card.m_id)
+                    self.page_hist.load_history(self.active_card.m_id, force_reload=True)
             
             # Update Tip Analysis metrics
             if hasattr(self, 'page_ana') and hasattr(self.page_ana, 'tip_analysis_card'):
