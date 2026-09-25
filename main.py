@@ -2939,17 +2939,35 @@ class MainWindow(QMainWindow):
                 msg_box.setIcon(QMessageBox.Warning)
                 msg_box.setWindowTitle("Level Check Failed")
                 
-                info_append = "\n\nThe Stress Test uses a higher output level than normal sweeps.\nRunning with incorrect levels will produce invalid results.\n\nDo you want to continue anyway?"
+                info_append_html = "<br><br>The Stress Test uses a higher output level than normal sweeps.<br>Running with incorrect levels will produce invalid results."
+                info_append_plain = "\n\nThe Stress Test uses a higher output level than normal sweeps.\nRunning with incorrect levels will produce invalid results.\n\nDo you want to continue anyway?"
                 
                 if "💡" in pf_msg:
                     parts = pf_msg.split("💡")
                     tech_details = parts[0].strip()
-                    main_tip = "💡 " + parts[1].strip()
-                    msg_box.setText(main_tip)
-                    msg_box.setInformativeText(f"Technical details:\n{tech_details}{info_append}")
+                    main_tip_lines = parts[1].strip().split('\n')
+                    main_title = "💡 " + main_tip_lines[0]
+                    main_expl = "<br>".join(main_tip_lines[1:])
+                    
+                    html = f"""
+                    <div style='font-size: 15px; font-weight: bold; margin-bottom: 12px;'>
+                        {main_title}
+                    </div>
+                    <div style='font-size: 13px; font-weight: normal; margin-bottom: 15px;'>
+                        {main_expl}
+                    </div>
+                    <div style='font-size: 13px; font-weight: bold; margin-bottom: 15px; color: #eab308;'>
+                        Do you want to continue anyway?
+                    </div>
+                    <div style='font-size: 11px; font-weight: normal; color: #9ca3af;'>
+                        <b>Technical details:</b><br>{tech_details.replace(chr(10), '<br>')}{info_append_html}
+                    </div>
+                    """
+                    msg_box.setText(html)
+                    msg_box.setTextFormat(Qt.TextFormat.RichText)
                 else:
                     msg_box.setText("Level Check Failed")
-                    msg_box.setInformativeText(f"{pf_msg}{info_append}")
+                    msg_box.setInformativeText(f"{pf_msg}{info_append_plain}")
                     
                 msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
                 msg_box.setDefaultButton(QMessageBox.No)
@@ -2958,7 +2976,8 @@ class MainWindow(QMainWindow):
                 if reply != QMessageBox.Yes:
                     return
         except Exception as e:
-            print(f"[PREFLIGHT] Skipped: {e}")
+            QMessageBox.critical(self, "Preflight Error", f"An internal error occurred during preflight check:\n{e}")
+            return
         
         # Warn if stress amp can't go louder than normal sweep
         cal_sweep = getattr(self.audio_engine, 'calibrated_sweep_amp', 0.1)
@@ -4281,17 +4300,34 @@ class MainWindow(QMainWindow):
                 self.selected_in_idx, self.selected_out_idx, target_ch
             )
             if not passed:
+                from PySide6.QtCore import Qt
                 msg_box = QMessageBox(self)
                 msg_box.setIcon(QMessageBox.Warning)
                 msg_box.setWindowTitle("Level Check Failed")
                 
-                # If there's a specific '💡' tip, make it the main big bold text!
                 if "💡" in pf_msg:
                     parts = pf_msg.split("💡")
                     tech_details = parts[0].strip()
-                    main_tip = "💡 " + parts[1].strip()
-                    msg_box.setText(main_tip)
-                    msg_box.setInformativeText(f"Do you want to continue anyway?\n\nTechnical details:\n{tech_details}")
+                    main_tip_lines = parts[1].strip().split('\n')
+                    main_title = "💡 " + main_tip_lines[0]
+                    main_expl = "<br>".join(main_tip_lines[1:])
+                    
+                    html = f"""
+                    <div style='font-size: 15px; font-weight: bold; margin-bottom: 12px;'>
+                        {main_title}
+                    </div>
+                    <div style='font-size: 13px; font-weight: normal; margin-bottom: 15px;'>
+                        {main_expl}
+                    </div>
+                    <div style='font-size: 13px; font-weight: bold; margin-bottom: 15px; color: #eab308;'>
+                        Do you want to continue anyway?
+                    </div>
+                    <div style='font-size: 11px; font-weight: normal; color: #9ca3af;'>
+                        <b>Technical details:</b><br>{tech_details.replace(chr(10), '<br>')}
+                    </div>
+                    """
+                    msg_box.setText(html)
+                    msg_box.setTextFormat(Qt.TextFormat.RichText)
                 else:
                     msg_box.setText("Level Check Failed")
                     msg_box.setInformativeText(f"{pf_msg}\n\nDo you want to continue anyway?")
@@ -4303,7 +4339,8 @@ class MainWindow(QMainWindow):
                 if reply != QMessageBox.Yes:
                     return
         except Exception as e:
-            print(f"[PREFLIGHT] Skipped: {e}")
+            QMessageBox.critical(self, "Preflight Error", f"An internal error occurred during preflight check:\n{e}")
+            return
         # --- END PREFLIGHT ---
 
         # Lock the profile ID for this sweep so a mid-sweep switch doesn't corrupt results
