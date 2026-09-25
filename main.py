@@ -1230,6 +1230,8 @@ class MainWindow(QMainWindow):
         )
         self.lbl_logo.installEventFilter(self.logo_triple_click_filter)
         self.lbl_sublogo.installEventFilter(self.logo_triple_click_filter)
+        if hasattr(self, 'logo_img'):
+            self.logo_img.installEventFilter(self.logo_triple_click_filter)
         
         # Center the profile label
         top_layout.addStretch()
@@ -1590,13 +1592,14 @@ class MainWindow(QMainWindow):
         self.cb_tip = self.combo_tip
         self.cb_prokit_tip = self.combo_tip
         
-        # Wrap in container for visibility gating
+        # Wrap in container for visibility gating and bottom alignment
         self.tip_container = QWidget()
         self.tip_container.setObjectName("tip_container")
-        tip_h = QHBoxLayout(self.tip_container)
-        tip_h.setContentsMargins(8, 0, 0, 0)
-        tip_h.setSpacing(0)
-        tip_h.addWidget(self.combo_tip)
+        tip_v = QVBoxLayout(self.tip_container)
+        tip_v.setContentsMargins(8, 0, 0, 0)
+        tip_v.setSpacing(0)
+        tip_v.addStretch()
+        tip_v.addWidget(self.combo_tip)
         
         self.populate_tips()
         self.tip_container.setVisible(config.is_prokit_unlocked())
@@ -1683,10 +1686,7 @@ class MainWindow(QMainWindow):
         right_group = QHBoxLayout()
         right_group.setSpacing(7) # Pushes RTA 8px to the right to align with the visual edge of the QTabWidget above
         # Tip selector aligned to bottom (next to Depth)
-        tip_col = QVBoxLayout()
-        tip_col.addStretch()
-        tip_col.addWidget(self.tip_container)
-        right_group.addLayout(tip_col)
+        right_group.addWidget(self.tip_container)
         right_group.addWidget(rta_widget)
         right_group.addLayout(mod_capture)
         
@@ -2810,11 +2810,12 @@ class MainWindow(QMainWindow):
                 tone[:fade] *= np.linspace(0, 1, fade)
                 tone[-fade:] *= np.linspace(1, 0, fade)
                 # Stereo routing
-                tone_stereo = np.zeros((n, 2))
+                silence_samples = int(0.3 * self.audio_engine.sample_rate)
+                tone_stereo = np.zeros((silence_samples + n, 2))
                 if target_ch == 'L':
-                    tone_stereo[:, 0] = tone
+                    tone_stereo[silence_samples:, 0] = tone
                 else:
-                    tone_stereo[:, 1] = tone
+                    tone_stereo[silence_samples:, 1] = tone
                 
                 import threading
                 n_frames = len(tone_stereo)
@@ -2855,7 +2856,10 @@ class MainWindow(QMainWindow):
                     in_chans = sd.query_devices(self.selected_in_idx)['max_input_channels']
                     rec = run_stream(in_chans)
                 
-                peak = np.max(np.abs(rec))
+                if len(rec) > silence_samples:
+                    peak = np.max(np.abs(rec[silence_samples:]))
+                else:
+                    peak = np.max(np.abs(rec))
                 peak_dbfs = 20 * np.log10(peak + 1e-12)
                 results.append((amp, peak_dbfs))
                 

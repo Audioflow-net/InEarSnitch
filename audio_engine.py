@@ -62,12 +62,14 @@ class AudioEngine:
         tone[:fade] *= np.linspace(0, 1, fade)
         tone[-fade:] *= np.linspace(1, 0, fade)
         
-        # Route to correct channel (stereo output)
-        tone_stereo = np.zeros((n_samples, 2))
+        # Add 300ms silence at the start to let the DAC wake up and DC offset pops to settle!
+        # If we play immediately, the DAC wake-up pop pressurizes the sealed coupler and triggers a false 0 dBFS clipping error!
+        silence_samples = int(0.3 * self.sample_rate)
+        tone_stereo = np.zeros((silence_samples + n_samples, 2))
         if target_channel == 'L':
-            tone_stereo[:, 0] = tone
+            tone_stereo[silence_samples:, 0] = tone
         else:
-            tone_stereo[:, 1] = tone
+            tone_stereo[silence_samples:, 1] = tone
 
         # WASAPI Crash Prevention
         import sys
@@ -127,7 +129,11 @@ class AudioEngine:
                 "Please open Settings, click 'Refresh Device List', and select your Input/Output again."
             )
         
-        peak_amp = np.max(np.abs(rec))
+        # Ignore the first 300ms where the DC offset pop occurs!
+        if len(rec) > silence_samples:
+            peak_amp = np.max(np.abs(rec[silence_samples:]))
+        else:
+            peak_amp = np.max(np.abs(rec))
         peak_dbfs = 20 * np.log10(peak_amp + 1e-12)
         
         # Only block on actual clipping (> -1 dBFS at half amplitude = guaranteed clip at full)
