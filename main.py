@@ -1606,6 +1606,7 @@ class MainWindow(QMainWindow):
         
         # --- MODULE 4: LIVE TOOLS (RTA / Depth) ---
         rta_widget = QWidget()
+        rta_widget.setFixedWidth(95)
         rta_layout = QVBoxLayout(rta_widget)
         rta_layout.setContentsMargins(0,0,0,0)
         rta_layout.setSpacing(4)
@@ -3026,9 +3027,10 @@ class MainWindow(QMainWindow):
         target_ch = "L" if self.get_current_channel() == "Left" else "R"
         
         # --- PREFLIGHT LEVEL CHECK (Stress Test) ---
+        cal_amp = getattr(self.audio_engine, 'calibrated_sweep_amp', 0.1)
         try:
             passed, peak_dbfs, pf_msg = self.audio_engine.preflight_check(
-                self.selected_in_idx, self.selected_out_idx, target_ch
+                self.selected_in_idx, self.selected_out_idx, target_ch, probe_amp=cal_amp
             )
             
             # --- AUTO-HEAL: If macOS changed device indices (hot-plug), re-populate and retry! ---
@@ -3038,7 +3040,7 @@ class MainWindow(QMainWindow):
                 # Retry preflight with potentially updated indices
                 if self.selected_in_idx is not None and self.selected_out_idx is not None:
                     passed, peak_dbfs, pf_msg = self.audio_engine.preflight_check(
-                        self.selected_in_idx, self.selected_out_idx, target_ch
+                        self.selected_in_idx, self.selected_out_idx, target_ch, probe_amp=cal_amp
                     )
             if not passed:
                 from PySide6.QtCore import Qt
@@ -4399,9 +4401,10 @@ class MainWindow(QMainWindow):
         # --- PREFLIGHT LEVEL CHECK ---
         # Compare current recording level against calibration reference.
         # Catches: user changed output level after calibration, AGC activated, etc.
+        cal_amp = getattr(self.audio_engine, 'calibrated_sweep_amp', 0.1)
         try:
             passed, peak_dbfs, pf_msg = self.audio_engine.preflight_check(
-                self.selected_in_idx, self.selected_out_idx, target_ch
+                self.selected_in_idx, self.selected_out_idx, target_ch, probe_amp=cal_amp
             )
             
             # --- AUTO-HEAL: If macOS changed device indices (hot-plug), re-populate and retry! ---
@@ -4411,7 +4414,7 @@ class MainWindow(QMainWindow):
                 # Retry preflight with potentially updated indices
                 if self.selected_in_idx is not None and self.selected_out_idx is not None:
                     passed, peak_dbfs, pf_msg = self.audio_engine.preflight_check(
-                        self.selected_in_idx, self.selected_out_idx, target_ch
+                        self.selected_in_idx, self.selected_out_idx, target_ch, probe_amp=cal_amp
                     )
             if not passed:
                 from PySide6.QtCore import Qt
