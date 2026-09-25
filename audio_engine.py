@@ -150,11 +150,11 @@ class AudioEngine:
                     f"(expected {expected_probe_peak:.0f}, got {peak_dbfs:.0f} dBFS)."
                 )
                 
-                # If it's a massive drop (> 15 dB), they likely selected the wrong channel!
-                if expected_probe_peak - peak_dbfs > 15.0:
+                # If it's a massive drop (> 10 dB), they likely selected the wrong channel!
+                if expected_probe_peak - peak_dbfs > 10.0:
                     ch_name = "Left" if target_channel == 'L' else "Right"
                     msg += (
-                        f"\n\n💡 Are you testing the correct ear? Or did you change the volume?\n"
+                        f"\n\n💡 Are you testing the correct ear?<br>Or did you change the volume?\n"
                         f"You selected '{ch_name}', but the recording is extremely quiet (possibly just crosstalk)."
                     )
                 else:

@@ -858,15 +858,18 @@ class ProKitTipSelector(QPushButton):
                 self.currentIndexChanged.emit(idx)
                 
     def show_popup(self):
-        from PySide6.QtWidgets import QDialog, QGridLayout, QVBoxLayout, QWidget, QLabel
-        from PySide6.QtGui import QPixmap
+        from PySide6.QtWidgets import QMenu, QWidgetAction, QGridLayout, QVBoxLayout, QWidget, QLabel
+        from PySide6.QtGui import QPixmap, QAction
         from PySide6.QtCore import Qt
         import os, theme
-        dialog = QDialog(self.window())
-        dialog.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
-        dialog.setAttribute(Qt.WA_TranslucentBackground)
         
-        main_widget = QWidget(dialog)
+        # Use QMenu as the base to get native perfectly-working "click outside to close" behavior
+        menu = QMenu(self.window())
+        menu.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+        menu.setAttribute(Qt.WA_TranslucentBackground)
+        menu.setStyleSheet("QMenu { background: transparent; border: none; }")
+        
+        main_widget = QWidget()
         bg = theme.get_color('bg_panel')
         fg = theme.get_color('text_primary')
         border = theme.get_color('border')
@@ -891,10 +894,6 @@ class ProKitTipSelector(QPushButton):
         """)
         main_widget.setObjectName("PopupMain")
         
-        layout = QVBoxLayout(dialog)
-        layout.setContentsMargins(0,0,0,0)
-        layout.addWidget(main_widget)
-        
         grid = QGridLayout(main_widget)
         grid.setSpacing(10)
         grid.setContentsMargins(15, 15, 15, 15)
@@ -916,7 +915,6 @@ class ProKitTipSelector(QPushButton):
         row, col = 1, 0
         for i, item in enumerate(self.items):
             btn = QPushButton()
-            # Make the tiles much larger
             btn.setFixedSize(140, 140)
             btn.setCursor(Qt.PointingHandCursor)
             
@@ -936,14 +934,12 @@ class ProKitTipSelector(QPushButton):
                 lbl_icon.setStyleSheet("border: none; background: transparent;")
                 pix = QPixmap(img_path)
                 if not pix.isNull():
-                    # Scale to fill most of the 140x140 tile
                     lbl_icon.setPixmap(pix.scaled(110, 110, Qt.KeepAspectRatio, Qt.SmoothTransformation))
                 else:
                     lbl_icon.setText("?")
             else:
                 lbl_icon = QLabel(parts[0] if len(parts) > 1 else "?")
                 lbl_icon.setAlignment(Qt.AlignCenter)
-                # Much bigger text icon for Unbekannt/Kein Aufsatz
                 lbl_icon.setStyleSheet("font-size: 48px; color: #0ea5e9; border: none; background: transparent;")
             
             lbl_name = QLabel(name)
@@ -957,7 +953,7 @@ class ProKitTipSelector(QPushButton):
             def make_handler(idx):
                 def handler(checked):
                     self.setCurrentIndex(idx)
-                    dialog.accept()
+                    menu.close()
                 return handler
             btn.clicked.connect(make_handler(i))
             
@@ -973,15 +969,22 @@ class ProKitTipSelector(QPushButton):
             
             grid.addWidget(btn, row, col)
             col += 1
-            # Wrap at 3 columns for a nice 3x3 grid
             if col > 2:
                 col = 0
                 row += 1
                 
+        action = QWidgetAction(menu)
+        action.setDefaultWidget(main_widget)
+        menu.addAction(action)
+        
+        # Calculate popup position to pop upwards
+        main_widget.adjustSize()
+        h = main_widget.sizeHint().height()
         pos = self.mapToGlobal(self.rect().topLeft())
-        dialog.adjustSize()
-        dialog.move(pos.x(), pos.y() - dialog.height() - 5)
-        dialog.exec()
+        # Move up by height + 5px margin
+        pos.setY(pos.y() - h - 5)
+        
+        menu.exec(pos)
 
 class MainWindow(QMainWindow):
 
