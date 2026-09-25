@@ -3173,9 +3173,6 @@ class MainWindow(QMainWindow):
                 
             self.page_ana.render_diagnostics()
             
-            # Auto-zoom the THD graph to the problem area
-            self.page_ana.thd_widget.setXRange(np.log10(peak_freq * 0.5), np.log10(peak_freq * 2.0), padding=0.1)
-            
         else:
             self.sub_lbl.setText("Stress Test complete — no usable signal detected. Try reseating the IEM in the coupler.")
     
