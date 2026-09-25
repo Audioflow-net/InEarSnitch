@@ -816,26 +816,6 @@ class AnalysisWidget(QWidget):
         self.hohd_line.hide()
         
         
-        # THD Help
-        self.thd_help_lbl = QLabel("<b>Total Harmonic Distortion (THD)</b> measures how much the In-Ear Monitor alters the original audio signal by adding unwanted harmonic frequencies.<br><br>"
-                                  "• <b>L2 (2nd Harmonic):</b> Sounds warm and musical. A slight elevation here is often perceived as 'thick' or 'pleasant', but too much muddies the bass.<br>"
-                                  "• <b>L3 (3rd Harmonic):</b> Sounds harsh, metallic, and fatiguing. High L3 often points to mechanical issues, driver clipping, or acoustic blockages.<br><br>"
-                                  "<b>What to look for:</b><br>"
-                                  "A clean IEM should have THD well below 1% across most of the frequency range. Sharp, isolated spikes in the graph strongly indicate resonance issues or a failing driver.")
-        self.thd_help_lbl.setMinimumWidth(700)
-        self.thd_help_lbl.setStyleSheet("background-color: #1e293b; color: #cbd5e1; border: 1px solid #334155; border-radius: 6px; padding: 10px; font-size: 13px;")
-        self.thd_help_lbl.setWordWrap(True)
-        self.thd_help_lbl.hide()
-        
-        btn_thd_help = HelpHoverButton("?", self.thd_help_lbl)
-        
-        thd_top_bar = QHBoxLayout()
-        thd_top_bar.addStretch()
-        thd_top_bar.addWidget(self.thd_help_lbl)
-        thd_top_bar.addWidget(btn_thd_help)
-        thd_top_bar.setAlignment(btn_thd_help, Qt.AlignTop)
-        
-        thd_layout.addLayout(thd_top_bar)
         thd_layout.addWidget(self.thd_widget)
         
         # Stress test button bar
@@ -869,28 +849,7 @@ class AnalysisWidget(QWidget):
         self.csd_widget.setYRange(-60, 20)
         self.csd_widget.getViewBox().disableAutoRange()
         
-        # CSD Help
-        self.csd_help_lbl = QLabel("<b>Cumulative Spectral Decay (CSD / Waterfall)</b> visualizes how quickly the In-Ear Monitor stops producing sound after the signal stops, adding the dimension of <i>Time</i> to the frequency response.<br><br>"
-                                  "• <b>Clean Decay:</b> The graph drops off sharply and smoothly. This means the driver is fast and well-controlled, leading to precise transients and clear separation.<br>"
-                                  "• <b>Ringing / Ridges:</b> Mountains stretching forward in time mean the driver or acoustic chamber continues to resonate. Severe ringing causes listening fatigue and smeared details.<br><br>"
-                                  "<b>What to look for:</b><br>"
-                                  "Focus on the lower treble (4kHz - 8kHz). A deep, fast drop-off here is the hallmark of a high-end, well-tuned IEM. Prolonged ridges indicate poor acoustic damping.")
-        self.csd_help_lbl.setMinimumWidth(700)
-        self.csd_help_lbl.setStyleSheet("background-color: #1e293b; color: #cbd5e1; border: 1px solid #334155; border-radius: 6px; padding: 10px; font-size: 13px;")
-        self.csd_help_lbl.setWordWrap(True)
-        self.csd_help_lbl.hide()
-        
-        btn_csd_help = HelpHoverButton("?", self.csd_help_lbl)
-        
-        csd_top_bar = QHBoxLayout()
-        csd_top_bar.addStretch()
-        csd_top_bar.addWidget(self.csd_help_lbl)
-        csd_top_bar.addWidget(btn_csd_help)
-        csd_top_bar.setAlignment(btn_csd_help, Qt.AlignTop)
-        
-        csd_layout.addLayout(csd_top_bar)
         csd_layout.addWidget(self.csd_widget)
-        
         self.graph_tabs.addTab(csd_container, "Waterfall (CSD)")
         
         left_pane_layout.addWidget(self.graph_tabs)
