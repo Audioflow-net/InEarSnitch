@@ -1359,7 +1359,6 @@ class AnalysisWidget(QWidget):
             self.tip_analysis_card.set_active_tip(tip_id)
 
     def refresh_view(self):
-        print('[DEBUG] refresh_view called!')
         if not hasattr(self, '_last_data'): return
         sweep_count = "1x"
         smoothing_pts = 240
