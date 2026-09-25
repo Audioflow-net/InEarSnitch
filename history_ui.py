@@ -374,13 +374,13 @@ class HistoryWidget(QWidget):
         chan_vis_layout.setContentsMargins(0,0,0,0)
         chan_vis_layout.setSpacing(0)
         
-        self.btn_chan_l = QPushButton("Left")
+        self.btn_chan_l = QPushButton("L")
         self.btn_chan_l.setToolTip("Show/Hide Left Channel Curve")
         self.btn_chan_l.setCheckable(True)
         self.btn_chan_l.setChecked(True)
         self.btn_chan_l.setStyleSheet(f"QPushButton {{ background-color: {bg_hover}; color: {text_sec}; border: 1px solid #333; border-top-left-radius: 4px; border-bottom-left-radius: 4px; border-right: none; padding: 4px 10px; font-weight: bold; font-size: 11px; }} QPushButton:checked {{ background-color: {active}; color: {fg}; border-color: {border}; }}")
         
-        self.btn_chan_r = QPushButton("Right")
+        self.btn_chan_r = QPushButton("R")
         self.btn_chan_r.setToolTip("Show/Hide Right Channel Curve")
         self.btn_chan_r.setCheckable(True)
         self.btn_chan_r.setChecked(True)
