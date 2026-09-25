@@ -1602,7 +1602,9 @@ class AnalysisWidget(QWidget):
                 
                 card = EQPresetCardWidget(name, self.apply_eq_preset)
                 card.setFixedHeight(40)
-                card.setStyleSheet("QFrame { background: #222; border: 1px solid #333; border-radius: 6px; } QFrame:hover { border: 1px solid #0ea5e9; }")
+                card_bg = theme.get_color('bg_panel')
+                card_border = theme.get_color('border')
+                card.setStyleSheet(f"QFrame {{ background: {card_bg}; border: 1px solid {card_border}; border-radius: 6px; }} QFrame:hover {{ border: 1px solid #0ea5e9; }}")
                 cl = QHBoxLayout(card)
                 cl.setContentsMargins(8, 4, 8, 4)
                 
@@ -1616,7 +1618,7 @@ class AnalysisWidget(QWidget):
                 mini_plot.setFixedSize(110, 28)
                 mini_plot.hideAxis('bottom')
                 mini_plot.hideAxis('left')
-                mini_plot.setBackground(theme.get_color('bg_main'))
+                mini_plot.setBackground(card_bg)
                 mini_plot.setMouseEnabled(x=False, y=False)
                 mini_plot.setMenuEnabled(False)
                 mini_plot.setLogMode(x=True, y=False)
@@ -1640,9 +1642,11 @@ class AnalysisWidget(QWidget):
                 delta = temp_dsp.get_magnitude_response(f_mini, 48000)
                 mini_plot.plot(f_mini, delta, pen=pg.mkPen(theme.get_color('accent'), width=2))
                 
-                btn_del = QPushButton("🗑")
+                btn_del = QPushButton("✕")
                 btn_del.setFixedSize(26, 26)
-                btn_del.setStyleSheet("QPushButton { background-color: #2a2a2f; color: #888; font-size: 14px; border-radius: 4px; border: 1px solid #3f3f46; } QPushButton:hover { background-color: #dc2626; color: white; border: 1px solid #b91c1c; }")
+                btn_bg = theme.get_color('bg_hover')
+                text_sec = theme.get_color('text_secondary')
+                btn_del.setStyleSheet(f"QPushButton {{ background-color: {btn_bg}; color: {text_sec}; font-size: 14px; font-weight: bold; border-radius: 4px; border: 1px solid {card_border}; padding-bottom: 2px; }} QPushButton:hover {{ background-color: #dc2626; color: white; border: 1px solid #b91c1c; }}")
                 btn_del.clicked.connect(lambda checked, n=name: self.delete_eq_preset(n))
                 
                 cl.addWidget(lbl, stretch=1)
@@ -1758,23 +1762,9 @@ class AnalysisWidget(QWidget):
             btn_border = theme.get_color('border')
             self.btn_toggle_tools.setStyleSheet(f"QPushButton {{ background-color: {btn_bg}; color: {fg}; border: none; border-left: 1px solid {btn_border}; font-size: 10px; }} QPushButton:hover {{ background-color: {border}; color: {fg}; }}")
             
-        # Update EQ mini plots and labels
+        # Reload EQ presets to apply new theme colors
         if hasattr(self, 'preset_cards_layout'):
-            for i in range(self.preset_cards_layout.count()):
-                item = self.preset_cards_layout.itemAt(i)
-                if item and item.widget():
-                    card = item.widget()
-                    # Reapply styling to the card to trigger the patched setter
-                    if hasattr(card, '_original_qss'):
-                        card.setStyleSheet(card._original_qss)
-                    from PySide6.QtWidgets import QLabel
-                    for child in card.findChildren(QLabel):
-                        if hasattr(child, '_original_qss'):
-                            child.setStyleSheet(child._original_qss)
-                    # The mini plots need explicit updating
-                    import pyqtgraph as pg
-                    for child in card.findChildren(pg.PlotWidget):
-                        child.setBackground(theme.get_color('bg_main'))
+            self.load_eq_presets()
                         
         if hasattr(self, 'tip_analysis_card') and self.tip_analysis_card:
             self.tip_analysis_card.update_theme()
