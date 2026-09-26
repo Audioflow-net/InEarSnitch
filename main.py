@@ -574,16 +574,16 @@ class SearchableComboBox(QComboBox):
             
     def eventFilter(self, obj, event):
         if obj == self.lineEdit():
-            if event.type() == QtCore.QEvent.MouseButtonPress:
+            if event.type() == QEvent.MouseButtonPress:
                 # Store text and clear it so completer shows all options
                 if self.lineEdit().text():
                     self._last_valid_text = self.lineEdit().text()
                 self.lineEdit().clear()
                 # Use QTimer to open the popup AFTER the mouse click is fully processed
-                QtCore.QTimer.singleShot(50, self.showPopup)
+                QTimer.singleShot(50, self.showPopup)
                 return True # We handled the click
                 
-            elif event.type() == QtCore.QEvent.FocusOut:
+            elif event.type() == QEvent.FocusOut:
                 # If they clicked away and left it empty, restore the old text
                 if not self.lineEdit().text():
                     self.lineEdit().setText(self._last_valid_text)
