@@ -2508,8 +2508,8 @@ class MainWindow(QMainWindow):
                             # Clear text and show popup on click
                             obj.clear()
                             parent = obj.parent()
-                            if hasattr(parent, "showPopup"):
-                                QtCore.QTimer.singleShot(0, parent.showPopup)
+                            if hasattr(parent, "completer") and parent.completer():
+                                parent.completer().complete()
                         elif event.type() == QtCore.QEvent.FocusOut:
                             parent = obj.parent()
                             if hasattr(parent, "currentText"):
