@@ -554,7 +554,7 @@ class HistoryWidget(QWidget):
         self.search_bar.setStyleSheet(f"background-color: {bg_hover}; color: {fg}; border: 1px solid {border}; padding: 6px; border-radius: 4px;")
         
         # Add ESC key handling to drop focus and clear
-        from PySide6.QtCore import QObject, QEvent, Qt
+        from PySide6.QtCore import QObject, QEvent
         class SearchBarFilter(QObject):
             def eventFilter(self, obj, event):
                 if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Escape:
