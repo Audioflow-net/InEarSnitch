@@ -564,6 +564,7 @@ class SearchableComboBox(QComboBox):
         self.completer().setMaxVisibleItems(25)
         
         self.currentIndexChanged.connect(self._on_index_changed)
+        self.completer().activated.connect(self._on_completer_activated)
         
         self.lineEdit().installEventFilter(self)
         if self.completer() and self.completer().popup():
@@ -572,6 +573,12 @@ class SearchableComboBox(QComboBox):
     def _on_index_changed(self, idx):
         if idx >= 0:
             QTimer.singleShot(50, lambda: self.lineEdit().setCursorPosition(0))
+            
+    def _on_completer_activated(self, text):
+        idx = self.findText(text)
+        if idx >= 0:
+            if self.currentIndex() != idx:
+                self.setCurrentIndex(idx)
             
     def eventFilter(self, obj, event):
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Escape:
@@ -2483,7 +2490,7 @@ class MainWindow(QMainWindow):
         if hasattr(self, 'page_ana'):
             self.update_analysis_view()
 
-    def load_targets(self, select_meas_id=None):
+    def load_targets(self):
         # We populate the four combo boxes (2 in Meas, 2 in Ana)
         boxes_hist = [self.cb_meas_history, self.page_ana.cb_ana_history]
         boxes_tgt = [self.cb_meas_target, self.page_ana.cb_ana_target]
@@ -2524,7 +2531,7 @@ class MainWindow(QMainWindow):
                 if ts:
                     try:
                         dt = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
-                        date_str = dt.strftime("%d.%m. %H:%M")
+                        date_str = dt.strftime("%d.%m. %H:%M:%S")
                     except Exception:
                         date_str = ts.split()[0]
                 
@@ -2572,12 +2579,7 @@ class MainWindow(QMainWindow):
                 # The SearchableComboBox class handles its own events now.
                     
         # Restore selections
-        if select_meas_id is not None:
-            idx = self.cb_meas_history.findData(select_meas_id)
-            if idx >= 0:
-                for b in boxes_hist:
-                    b.setCurrentIndex(idx)
-        elif saved_hist and saved_hist != "No History Selected":
+        if saved_hist and saved_hist != "No History Selected":
             idx = self.cb_meas_history.findText(saved_hist)
             if idx >= 0:
                 for b in boxes_hist:
@@ -4888,7 +4890,7 @@ class MainWindow(QMainWindow):
                 if val is not None:
                     tip_id = int(val)
 
-            new_meas_id = self.db.save_measurement(
+            self.db.save_measurement(
                 self.current_iem_id, 
                 self.temp_freqs, 
                 self.temp_mag_l, 
@@ -4922,7 +4924,7 @@ class MainWindow(QMainWindow):
                 self.page_ana.tip_analysis_card.refresh_metrics()
             
             # Also update the history dropdowns so the user can select it for comparison immediately
-            self.load_targets(select_meas_id=new_meas_id)
+            self.load_targets()
             
         except Exception as e:
             self.sub_lbl.setText("We couldn't save to the database — please try again.")

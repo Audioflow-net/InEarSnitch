@@ -202,12 +202,12 @@ Directamente debajo del botón RTA se encuentra la casilla **"IEC Guide"** (ante
 ### ¿Cómo funciona la Guía IEC?
 Cuando el IEM se inserta en el tubo de medición (acoplador IEC 711), se forma una pequeña cavidad entre el IEM y el micrófono. El aire en esta cavidad resuena físicamente a una frecuencia muy específica: la "Resonancia del Acoplador" (Coupler Resonance).
 
-El estándar IEC 711 fue diseñado específicamente en los años 80 para que esta resonancia simule el canal auditivo humano. Para obtener una medición comparable (p. ej., con bases de datos de Crinacle o Super*Review), el IEM DEBE insertarse a una profundidad en la que esta resonancia física se produzca exactamente en el rango de **7.000 Hz a 8.600 Hz** (clásicamente ~8 kHz).
+El estándar IEC 711 fue diseñado específicamente en los años 80 para que esta resonancia simule el canal auditivo humano. Para obtener una medición comparable (p. ej., con bases de datos de Crinacle o Super*Review), el IEM DEBE insertarse a una profundidad en la que esta resonancia física se produzca en el rango de **6.500 Hz a 8.600 Hz**. Aunque el ideal absoluto de laboratorio es ~8.0 kHz, la aplicación tolera y acepta (Zona verde) cualquier valor entre 6.5 kHz y 8.6 kHz. Esto es especialmente importante para los grandes Custom In-Ears (CIEMs) que físicamente no se pueden empujar más profundo en el acoplador.
 
-La *Guía IEC* muestra una zona verde objetivo (7 - 8,6 kHz) y una cruz de referencia que rastrea el pico de resonancia actual en tiempo real.
-- Texto rojo ("Push Deeper" / "Empuje más profundo"): La resonancia está por debajo de 7 kHz -> Empuje el IEM más adentro del tubo.
-- Texto rojo ("Pull Out Slightly" / "Retire ligeramente"): La resonancia está por encima de 8,6 kHz -> Retire el IEM un poco.
-- Texto verde ("Depth OK" / "Profundidad correcta"): ¡Se ha alcanzado la profundidad de inserción perfecta!
+La *Guía IEC* muestra una zona verde objetivo (6.5 - 8.6 kHz) y una cruz de referencia que rastrea el pico de resonancia actual en tiempo real.
+- Texto rojo ("Push Deeper" / "Empuje más profundo"): La resonancia está por debajo de 6.5 kHz -> Empuje el IEM más adentro del tubo.
+- Texto rojo ("Pull Out Slightly" / "Retire ligeramente"): La resonancia está por encima de 8.6 kHz -> Retire el IEM un poco.
+- Texto verde ("Depth OK" / "Profundidad correcta"): ¡Se ha alcanzado la profundidad de inserción dentro del rango tolerado!
 
 ### ¿Por qué siempre 8 kHz, incluso con diferentes calibraciones?
 Una pregunta frecuente es por qué la guía *siempre* apunta a 8 kHz, incluso si se han cargado perfiles de calibración de micrófono completamente diferentes.

@@ -216,10 +216,10 @@ Wenn der In-Ear Monitor nicht 100% luftdicht mit dem Kuppler abschließt, entwei
 - **Rote 40 Hz Linie (Bass Leak!):** Luft entweicht. Drücken Sie den In-Ear gerader in den Kuppler oder nutzen Sie einen anderen Schaumstoff/Silikon-Tip.
 
 ### 2. Einstecktiefe (IEC Guide / 8 kHz Linie)
-Wenn der In-Ear in das Messrohr (IEC 711 Kuppler) eingeführt wird, entsteht ein kleiner Hohlraum, der bei einer bestimmten Frequenz resoniert. Für normgerechte Messungen muss der In-Ear exakt so tief eingesteckt werden, dass diese Resonanz in der grünen Zielzone zwischen **7.000 Hz und 8.600 Hz** liegt.
-- **Gelber Text ("Push Deeper"):** Resonanz liegt unter 7 kHz -> Den In-Ear weiter in das Rohr schieben.
+Wenn der In-Ear in das Messrohr (IEC 711 Kuppler) eingeführt wird, entsteht ein kleiner Hohlraum, der bei einer bestimmten Frequenz resoniert. Für normgerechte Messungen muss der In-Ear exakt so tief eingesteckt werden, dass diese Resonanz in der grünen Zielzone zwischen **6.500 Hz und 8.600 Hz** liegt. Das absolute Labor-Ideal ist zwar ~8.0 kHz, aber die App toleriert und akzeptiert (Grüner Bereich) alles zwischen 6.5 kHz und 8.6 kHz. Das ist besonders wichtig für große Custom In-Ears (CIEMs), die sich physisch nicht tiefer in den Coupler schieben lassen.
+- **Gelber Text ("Push Deeper"):** Resonanz liegt unter 6.5 kHz -> Den In-Ear weiter in das Rohr schieben.
 - **Gelber Text ("Pull Out Slightly"):** Resonanz liegt über 8.6 kHz -> Den In-Ear ein kleines Stück herausziehen.
-- **Grüner Text ("Depth OK"):** Perfekte Einstecktiefe erreicht!
+- **Grüner Text ("Depth OK"):** Einstecktiefe im tolerierten Bereich erreicht!
 
 ### Warum immer 8 kHz – selbst bei anderen Kalibrierungen?
 Oft wird gefragt, warum der Guide *immer* auf 8 kHz zielt, selbst wenn man unterschiedliche Mikrofon-Kalibrierungsdateien geladen hat.

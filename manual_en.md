@@ -214,10 +214,10 @@ If the In-Ear Monitor does not form a 100% air-tight seal with the coupler, pres
 - **Red 40 Hz Line (Bass Leak!):** Air is escaping. Push the IEM in straighter or use a different foam/silicone tip.
 
 ### 2. Insertion Depth (IEC Guide / 8 kHz Line)
-When the IEM is inserted into the measurement tube (IEC 711 coupler), a small cavity is formed that resonates at a specific frequency. For standardized measurements, the IEM must be inserted exactly to a depth where this resonance lands in the green target zone between **7,000 Hz and 8,600 Hz**.
-- **Yellow Text ("Push Deeper"):** Resonance is below 7 kHz -> Push the IEM further into the tube.
+When the IEM is inserted into the measurement tube (IEC 711 coupler), a small cavity is formed that resonates at a specific frequency. For standardized measurements, the IEM must be inserted exactly to a depth where this resonance lands in the green target zone between **6,500 Hz and 8,600 Hz**. Although the absolute lab ideal is ~8.0 kHz, the app tolerates and accepts (Green zone) anything between 6.5 kHz and 8.6 kHz. This is especially important for large Custom In-Ears (CIEMs) that physically cannot be pushed any deeper into the coupler.
+- **Yellow Text ("Push Deeper"):** Resonance is below 6.5 kHz -> Push the IEM further into the tube.
 - **Yellow Text ("Pull Out Slightly"):** Resonance is above 8.6 kHz -> Pull the IEM out a tiny bit.
-- **Green Text ("Depth OK"):** Perfect insertion depth achieved!
+- **Green Text ("Depth OK"):** Insertion depth within tolerated range achieved!
 
 ### Why always 8 kHz – even with different calibrations?
 A common question is why the depth guide *always* aims for 8 kHz, even if different microphone calibration profiles are loaded.

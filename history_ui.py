@@ -786,11 +786,35 @@ class HistoryWidget(QWidget):
             
             rows = cursor.fetchall()
             
+            from datetime import datetime
+            date_counts = {}
+            for row in rows:
+                ts = row[0]
+                if ts:
+                    date_only = ts.split()[0]
+                    date_counts[date_only] = date_counts.get(date_only, 0) + 1
+            
             for row in rows:
                 (timestamp, notes, photo_path, freq_blob, mag_l_blob, mag_r_blob,
                  iem_name, custom_name, meas_name,
                  raw_tip_id, raw_tip_name, raw_tip_icon, raw_tip_color) = row
-                base_name = custom_name if custom_name else iem_name
+                 
+                base_name = "Measurement"
+                if timestamp:
+                    date_only = timestamp.split()[0]
+                    try:
+                        dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+                        formatted_date = dt.strftime("%d.%m.%Y")
+                        formatted_time = dt.strftime("%H:%M")
+                    except Exception:
+                        formatted_date = date_only
+                        formatted_time = ""
+                        
+                    if date_counts.get(date_only, 0) > 1 and formatted_time:
+                        base_name = f"{formatted_date} - {formatted_time}"
+                    else:
+                        base_name = formatted_date
+                
                 display_name = meas_name if meas_name else base_name
                 
                 tip_id = int(raw_tip_id) if raw_tip_id is not None else 1
@@ -975,14 +999,41 @@ class HistoryWidget(QWidget):
             
             cursor.execute('UPDATE Measurements SET notes = ?, meas_name = ?, timestamp = ? WHERE timestamp = ?', 
                            (new_notes, new_name, new_ts, old_ts))
-            conn.commit()
-            conn.close()
-            
             # Update item data
             data['notes'] = new_notes
             data['meas_name'] = new_name
             data['timestamp'] = new_ts
-            data['iem_name'] = new_name if new_name else data.get('base_name', '')
+            
+            new_base = "Measurement"
+            if new_ts:
+                new_date_only = new_ts.split()[0]
+                cursor.execute("SELECT iem_id FROM Measurements WHERE timestamp = ?", (new_ts,))
+                row = cursor.fetchone()
+                if row:
+                    iem_id = row[0]
+                    cursor.execute("SELECT COUNT(*) FROM Measurements WHERE iem_id = ? AND timestamp LIKE ?", (iem_id, new_date_only + "%"))
+                    count = cursor.fetchone()[0]
+                    
+                    from datetime import datetime
+                    try:
+                        dt = datetime.strptime(new_ts, "%Y-%m-%d %H:%M:%S")
+                        formatted_date = dt.strftime("%d.%m.%Y")
+                        formatted_time = dt.strftime("%H:%M")
+                    except Exception:
+                        formatted_date = new_date_only
+                        formatted_time = ""
+                        
+                    if count > 1 and formatted_time:
+                        new_base = f"{formatted_date} - {formatted_time}"
+                    else:
+                        new_base = formatted_date
+            
+            conn.commit()
+            conn.close()
+            
+            data['base_name'] = new_base
+            
+            data['iem_name'] = new_name if new_name else new_base
             items[0].setData(Qt.UserRole, data)
             
             # Update Card UI
@@ -1078,7 +1129,12 @@ class HistoryWidget(QWidget):
                 cursor.execute('DELETE FROM Measurements WHERE timestamp = ?', (ts,))
                 conn.commit()
                 conn.close()
-                self.load_history(self.last_m_id)
+                self.load_history(self.last_m_id, force_reload=True)
+                
+                # Also notify main window to update targets if possible
+                main_window = self.window()
+                if hasattr(main_window, 'load_targets'):
+                    main_window.load_targets()
             except Exception as e:
                 print(e)
 

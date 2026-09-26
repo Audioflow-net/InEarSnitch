@@ -41,6 +41,7 @@ class SearchableComboBox(QComboBox):
         
         self._last_valid_text = ""
         self.currentIndexChanged.connect(self._on_index_changed)
+        self.completer().activated.connect(self._on_completer_activated)
         
         self.lineEdit().installEventFilter(self)
         if self.completer() and self.completer().popup():
@@ -50,6 +51,12 @@ class SearchableComboBox(QComboBox):
         if idx >= 0:
             self._last_valid_text = self.itemText(idx)
             QTimer.singleShot(50, lambda: self.lineEdit().setCursorPosition(0))
+            
+    def _on_completer_activated(self, text):
+        idx = self.findText(text)
+        if idx >= 0:
+            if self.currentIndex() != idx:
+                self.setCurrentIndex(idx)
             
     def eventFilter(self, obj, event):
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Escape:
