@@ -582,17 +582,28 @@ class SearchableComboBox(QComboBox):
             elif event.type() == QEvent.MouseButtonRelease:
                 self.completer().setCompletionPrefix("")
                 self.completer().complete()
+            elif event.type() == QEvent.KeyPress:
+                # If they press Escape, or Return/Enter when empty, restore it immediately
+                if event.key() == Qt.Key_Escape or (event.key() in (Qt.Key_Return, Qt.Key_Enter) and not self.lineEdit().text()):
+                    self._do_restore()
+                    if event.key() == Qt.Key_Escape and self.completer().popup():
+                        self.completer().popup().hide()
             elif event.type() == QEvent.FocusOut:
-                # Use a singleShot to check after all other events (like popup closing) have resolved
-                QTimer.singleShot(0, self._check_restore)
+                QTimer.singleShot(100, self._check_restore)
         return super().eventFilter(obj, event)
         
     def _check_restore(self):
-        # If popup is still open (e.g. clicking its scrollbar), do not restore yet
-        if self.completer().popup() and self.completer().popup().isVisible():
+        # If the line edit regained focus (e.g. returning from popup scrollbar), don't restore yet
+        if self.lineEdit().hasFocus():
             return
-        # If they clicked away and left it empty, restore the old text
-        if not self.lineEdit().text():
+        # If popup is still fully visible and active, wait
+        if self.completer().popup() and self.completer().popup().isVisible() and self.completer().popup().hasFocus():
+            return
+            
+        self._do_restore()
+
+    def _do_restore(self):
+        if not self.lineEdit().text() and self._last_valid_text:
             self.lineEdit().setText(self._last_valid_text)
             idx = self.findText(self._last_valid_text)
             if idx >= 0:
