@@ -1117,7 +1117,22 @@ class HistoryWidget(QWidget):
             # Simple average if both are present? Or just ask the user. We'll default to left.
             mag_to_save = mag_l
             
-        target_name, ok = QInputDialog.getText(self, "Save Target", "Target Name:", text=f"{iem} Target")
+        dialog = QInputDialog(self)
+        dialog.setWindowTitle("Save Target")
+        dialog.setLabelText("Target Name:")
+        dialog.setTextValue(f"{iem} Target")
+        dialog.setMinimumWidth(400)
+        dialog.resize(450, 150)
+        
+        import theme
+        bg = theme.get_color('bg_panel')
+        fg = theme.get_color('text_primary')
+        border = theme.get_color('border')
+        dialog.setStyleSheet(f"QInputDialog {{ background-color: {bg}; color: {fg}; }} QLineEdit {{ background-color: #111; color: white; border: 1px solid {border}; padding: 6px; border-radius: 4px; }} QLabel {{ color: {fg}; }} QPushButton {{ background-color: #333; color: white; border: 1px solid {border}; padding: 6px 12px; border-radius: 4px; }}")
+        
+        ok = dialog.exec()
+        target_name = dialog.textValue()
+        
         if ok and target_name:
             try:
                 target_dir = os.path.join("reference_targets", "Pro_Live_IEMs")
