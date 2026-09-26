@@ -2494,6 +2494,9 @@ class MainWindow(QMainWindow):
             if completer:
                 completer.setCompletionMode(QCompleter.PopupCompletion)
                 completer.setFilterMode(Qt.MatchContains)
+                if completer.popup():
+                    completer.popup().setStyleSheet("background-color: #111; color: white; border: 1px solid #333;")
+                completer.setMaxVisibleItems(25)
             
             # Styling the line edit inside the combobox
             line_edit = b.lineEdit()
@@ -2512,10 +2515,9 @@ class MainWindow(QMainWindow):
                             
                             # Clear text and show popup on click
                             obj.clear()
-                            if hasattr(parent, "showPopup"):
-                                QtCore.QTimer.singleShot(0, parent.showPopup)
-                                # Force focus back to line edit so typing works
-                                QtCore.QTimer.singleShot(50, obj.setFocus)
+                            if hasattr(parent, "completer") and parent.completer():
+                                # Use completer popup instead of combobox popup so typing works natively
+                                QtCore.QTimer.singleShot(0, parent.completer().complete)
                         elif event.type() == QtCore.QEvent.FocusOut:
                             parent = obj.parent()
                             # Restore text if they didn't pick anything
