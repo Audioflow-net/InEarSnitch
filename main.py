@@ -563,7 +563,6 @@ class SearchableComboBox(QComboBox):
         self.completer().setFilterMode(Qt.MatchContains)
         self.completer().setMaxVisibleItems(25)
         
-        self._last_valid_text = ""
         self.currentIndexChanged.connect(self._on_index_changed)
         
         self.lineEdit().installEventFilter(self)
@@ -572,18 +571,16 @@ class SearchableComboBox(QComboBox):
         
     def _on_index_changed(self, idx):
         if idx >= 0:
-            self._last_valid_text = self.itemText(idx)
             QTimer.singleShot(50, lambda: self.lineEdit().setCursorPosition(0))
             
     def eventFilter(self, obj, event):
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Escape:
-            if obj == self.lineEdit() or (self.completer() and obj == self.completer().popup()):
-                self._do_restore()
-                if self.completer() and self.completer().popup():
-                    self.completer().popup().hide()
-                self.lineEdit().clearFocus()
-                self.clearFocus()
-                return True
+            self._do_restore()
+            if self.completer() and self.completer().popup():
+                self.completer().popup().hide()
+            self.lineEdit().clearFocus()
+            self.clearFocus()
+            return True
         elif event.type() == QEvent.KeyPress and event.key() in (Qt.Key_Return, Qt.Key_Enter):
             if obj == self.lineEdit():
                 if self.findText(self.lineEdit().text()) == -1:
@@ -594,8 +591,6 @@ class SearchableComboBox(QComboBox):
 
         if obj == self.lineEdit():
             if event.type() == QEvent.MouseButtonPress:
-                if self.lineEdit().text():
-                    self._last_valid_text = self.lineEdit().text()
                 self.lineEdit().clear()
             elif event.type() == QEvent.MouseButtonRelease:
                 self.completer().setCompletionPrefix("")
@@ -614,16 +609,18 @@ class SearchableComboBox(QComboBox):
             self._do_restore()
 
     def _do_restore(self):
-        if self._last_valid_text:
-            self.lineEdit().setText(self._last_valid_text)
-            idx = self.findText(self._last_valid_text)
-            if idx >= 0:
-                self.setCurrentIndex(idx)
+        idx = self.currentIndex()
+        if idx >= 0:
+            valid_text = self.itemText(idx)
+            self.lineEdit().setText(valid_text)
+            exact_idx = self.findText(valid_text)
+            if exact_idx >= 0:
+                self.setCurrentIndex(exact_idx)
+        else:
+            self.lineEdit().clear()
         QTimer.singleShot(50, lambda: self.lineEdit().setCursorPosition(0))
 
     def showPopup(self):
-        if self.lineEdit().text():
-            self._last_valid_text = self.lineEdit().text()
         self.lineEdit().clear()
         self.completer().setCompletionPrefix("")
         self.completer().complete()
@@ -2486,7 +2483,7 @@ class MainWindow(QMainWindow):
         if hasattr(self, 'page_ana'):
             self.update_analysis_view()
 
-    def load_targets(self):
+    def load_targets(self, select_meas_id=None):
         # We populate the four combo boxes (2 in Meas, 2 in Ana)
         boxes_hist = [self.cb_meas_history, self.page_ana.cb_ana_history]
         boxes_tgt = [self.cb_meas_target, self.page_ana.cb_ana_target]
@@ -2575,7 +2572,12 @@ class MainWindow(QMainWindow):
                 # The SearchableComboBox class handles its own events now.
                     
         # Restore selections
-        if saved_hist and saved_hist != "No History Selected":
+        if select_meas_id is not None:
+            idx = self.cb_meas_history.findData(select_meas_id)
+            if idx >= 0:
+                for b in boxes_hist:
+                    b.setCurrentIndex(idx)
+        elif saved_hist and saved_hist != "No History Selected":
             idx = self.cb_meas_history.findText(saved_hist)
             if idx >= 0:
                 for b in boxes_hist:
@@ -4886,7 +4888,7 @@ class MainWindow(QMainWindow):
                 if val is not None:
                     tip_id = int(val)
 
-            self.db.save_measurement(
+            new_meas_id = self.db.save_measurement(
                 self.current_iem_id, 
                 self.temp_freqs, 
                 self.temp_mag_l, 
@@ -4920,7 +4922,7 @@ class MainWindow(QMainWindow):
                 self.page_ana.tip_analysis_card.refresh_metrics()
             
             # Also update the history dropdowns so the user can select it for comparison immediately
-            self.load_targets()
+            self.load_targets(select_meas_id=new_meas_id)
             
         except Exception as e:
             self.sub_lbl.setText("We couldn't save to the database — please try again.")
