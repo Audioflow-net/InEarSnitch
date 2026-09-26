@@ -567,6 +567,8 @@ class SearchableComboBox(QComboBox):
         self.currentIndexChanged.connect(self._on_index_changed)
         
         self.lineEdit().installEventFilter(self)
+        if self.completer() and self.completer().popup():
+            self.completer().popup().installEventFilter(self)
         
     def _on_index_changed(self, idx):
         if idx >= 0:
@@ -574,6 +576,22 @@ class SearchableComboBox(QComboBox):
             QTimer.singleShot(50, lambda: self.lineEdit().setCursorPosition(0))
             
     def eventFilter(self, obj, event):
+        if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Escape:
+            if obj == self.lineEdit() or (self.completer() and obj == self.completer().popup()):
+                self._do_restore()
+                if self.completer() and self.completer().popup():
+                    self.completer().popup().hide()
+                self.lineEdit().clearFocus()
+                self.clearFocus()
+                return True
+        elif event.type() == QEvent.KeyPress and event.key() in (Qt.Key_Return, Qt.Key_Enter):
+            if obj == self.lineEdit():
+                if self.findText(self.lineEdit().text()) == -1:
+                    self._do_restore()
+                    self.lineEdit().clearFocus()
+                    self.clearFocus()
+                    return True
+
         if obj == self.lineEdit():
             if event.type() == QEvent.MouseButtonPress:
                 if self.lineEdit().text():
@@ -582,16 +600,6 @@ class SearchableComboBox(QComboBox):
             elif event.type() == QEvent.MouseButtonRelease:
                 self.completer().setCompletionPrefix("")
                 self.completer().complete()
-            elif event.type() == QEvent.KeyPress:
-                if event.key() == Qt.Key_Escape:
-                    self._do_restore()
-                    if self.completer().popup():
-                        self.completer().popup().hide()
-                    return True
-                elif event.key() in (Qt.Key_Return, Qt.Key_Enter):
-                    if self.findText(self.lineEdit().text()) == -1:
-                        self._do_restore()
-                        return True
             elif event.type() == QEvent.FocusOut:
                 QTimer.singleShot(50, lambda: self.lineEdit().setCursorPosition(0))
                 QTimer.singleShot(100, self._check_restore)
