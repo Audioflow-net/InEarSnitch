@@ -559,13 +559,7 @@ class SearchableComboBox(QComboBox):
         self.completer().setCompletionMode(QCompleter.PopupCompletion)
         self.completer().setFilterMode(Qt.MatchContains)
         
-        # When clicking into the text area, clear text and show popup
-        self.lineEdit().mousePressEvent = self._handle_mouse_press
-        
-    def _handle_mouse_press(self, event):
-        super(QComboBox, self).lineEdit().mousePressEvent(event)
-        self.lineEdit().clear()
-        self.showPopup()
+        # Event handling is done via eventFilter in load_targets
         
 class LiveSealWorker(QThread):
 
@@ -2492,6 +2486,7 @@ class MainWindow(QMainWindow):
             b.blockSignals(False)
             # Make combobox searchable
             b.setEditable(True)
+            b.setMaxVisibleItems(25)
             from PySide6.QtWidgets import QCompleter
             from PySide6.QtCore import Qt
             b.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
@@ -2509,7 +2504,7 @@ class MainWindow(QMainWindow):
                 from PySide6 import QtCore
                 class FocusSelectFilter(QtCore.QObject):
                     def eventFilter(self, obj, event):
-                        if event.type() == QtCore.QEvent.MouseButtonPress:
+                        if event.type() == QtCore.QEvent.MouseButtonRelease:
                             # Clear text and show popup on click
                             obj.clear()
                             parent = obj.parent()

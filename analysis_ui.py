@@ -34,12 +34,7 @@ class SearchableComboBox(QComboBox):
         self.completer().setCompletionMode(QCompleter.PopupCompletion)
         self.completer().setFilterMode(Qt.MatchContains)
         
-        self.lineEdit().mousePressEvent = self._handle_mouse_press
-        
-    def _handle_mouse_press(self, event):
-        super(QComboBox, self).lineEdit().mousePressEvent(event)
-        self.lineEdit().clear()
-        self.showPopup()
+        pass
 
 class FreqAxisItem(pg.AxisItem):
 
