@@ -2563,6 +2563,9 @@ class MainWindow(QMainWindow):
                 completer.setFilterMode(Qt.MatchContains)
                 if completer.popup():
                     completer.popup().setStyleSheet("background-color: #111; color: white; border: 1px solid #333;")
+                    # Re-install event filter just in case the popup was recreated
+                    completer.popup().removeEventFilter(b)
+                    completer.popup().installEventFilter(b)
                 completer.setMaxVisibleItems(25)
             
             # Styling the line edit inside the combobox
