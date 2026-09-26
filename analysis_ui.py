@@ -22,7 +22,27 @@ class HelpHoverButton(QPushButton):
         self.target_widget.hide()
         super().leaveEvent(event)
 
+
+from PySide6.QtWidgets import QComboBox, QCompleter
+from PySide6.QtCore import Qt, Signal
+
+class SearchableComboBox(QComboBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setEditable(True)
+        self.setInsertPolicy(QComboBox.NoInsert)
+        self.completer().setCompletionMode(QCompleter.PopupCompletion)
+        self.completer().setFilterMode(Qt.MatchContains)
+        
+        self.lineEdit().mousePressEvent = self._handle_mouse_press
+        
+    def _handle_mouse_press(self, event):
+        super(QComboBox, self).lineEdit().mousePressEvent(event)
+        self.lineEdit().clear()
+        self.showPopup()
+
 class FreqAxisItem(pg.AxisItem):
+
     def tickStrings(self, values, scale, spacing):
         if not values: return []
         strings = []
@@ -740,13 +760,13 @@ class AnalysisWidget(QWidget):
         self.btn_chan_r.setChecked(True)
         self.btn_chan_r.setStyleSheet("QPushButton { background-color: #1f1f23; color: #888; border: 1px solid #3f3f46; border-top-right-radius: 4px; border-bottom-right-radius: 4px; padding: 4px 10px; font-weight: bold; font-size: 11px; } QPushButton:checked { background-color: #ef4444; color: white; border-color: #ef4444; }")
 
-        self.cb_ana_target = QComboBox()
+        self.cb_ana_target = SearchableComboBox()
         self.cb_ana_target.hide()
         self.cb_ana_target.addItem("-- Target --")
         self.cb_ana_target.setToolTip("Select a target curve for analysis.")
         self.cb_ana_target.setMinimumWidth(120)
         
-        self.cb_ana_history = QComboBox()
+        self.cb_ana_history = SearchableComboBox()
         self.cb_ana_history.hide()
         self.cb_ana_history.addItem("-- History --")
         self.cb_ana_history.setToolTip("Select a historical measurement.")

@@ -547,7 +547,28 @@ class MeasurementAnimator(QObject):
 
 
 
+
+from PySide6.QtWidgets import QComboBox, QCompleter
+from PySide6.QtCore import Qt, Signal
+
+class SearchableComboBox(QComboBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setEditable(True)
+        self.setInsertPolicy(QComboBox.NoInsert)
+        self.completer().setCompletionMode(QCompleter.PopupCompletion)
+        self.completer().setFilterMode(Qt.MatchContains)
+        
+        # When clicking into the text area, clear text and show popup
+        self.lineEdit().mousePressEvent = self._handle_mouse_press
+        
+    def _handle_mouse_press(self, event):
+        super(QComboBox, self).lineEdit().mousePressEvent(event)
+        self.lineEdit().clear()
+        self.showPopup()
+        
 class LiveSealWorker(QThread):
+
     update_signal = Signal(object, object)
     error = Signal(str)
 
@@ -1541,14 +1562,14 @@ class MainWindow(QMainWindow):
         mod_compare = QVBoxLayout()
         mod_compare.setSpacing(6)
         
-        self.cb_meas_target = QComboBox()
+        self.cb_meas_target = SearchableComboBox()
         self.cb_meas_target.setToolTip("Select a target curve. Type to search.")
         self.cb_meas_target.setMinimumWidth(100)
         self.cb_meas_target.setMaximumWidth(340)
         self.cb_meas_target.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.cb_meas_target.currentIndexChanged.connect(self.on_meas_target_changed)
         
-        self.cb_meas_history = QComboBox()
+        self.cb_meas_history = SearchableComboBox()
         self.cb_meas_history.setToolTip("Select a historical measurement. Type to search.")
         self.cb_meas_history.setMinimumWidth(100)
         self.cb_meas_history.setMaximumWidth(340)
@@ -2409,6 +2430,10 @@ class MainWindow(QMainWindow):
         boxes_hist = [self.cb_meas_history, self.page_ana.cb_ana_history]
         boxes_tgt = [self.cb_meas_target, self.page_ana.cb_ana_target]
         
+        # Save current selections to restore them after clearing
+        saved_hist = self.cb_meas_history.currentText() if hasattr(self, 'cb_meas_history') and self.cb_meas_history.count() > 0 else None
+        saved_tgt = self.cb_meas_target.currentText() if hasattr(self, 'cb_meas_target') and self.cb_meas_target.count() > 0 else None
+        
         for b in boxes_hist + boxes_tgt:
             b.blockSignals(True)
             b.clear()
@@ -2484,9 +2509,16 @@ class MainWindow(QMainWindow):
                 from PySide6 import QtCore
                 class FocusSelectFilter(QtCore.QObject):
                     def eventFilter(self, obj, event):
-                        if event.type() == QtCore.QEvent.FocusIn:
-                            QtCore.QTimer.singleShot(0, obj.selectAll)
-                        # Remove MouseButtonPress interception so popup opens normally
+                        if event.type() == QtCore.QEvent.MouseButtonPress:
+                            # Clear text and show popup on click
+                            obj.clear()
+                            parent = obj.parent()
+                            if hasattr(parent, "showPopup"):
+                                QtCore.QTimer.singleShot(0, parent.showPopup)
+                        elif event.type() == QtCore.QEvent.FocusOut:
+                            parent = obj.parent()
+                            if hasattr(parent, "currentText"):
+                                obj.setText(parent.currentText())
                         return super().eventFilter(obj, event)
                 
                 b._focus_filter = FocusSelectFilter(b)
@@ -2494,6 +2526,18 @@ class MainWindow(QMainWindow):
                 # Update placeholder text manually if empty
                 if b.count() > 0 and b.currentIndex() == -1:
                     line_edit.setText(b.itemText(0))
+                    
+        # Restore selections
+        if saved_hist and saved_hist != "No History Selected":
+            idx = self.cb_meas_history.findText(saved_hist)
+            if idx >= 0:
+                for b in boxes_hist:
+                    b.setCurrentIndex(idx)
+        if saved_tgt and saved_tgt != "No Target Selected":
+            idx = self.cb_meas_target.findText(saved_tgt)
+            if idx >= 0:
+                for b in boxes_tgt:
+                    b.setCurrentIndex(idx)
 
     def style_tab(self, btn, active):
         if active:
