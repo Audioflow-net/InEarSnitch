@@ -37,6 +37,7 @@ class SearchableComboBox(QComboBox):
         
         self.completer().setCompletionMode(QCompleter.PopupCompletion)
         self.completer().setFilterMode(Qt.MatchContains)
+        self.completer().setMaxVisibleItems(25)
         
         self._last_valid_text = ""
         self.currentIndexChanged.connect(self._on_index_changed)
@@ -53,20 +54,32 @@ class SearchableComboBox(QComboBox):
                 if self.lineEdit().text():
                     self._last_valid_text = self.lineEdit().text()
                 self.lineEdit().clear()
-                QtCore.QTimer.singleShot(50, self.showPopup)
-                return True
-                
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                self.completer().setCompletionPrefix("")
+                self.completer().complete()
             elif event.type() == QtCore.QEvent.FocusOut:
-                if not self.lineEdit().text():
-                    self.lineEdit().setText(self._last_valid_text)
-                    idx = self.findText(self._last_valid_text)
-                    if idx >= 0:
-                        self.setCurrentIndex(idx)
+                # Use a singleShot to check after all other events (like popup closing) have resolved
+                QtCore.QTimer.singleShot(0, self._check_restore)
         return super().eventFilter(obj, event)
-        
+
+    def _check_restore(self):
+        # If popup is still open (e.g. clicking its scrollbar), do not restore yet
+        if self.completer().popup() and self.completer().popup().isVisible():
+            return
+        # If they clicked away and left it empty, restore the old text
+        if not self.lineEdit().text():
+            self.lineEdit().setText(self._last_valid_text)
+            idx = self.findText(self._last_valid_text)
+            if idx >= 0:
+                self.setCurrentIndex(idx)
+
     def showPopup(self):
-        super().showPopup()
-        self.lineEdit().setFocus()
+        # Override the native arrow-click to use the completer instead
+        if self.lineEdit().text():
+            self._last_valid_text = self.lineEdit().text()
+        self.lineEdit().clear()
+        self.completer().setCompletionPrefix("")
+        self.completer().complete()
 
 class FreqAxisItem(pg.AxisItem):
 

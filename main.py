@@ -561,11 +561,12 @@ class SearchableComboBox(QComboBox):
         
         self.completer().setCompletionMode(QCompleter.PopupCompletion)
         self.completer().setFilterMode(Qt.MatchContains)
+        self.completer().setMaxVisibleItems(25)
         
         self._last_valid_text = ""
         self.currentIndexChanged.connect(self._on_index_changed)
         
-        # We hook into the line edit's mouse press event
+        # We hook into the line edit's events
         self.lineEdit().installEventFilter(self)
         
     def _on_index_changed(self, idx):
@@ -575,28 +576,36 @@ class SearchableComboBox(QComboBox):
     def eventFilter(self, obj, event):
         if obj == self.lineEdit():
             if event.type() == QEvent.MouseButtonPress:
-                # Store text and clear it so completer shows all options
                 if self.lineEdit().text():
                     self._last_valid_text = self.lineEdit().text()
                 self.lineEdit().clear()
-                # Use QTimer to open the popup AFTER the mouse click is fully processed
-                QTimer.singleShot(50, self.showPopup)
-                return True # We handled the click
-                
+            elif event.type() == QEvent.MouseButtonRelease:
+                self.completer().setCompletionPrefix("")
+                self.completer().complete()
             elif event.type() == QEvent.FocusOut:
-                # If they clicked away and left it empty, restore the old text
-                if not self.lineEdit().text():
-                    self.lineEdit().setText(self._last_valid_text)
-                    idx = self.findText(self._last_valid_text)
-                    if idx >= 0:
-                        self.setCurrentIndex(idx)
+                # Use a singleShot to check after all other events (like popup closing) have resolved
+                QTimer.singleShot(0, self._check_restore)
         return super().eventFilter(obj, event)
         
-    # We override showPopup to force focus back to the line edit!
+    def _check_restore(self):
+        # If popup is still open (e.g. clicking its scrollbar), do not restore yet
+        if self.completer().popup() and self.completer().popup().isVisible():
+            return
+        # If they clicked away and left it empty, restore the old text
+        if not self.lineEdit().text():
+            self.lineEdit().setText(self._last_valid_text)
+            idx = self.findText(self._last_valid_text)
+            if idx >= 0:
+                self.setCurrentIndex(idx)
+
     def showPopup(self):
-        super().showPopup()
-        self.lineEdit().setFocus()
-        
+        # Override the native arrow-click to use the completer instead
+        if self.lineEdit().text():
+            self._last_valid_text = self.lineEdit().text()
+        self.lineEdit().clear()
+        self.completer().setCompletionPrefix("")
+        self.completer().complete()
+
 class LiveSealWorker(QThread):
 
     update_signal = Signal(object, object)
