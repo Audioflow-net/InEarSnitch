@@ -2505,15 +2505,26 @@ class MainWindow(QMainWindow):
                 class FocusSelectFilter(QtCore.QObject):
                     def eventFilter(self, obj, event):
                         if event.type() == QtCore.QEvent.MouseButtonRelease:
+                            parent = obj.parent()
+                            # Save the current valid text BEFORE clearing
+                            if not hasattr(self, 'saved_text') or obj.text():
+                                self.saved_text = obj.text()
+                            
                             # Clear text and show popup on click
                             obj.clear()
-                            parent = obj.parent()
-                            if hasattr(parent, "completer") and parent.completer():
-                                parent.completer().complete()
+                            if hasattr(parent, "showPopup"):
+                                QtCore.QTimer.singleShot(0, parent.showPopup)
+                                # Force focus back to line edit so typing works
+                                QtCore.QTimer.singleShot(50, obj.setFocus)
                         elif event.type() == QtCore.QEvent.FocusOut:
                             parent = obj.parent()
-                            if hasattr(parent, "currentText"):
-                                obj.setText(parent.currentText())
+                            # Restore text if they didn't pick anything
+                            if not obj.text() and hasattr(self, 'saved_text'):
+                                obj.setText(self.saved_text)
+                                # Ensure the combobox model matches the restored text
+                                idx = parent.findText(self.saved_text)
+                                if idx >= 0:
+                                    parent.setCurrentIndex(idx)
                         return super().eventFilter(obj, event)
                 
                 b._focus_filter = FocusSelectFilter(b)
