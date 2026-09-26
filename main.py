@@ -571,15 +571,14 @@ class SearchableComboBox(QComboBox):
     def _on_index_changed(self, idx):
         if idx >= 0:
             self._last_valid_text = self.itemText(idx)
-            QTimer.singleShot(0, self.lineEdit().deselect)
+            QTimer.singleShot(50, lambda: self.lineEdit().setCursorPosition(0))
             
     def eventFilter(self, obj, event):
         if obj == self.lineEdit():
             if event.type() == QEvent.MouseButtonPress:
                 if self.lineEdit().text():
                     self._last_valid_text = self.lineEdit().text()
-                # Delay selectAll slightly to override default selection behavior
-                QTimer.singleShot(0, self.lineEdit().selectAll)
+                self.lineEdit().clear()
             elif event.type() == QEvent.MouseButtonRelease:
                 self.completer().setCompletionPrefix("")
                 self.completer().complete()
@@ -594,7 +593,7 @@ class SearchableComboBox(QComboBox):
                         self._do_restore()
                         return True
             elif event.type() == QEvent.FocusOut:
-                QTimer.singleShot(0, self.lineEdit().deselect)
+                QTimer.singleShot(50, lambda: self.lineEdit().setCursorPosition(0))
                 QTimer.singleShot(100, self._check_restore)
         return super().eventFilter(obj, event)
         
@@ -612,12 +611,12 @@ class SearchableComboBox(QComboBox):
             idx = self.findText(self._last_valid_text)
             if idx >= 0:
                 self.setCurrentIndex(idx)
-        QTimer.singleShot(0, self.lineEdit().deselect)
+        QTimer.singleShot(50, lambda: self.lineEdit().setCursorPosition(0))
 
     def showPopup(self):
         if self.lineEdit().text():
             self._last_valid_text = self.lineEdit().text()
-        self.lineEdit().selectAll()
+        self.lineEdit().clear()
         self.completer().setCompletionPrefix("")
         self.completer().complete()
 
