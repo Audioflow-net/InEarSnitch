@@ -3,7 +3,7 @@ import numpy as np
 import theme
 import config
 from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QFrame, QSplitter, QTabWidget, QComboBox, QDial, QLineEdit, QSizePolicy
-from PySide6.QtCore import Qt, Signal, QTimer
+from PySide6.QtCore import Qt, Signal, QEvent, QTimer, QTimer
 import pyqtgraph as pg
 
 class HelpHoverButton(QPushButton):
@@ -24,7 +24,7 @@ class HelpHoverButton(QPushButton):
 
 
 from PySide6.QtWidgets import QComboBox, QCompleter
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QEvent, QTimer
 
 from PySide6.QtGui import QMouseEvent
 from PySide6 import QtCore
@@ -47,37 +47,53 @@ class SearchableComboBox(QComboBox):
     def _on_index_changed(self, idx):
         if idx >= 0:
             self._last_valid_text = self.itemText(idx)
+            QTimer.singleShot(0, self.lineEdit().deselect)
             
     def eventFilter(self, obj, event):
         if obj == self.lineEdit():
-            if event.type() == QtCore.QEvent.MouseButtonPress:
+            if event.type() == QEvent.MouseButtonPress:
                 if self.lineEdit().text():
                     self._last_valid_text = self.lineEdit().text()
-                self.lineEdit().clear()
-            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                # Delay selectAll slightly to override default selection behavior
+                QTimer.singleShot(0, self.lineEdit().selectAll)
+            elif event.type() == QEvent.MouseButtonRelease:
                 self.completer().setCompletionPrefix("")
                 self.completer().complete()
-            elif event.type() == QtCore.QEvent.FocusOut:
-                # Use a singleShot to check after all other events (like popup closing) have resolved
-                QtCore.QTimer.singleShot(0, self._check_restore)
+            elif event.type() == QEvent.KeyPress:
+                if event.key() == Qt.Key_Escape:
+                    self._do_restore()
+                    if self.completer().popup():
+                        self.completer().popup().hide()
+                    return True
+                elif event.key() in (Qt.Key_Return, Qt.Key_Enter):
+                    if self.findText(self.lineEdit().text()) == -1:
+                        self._do_restore()
+                        return True
+            elif event.type() == QEvent.FocusOut:
+                QTimer.singleShot(0, self.lineEdit().deselect)
+                QTimer.singleShot(100, self._check_restore)
         return super().eventFilter(obj, event)
-
+        
     def _check_restore(self):
-        # If popup is still open (e.g. clicking its scrollbar), do not restore yet
-        if self.completer().popup() and self.completer().popup().isVisible():
+        if self.lineEdit().hasFocus():
             return
-        # If they clicked away and left it empty, restore the old text
-        if not self.lineEdit().text():
+        if self.completer().popup() and self.completer().popup().isVisible() and self.completer().popup().hasFocus():
+            return
+        if self.findText(self.lineEdit().text()) == -1:
+            self._do_restore()
+
+    def _do_restore(self):
+        if self._last_valid_text:
             self.lineEdit().setText(self._last_valid_text)
             idx = self.findText(self._last_valid_text)
             if idx >= 0:
                 self.setCurrentIndex(idx)
+        QTimer.singleShot(0, self.lineEdit().deselect)
 
     def showPopup(self):
-        # Override the native arrow-click to use the completer instead
         if self.lineEdit().text():
             self._last_valid_text = self.lineEdit().text()
-        self.lineEdit().clear()
+        self.lineEdit().selectAll()
         self.completer().setCompletionPrefix("")
         self.completer().complete()
 
