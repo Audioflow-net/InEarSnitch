@@ -905,6 +905,13 @@ class AnalysisWidget(QWidget):
         self.hohd_line = self.thd_widget.plot(pen=pg.mkPen('#ef4444', width=2, style=Qt.DashLine), name="R&B (HOHD)")
         self.hohd_line.hide()
         
+        self.watermark_thd = QLabel("⚠️ NOISE CORRUPTED", self.thd_widget)
+        self.watermark_thd.setStyleSheet("color: rgba(255, 60, 60, 200); font-size: 24pt; font-weight: bold; background-color: rgba(0,0,0,150); padding: 8px 16px; border-radius: 6px;")
+        self.watermark_thd.setAlignment(Qt.AlignCenter)
+        self.watermark_thd.hide()
+        
+        lay_thd = QVBoxLayout(self.thd_widget)
+        lay_thd.addWidget(self.watermark_thd, 0, Qt.AlignCenter)
         
         thd_layout.addWidget(self.thd_widget)
         
@@ -1622,8 +1629,10 @@ class AnalysisWidget(QWidget):
             snr_l = getattr(self, '_snr_l', None)
             snr_r = getattr(self, '_snr_r', None)
             
+            is_poor_snr_l = (snr_l is not None and snr_l < 75.0)
+            is_poor_snr_r = (snr_r is not None and snr_r < 75.0)
+            
             if thd_l is not None:
-                is_poor_snr_l = (snr_l is not None and snr_l < 75.0)
                 pen_l = pg.mkPen(theme.get_color('curve_left'), width=2, style=Qt.DashLine if is_poor_snr_l else Qt.SolidLine)
                 if is_poor_snr_l:
                     c = pen_l.color()
@@ -1632,7 +1641,6 @@ class AnalysisWidget(QWidget):
                 self.thd_widget.plot(thd_freqs, thd_l, pen=pen_l, name='Left THD (Masked)' if is_poor_snr_l else 'Left THD')
                 
             if thd_r is not None:
-                is_poor_snr_r = (snr_r is not None and snr_r < 75.0)
                 pen_r = pg.mkPen(theme.get_color('curve_right'), width=2, style=Qt.DotLine if is_poor_snr_r else Qt.DashLine)
                 if is_poor_snr_r:
                     c = pen_r.color()
