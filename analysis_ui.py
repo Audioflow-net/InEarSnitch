@@ -3,7 +3,7 @@ import numpy as np
 import theme
 import config
 from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QFrame, QSplitter, QTabWidget, QComboBox, QDial, QLineEdit, QSizePolicy
-from PySide6.QtCore import Qt, Signal, QEvent, QTimer, QTimer
+from PySide6.QtCore import Qt, Signal, QEvent, QTimer, QObject
 import pyqtgraph as pg
 
 class HelpHoverButton(QPushButton):
@@ -254,7 +254,7 @@ class OverlayFilter(QObject):
         self.overlay_widget = overlay_widget
 
     def eventFilter(self, obj, event):
-        if event.type() == event.Type.Resize:
+        if event.type() == QEvent.Resize:
             w = obj.width()
             h = obj.height()
             ow = self.overlay_widget.width()
