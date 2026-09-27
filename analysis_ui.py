@@ -1640,6 +1640,14 @@ class AnalysisWidget(QWidget):
             else:
                 self.hohd_line.hide()
                 
+            poor_l = (thd_l is not None and is_poor_snr_l)
+            poor_r = (thd_r is not None and is_poor_snr_r)
+            if poor_l or poor_r:
+                watermark = pg.TextItem(html='<div style="text-align: center;"><span style="color: rgba(255, 60, 60, 200); font-size: 24pt; font-weight: bold; background-color: rgba(0,0,0,150); padding: 5px; border-radius: 4px;">⚠️ NOISE CORRUPTED</span></div>', anchor=(0.5, 0.5))
+                watermark.setPos(2.7, 2.5)
+                watermark.setZValue(100)
+                self.thd_widget.addItem(watermark)
+                
         # --- Update CSD Plot ---
         self.csd_widget.clear()
         if self.csd_widget.plotItem.legend:
@@ -1688,6 +1696,11 @@ class AnalysisWidget(QWidget):
                 except Exception:
                     base_rgb = (255, 0, 85) if is_right else (0, 255, 255)
                     
+                snr_val = getattr(self, '_snr_r' if is_right else '_snr_l', None)
+                is_poor_snr = snr_val is not None and snr_val < 75.0
+                if is_poor_snr:
+                    base_rgb = (100, 100, 105) # Gray scale for corrupted
+                    
                 # 4. Fill-Opacity reduzieren
                 # Draw from back (t=0) to front (t>0) to allow proper occlusion
                 for i in range(num_slices):
@@ -1718,6 +1731,12 @@ class AnalysisWidget(QWidget):
                         brush=fill_brush,
                         name=f"CSD_{'R' if is_right else 'L'}_{i}" if i==0 else None
                     )
+                    
+                if is_poor_snr:
+                    watermark = pg.TextItem(html='<div style="text-align: center;"><span style="color: rgba(255, 60, 60, 200); font-size: 24pt; font-weight: bold; background-color: rgba(0,0,0,150); padding: 5px; border-radius: 4px;">⚠️ NOISE CORRUPTED</span></div>', anchor=(0.5, 0.5))
+                    watermark.setPos(2.7, max_peak - 15)
+                    watermark.setZValue(100)
+                    self.csd_widget.addItem(watermark)
         # Trigger EQ update to draw the virtual curve
         if hasattr(self, 'peq_bands') and len(self.peq_bands) > 0:
             # We call the first band's toggled slot manually to force an update
