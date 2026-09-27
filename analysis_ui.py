@@ -939,6 +939,14 @@ class AnalysisWidget(QWidget):
         self.csd_widget.setYRange(-60, 20)
         self.csd_widget.getViewBox().disableAutoRange()
         
+        self.watermark_csd = QLabel("⚠️ NOISE CORRUPTED", self.csd_widget)
+        self.watermark_csd.setStyleSheet("color: rgba(255, 60, 60, 200); font-size: 24pt; font-weight: bold; background-color: rgba(0,0,0,150); padding: 8px 16px; border-radius: 6px;")
+        self.watermark_csd.setAlignment(Qt.AlignCenter)
+        self.watermark_csd.hide()
+        
+        lay_csd = QVBoxLayout(self.csd_widget)
+        lay_csd.addWidget(self.watermark_csd, 0, Qt.AlignCenter)
+        
         csd_layout.addWidget(self.csd_widget)
         self.graph_tabs.addTab(csd_container, "Waterfall (CSD)")
         
@@ -1643,10 +1651,9 @@ class AnalysisWidget(QWidget):
             poor_l = (thd_l is not None and is_poor_snr_l)
             poor_r = (thd_r is not None and is_poor_snr_r)
             if poor_l or poor_r:
-                watermark = pg.TextItem(html='<div style="text-align: center;"><span style="color: rgba(255, 60, 60, 200); font-size: 24pt; font-weight: bold; background-color: rgba(0,0,0,150); padding: 5px; border-radius: 4px;">⚠️ NOISE CORRUPTED</span></div>', anchor=(0.5, 0.5))
-                watermark.setPos(2.7, 2.5)
-                watermark.setZValue(100)
-                self.thd_widget.addItem(watermark)
+                if hasattr(self, 'watermark_thd'): self.watermark_thd.show()
+            else:
+                if hasattr(self, 'watermark_thd'): self.watermark_thd.hide()
                 
         # --- Update CSD Plot ---
         self.csd_widget.clear()
@@ -1732,11 +1739,12 @@ class AnalysisWidget(QWidget):
                         name=f"CSD_{'R' if is_right else 'L'}_{i}" if i==0 else None
                     )
                     
-                if is_poor_snr:
-                    watermark = pg.TextItem(html='<div style="text-align: center;"><span style="color: rgba(255, 60, 60, 200); font-size: 24pt; font-weight: bold; background-color: rgba(0,0,0,150); padding: 5px; border-radius: 4px;">⚠️ NOISE CORRUPTED</span></div>', anchor=(0.5, 0.5))
-                    watermark.setPos(2.7, max_peak - 15)
-                    watermark.setZValue(100)
-                    self.csd_widget.addItem(watermark)
+
+            if getattr(self, '_snr_l', None) is not None and getattr(self, '_snr_l', None) < 75.0 or getattr(self, '_snr_r', None) is not None and getattr(self, '_snr_r', None) < 75.0:
+                if hasattr(self, 'watermark_csd'): self.watermark_csd.show()
+            else:
+                if hasattr(self, 'watermark_csd'): self.watermark_csd.hide()
+
         # Trigger EQ update to draw the virtual curve
         if hasattr(self, 'peq_bands') and len(self.peq_bands) > 0:
             # We call the first band's toggled slot manually to force an update
