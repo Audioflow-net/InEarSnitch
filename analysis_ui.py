@@ -1352,7 +1352,7 @@ class AnalysisWidget(QWidget):
             elif show_r and snr_r is not None:
                 min_snr = snr_r
                 
-            if min_snr is not None and min_snr < 40.0:
+            if min_snr is not None and min_snr < 75.0:
                 report_items = [item for item in report_items if item.get('category') not in ('THD', 'CSD')]
                 report_items.append({
                     'status': 'DISABLED',
@@ -1611,10 +1611,26 @@ class AnalysisWidget(QWidget):
             thd_l = orig_thd_l if show_l else None
             thd_r = orig_thd_r if show_r else None
             
+            snr_l = getattr(self, '_snr_l', None)
+            snr_r = getattr(self, '_snr_r', None)
+            
             if thd_l is not None:
-                self.thd_widget.plot(thd_freqs, thd_l, pen=pg.mkPen(theme.get_color('curve_left'), width=2), name='Left THD')
+                is_poor_snr_l = (snr_l is not None and snr_l < 75.0)
+                pen_l = pg.mkPen(theme.get_color('curve_left'), width=2, style=Qt.DashLine if is_poor_snr_l else Qt.SolidLine)
+                if is_poor_snr_l:
+                    c = pen_l.color()
+                    c.setAlpha(120)
+                    pen_l.setColor(c)
+                self.thd_widget.plot(thd_freqs, thd_l, pen=pen_l, name='Left THD (Masked)' if is_poor_snr_l else 'Left THD')
+                
             if thd_r is not None:
-                self.thd_widget.plot(thd_freqs, thd_r, pen=pg.mkPen(theme.get_color('curve_right'), width=2, style=Qt.DashLine), name='Right THD')
+                is_poor_snr_r = (snr_r is not None and snr_r < 75.0)
+                pen_r = pg.mkPen(theme.get_color('curve_right'), width=2, style=Qt.DotLine if is_poor_snr_r else Qt.DashLine)
+                if is_poor_snr_r:
+                    c = pen_r.color()
+                    c.setAlpha(120)
+                    pen_r.setColor(c)
+                self.thd_widget.plot(thd_freqs, thd_r, pen=pen_r, name='Right THD (Masked)' if is_poor_snr_r else 'Right THD')
                 
             if getattr(self, '_is_stress', False):
                 self.hohd_line.show()
