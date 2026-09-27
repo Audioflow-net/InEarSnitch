@@ -247,6 +247,26 @@ class FloatKnob(QWidget):
 
 from analysis import Analyzer
 
+
+class OverlayFilter(QObject):
+    def __init__(self, overlay_widget, parent=None):
+        super().__init__(parent)
+        self.overlay_widget = overlay_widget
+
+    def eventFilter(self, obj, event):
+        if event.type() == event.Type.Resize:
+            w = obj.width()
+            h = obj.height()
+            ow = self.overlay_widget.width()
+            oh = self.overlay_widget.height()
+            
+            # THD widget is shorter because of the STRESS TEST button below it.
+            # We add a ~20px offset to THD so its watermark visually aligns with CSD.
+            y_offset = 20 if hasattr(self.overlay_widget.parent(), 'hohd_line') else 0
+            
+            self.overlay_widget.move((w - ow) // 2, (h - oh) // 2 + y_offset)
+        return False
+
 class AutoWrapLabel(QLabel):
     def __init__(self, text=""):
         super().__init__(text)
@@ -910,8 +930,9 @@ class AnalysisWidget(QWidget):
         self.watermark_thd.setAlignment(Qt.AlignCenter)
         self.watermark_thd.hide()
         
-        lay_thd = QVBoxLayout(self.thd_widget)
-        lay_thd.addWidget(self.watermark_thd, 0, Qt.AlignCenter)
+        self.thd_filter = OverlayFilter(self.watermark_thd, self.thd_widget)
+        self.thd_widget.installEventFilter(self.thd_filter)
+        self.watermark_thd.raise_()
         
         thd_layout.addWidget(self.thd_widget)
         
@@ -951,8 +972,9 @@ class AnalysisWidget(QWidget):
         self.watermark_csd.setAlignment(Qt.AlignCenter)
         self.watermark_csd.hide()
         
-        lay_csd = QVBoxLayout(self.csd_widget)
-        lay_csd.addWidget(self.watermark_csd, 0, Qt.AlignCenter)
+        self.csd_filter = OverlayFilter(self.watermark_csd, self.csd_widget)
+        self.csd_widget.installEventFilter(self.csd_filter)
+        self.watermark_csd.raise_()
         
         csd_layout.addWidget(self.csd_widget)
         self.graph_tabs.addTab(csd_container, "Waterfall (CSD)")
