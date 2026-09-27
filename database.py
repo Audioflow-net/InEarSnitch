@@ -118,6 +118,10 @@ class DatabaseManager:
                 notes TEXT,
                 photo_path TEXT,
                 tip_id INTEGER DEFAULT 1,
+                resonance_hz_l REAL,
+                resonance_hz_r REAL,
+                snr_l REAL,
+                snr_r REAL,
                 FOREIGN KEY (iem_id) REFERENCES IEM_Models (id),
                 FOREIGN KEY (tip_id) REFERENCES TipProfiles (id)
             )
@@ -131,6 +135,10 @@ class DatabaseManager:
             "notes TEXT",
             "photo_path TEXT",
             "tip_id INTEGER DEFAULT 1 REFERENCES TipProfiles(id)",
+            "resonance_hz_l REAL",
+            "resonance_hz_r REAL",
+            "snr_l REAL",
+            "snr_r REAL",
         ]:
             try:
                 cursor.execute(f"ALTER TABLE Measurements ADD COLUMN {col_def}")
@@ -146,7 +154,7 @@ class DatabaseManager:
         conn.commit()
         conn.close()
 
-    def save_measurement(self, iem_id, freqs, mag_l, mag_r, phase_l, phase_r, gain_db="", notes="", photo_path="", tip_id=1):
+    def save_measurement(self, iem_id, freqs, mag_l, mag_r, phase_l, phase_r, gain_db="", notes="", photo_path="", tip_id=1, resonance_hz_l=None, resonance_hz_r=None, snr_l=None, snr_r=None):
         """Saves a measurement directly as binary numpy arrays for maximum efficiency."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -163,10 +171,11 @@ class DatabaseManager:
         
         cursor.execute("""
             INSERT INTO Measurements 
-            (iem_id, gain_db, frequencies, magnitude_l, magnitude_r, phase_l, phase_r, notes, photo_path, tip_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (iem_id, gain_db, frequencies, magnitude_l, magnitude_r, phase_l, phase_r, notes, photo_path, tip_id, resonance_hz_l,
+                resonance_hz_r, snr_l, snr_r)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (iem_id, gain_db, 
-              f_bytes, ml, mr, pl, pr, notes, photo_path, actual_tip_id))
+              f_bytes, ml, mr, pl, pr, notes, photo_path, actual_tip_id, resonance_hz_l, resonance_hz_r, snr_l, snr_r))
               
         conn.commit()
         conn.close()
@@ -195,6 +204,26 @@ class DatabaseManager:
             return freqs, mag_l, mag_r, gain_db
             
         return None, None, None, ""
+
+    def get_last_resonance_hz(self, iem_id, channel="L"):
+        """Returns the resonance_hz of the last measurement for the given IEM and channel."""
+        if not iem_id:
+            return None
+        
+        col = "resonance_hz_l" if channel.upper() in ("L", "LEFT") else "resonance_hz_r"
+        
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT {col}
+            FROM Measurements
+            WHERE iem_id = ? AND {col} IS NOT NULL
+            ORDER BY timestamp DESC
+            LIMIT 1
+        """, (iem_id,))
+        row = cursor.fetchone()
+        conn.close()
+        return row[0] if row else None
 
     def get_all_tips(self, include_unknown=True):
         """Returns all ear tips from the catalog as a list of dicts."""

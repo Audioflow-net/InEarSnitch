@@ -4189,6 +4189,22 @@ class MainWindow(QMainWindow):
                 self.rta_peak_line.setZValue(20)
                 target_plot.addItem(self.rta_peak_line)
             self.rta_peak_line.hide()
+            
+            if not hasattr(self, 'rta_history_peak_line') or self.rta_history_peak_line is None:
+                self.rta_history_peak_line = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('#f59e0b', width=2, style=Qt.DashLine))
+                self.rta_history_peak_line.setZValue(15)
+                target_plot.addItem(self.rta_history_peak_line)
+                
+            hist_hz = self.db.get_last_resonance_hz(self.current_iem_id, channel=self.get_current_channel())
+            self._current_hist_hz = hist_hz
+            if hist_hz is not None:
+                self.rta_history_peak_line.setPos(np.log10(hist_hz))
+                if self.btn_iec_guide.isChecked():
+                    self.rta_history_peak_line.show()
+                else:
+                    self.rta_history_peak_line.hide()
+            else:
+                self.rta_history_peak_line.hide()
 
             if not hasattr(self, 'rta_bass_line') or self.rta_bass_line is None:
                 self.rta_bass_line = pg.InfiniteLine(pos=np.log10(40.0), angle=90, movable=False)
@@ -4251,6 +4267,15 @@ class MainWindow(QMainWindow):
                 except Exception:
                     pass
                 self.rta_bass_line = None
+                
+            if hasattr(self, 'rta_history_peak_line') and self.rta_history_peak_line is not None:
+                try:
+                    target = self.page_ana.plot_widget if hasattr(self, 'page_ana') else self.plot_widget
+                    target.removeItem(self.rta_history_peak_line)
+                except Exception:
+                    pass
+                self.rta_history_peak_line = None
+                
             self.sub_lbl.setText("Status: Ready to measure.")
             self.sub_lbl.setStyleSheet("color: #00FF99; font-size: 13px;")
             self.btn_capture.setEnabled(True)
@@ -4356,7 +4381,7 @@ class MainWindow(QMainWindow):
                         import pyqtgraph as pg
                         import numpy as np
                         self.rta_peak_line.setValue(np.log10(peak_freq))
-                        if peak_freq < 7000 or peak_freq > 8600:
+                        if peak_freq < 6500 or peak_freq > 8600:
                             self.rta_peak_line.setPen(pg.mkPen('#eab308', width=4))
                         else:
                             self.rta_peak_line.setPen(pg.mkPen('#10b981', width=4))
@@ -4391,10 +4416,21 @@ class MainWindow(QMainWindow):
                         depth_html = f"<span style='color: {c_warn}; font-weight: bold;'>Push Deeper (Peak: {peak_freq/1000:.1f}kHz)</span>"
                     else:
                         depth_html = f"<span style='color: {c_warn}; font-weight: bold;'>Pull Out Slightly (Peak: {peak_freq/1000:.1f}kHz)</span>"
+                        
+                    hist_hz = getattr(self, '_current_hist_hz', None)
+                    if hist_hz is not None:
+                        depth_html += f"<br><span style='font-size: 24px; color: #f59e0b;'>📍 Letzte Messung: {hist_hz:.0f} Hz</span>"
+                        if hasattr(self, 'rta_history_peak_line') and self.rta_history_peak_line is not None:
+                            if self.btn_iec_guide.isChecked():
+                                self.rta_history_peak_line.show()
+                            else:
+                                self.rta_history_peak_line.hide()
                 else:
                     depth_html = ""
                     if hasattr(self, 'rta_peak_line') and self.rta_peak_line is not None:
                         self.rta_peak_line.hide()
+                    if hasattr(self, 'rta_history_peak_line') and self.rta_history_peak_line is not None:
+                        self.rta_history_peak_line.hide()
     
                 # --- Status Check: Low Frequency Roll-off (Bass leak) ---
                 mask_40 = (freqs >= 35) & (freqs <= 45)
@@ -4663,8 +4699,35 @@ class MainWindow(QMainWindow):
             smoothing_pts=pts,
             noise_freqs=getattr(self, 'temp_noise_f_l', getattr(self, 'temp_noise_f_r', None)),
             noise_floor_db=getattr(self, 'temp_noise_m_l', getattr(self, 'temp_noise_m_r', None)),
-            is_stress=getattr(self, '_last_measurement_was_stress', False)
+            is_stress=getattr(self, '_last_measurement_was_stress', False),
+            snr_l=getattr(self, 'temp_snr_l', None),
+            snr_r=getattr(self, 'temp_snr_r', None)
         )
+
+    def calculate_measurement_snr(self, ir_data, sample_rate):
+        import numpy as np
+        if ir_data is None: return None
+        peak_idx = np.argmax(np.abs(ir_data))
+        
+        # Signal window: Peak + 10ms
+        signal_len = int(0.010 * sample_rate)
+        signal_window = ir_data[peak_idx : peak_idx + signal_len]
+        
+        # Noise window: Peak + 50ms to 150ms
+        noise_start = peak_idx + int(0.050 * sample_rate)
+        noise_end = peak_idx + int(0.150 * sample_rate)
+        
+        if noise_end > len(ir_data):
+            return 100.0 # Fallback if IR is too short
+            
+        noise_window = ir_data[noise_start : noise_end]
+        
+        rms_signal = np.sqrt(np.mean(signal_window**2))
+        rms_noise = np.sqrt(np.mean(noise_window**2))
+        rms_noise = max(rms_noise, 1e-12)
+        
+        snr_db = 20 * np.log10(rms_signal / rms_noise)
+        return snr_db
 
     def on_measurement_finished(self, freqs, mag, phase, ir, channel, noise=None, noise_freqs=None, noise_mag_db=None):
         self.is_measuring = False   # UI Hardening: release lock
@@ -4686,22 +4749,34 @@ class MainWindow(QMainWindow):
         # 2. Smart Post-Normalization
         if self.chk_normalize.isChecked() and np.isfinite(raw_val_1k):
             mag = mag + (80.0 - raw_val_1k)
+            
+        # 3. Smart Depth Matching: Extract Helmholtz Resonance (6k - 10k Hz)
+        temp_res = None
+        mask = (freqs >= 6000.0) & (freqs <= 10000.0)
+        if np.any(mask):
+            temp_res = float(freqs[mask][np.argmax(mag[mask])])
+        
+        snr_val = self.calculate_measurement_snr(ir, 48000)
         
         self.temp_freqs = freqs
         if channel == 'L':
+            self.temp_resonance_hz_l = temp_res
             self.temp_mag_l = mag
             self.temp_phase_l = phase
             self.temp_ir_l = ir
             self.temp_noise_l = noise
             self.temp_noise_f_l = noise_freqs
             self.temp_noise_m_l = noise_mag_db
+            self.temp_snr_l = snr_val
         else:
+            self.temp_resonance_hz_r = temp_res
             self.temp_mag_r = mag
             self.temp_phase_r = phase
             self.temp_ir_r = ir
             self.temp_noise_r = noise
             self.temp_noise_f_r = noise_freqs
             self.temp_noise_m_r = noise_mag_db
+            self.temp_snr_r = snr_val
             
         self.low_vol_warning = low_vol_warning
             
@@ -4900,7 +4975,11 @@ class MainWindow(QMainWindow):
                 gain,
                 notes,
                 "",
-                tip_id=tip_id
+                tip_id=tip_id,
+                resonance_hz_l=getattr(self, 'temp_resonance_hz_l', None),
+                resonance_hz_r=getattr(self, 'temp_resonance_hz_r', None),
+                snr_l=getattr(self, 'temp_snr_l', None),
+                snr_r=getattr(self, 'temp_snr_r', None)
             )
             self.sub_lbl.setText("Status: Saved to Database.")
             self.sub_lbl.setStyleSheet("color: #00FF99; font-size: 12px;")

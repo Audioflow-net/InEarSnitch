@@ -1250,11 +1250,13 @@ class AnalysisWidget(QWidget):
             self.hLine.hide()
             self.crosshair_label.hide()
         
-    def update_analysis(self, freqs, mag_l, mag_r, ref_mag_l=None, ref_mag_r=None, tgt_freqs=None, tgt_mags=None, thd_data=None, csd_data=None, ir_l=None, ir_r=None, sweep_count="1x", smoothing_pts=240, noise_freqs=None, noise_floor_db=None, is_stress=False):
+    def update_analysis(self, freqs, mag_l, mag_r, ref_mag_l=None, ref_mag_r=None, tgt_freqs=None, tgt_mags=None, thd_data=None, csd_data=None, ir_l=None, ir_r=None, sweep_count="1x", smoothing_pts=240, noise_freqs=None, noise_floor_db=None, is_stress=False, snr_l=None, snr_r=None):
         self._last_data = (freqs, mag_l, mag_r, ref_mag_l, ref_mag_r, tgt_freqs, tgt_mags, thd_data, csd_data, ir_l, ir_r, sweep_count, smoothing_pts)
         self._noise_freqs = noise_freqs
         self._noise_floor_db = noise_floor_db
         self._is_stress = is_stress
+        self._snr_l = snr_l
+        self._snr_r = snr_r
         
         # Auto-switch to the channel that actually has data
         if mag_l is None and mag_r is not None:
@@ -1317,6 +1319,7 @@ class AnalysisWidget(QWidget):
             'OK':   ('#dcfce7' if is_light else '#0d3320', '#16a34a' if is_light else '#22c55e', '✓'),
             'WARN': ('#fef3c7' if is_light else '#422006', '#d97706' if is_light else '#f59e0b', '⚠'),
             'FAIL': ('#fee2e2' if is_light else '#450a0a', '#dc2626' if is_light else '#ef4444', '✗'),
+            'DISABLED': ('#f3f4f6' if is_light else '#27272a', '#9ca3af' if is_light else '#71717a', '⚠️'),
         }
 
         left_items = []
@@ -1336,6 +1339,28 @@ class AnalysisWidget(QWidget):
         show_l = self.btn_chan_l.isChecked()
         show_r = self.btn_chan_r.isChecked()
         
+        # --- Smart SNR THD Masking ---
+        if active_cat in ('THD', 'CSD'):
+            snr_l = getattr(self, '_snr_l', None)
+            snr_r = getattr(self, '_snr_r', None)
+            
+            min_snr = None
+            if show_l and snr_l is not None and show_r and snr_r is not None:
+                min_snr = min(snr_l, snr_r)
+            elif show_l and snr_l is not None:
+                min_snr = snr_l
+            elif show_r and snr_r is not None:
+                min_snr = snr_r
+                
+            if min_snr is not None and min_snr < 40.0:
+                report_items = [item for item in report_items if item.get('category') not in ('THD', 'CSD')]
+                report_items.append({
+                    'status': 'DISABLED',
+                    'title': '⚠️ THD / CSD Analysis Disabled',
+                    'desc': f'Measurement corrupted by environmental noise (SNR: {min_snr:.1f} dB). Frequency Response is still valid, but distortion metrics are unreliable.',
+                    'category': active_cat
+                })
+                
         for item in report_items:
             cat = item.get('category', 'FR')
             if active_cat is not None and cat not in (active_cat, 'ENV'):

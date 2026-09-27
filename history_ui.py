@@ -96,6 +96,7 @@ class HistoryCardWidget(QWidget):
         freq=None,
         mag_l=None,
         mag_r=None,
+        resonance_hz_l=None, resonance_hz_r=None,
         **kwargs
     ):
         super().__init__(parent)
@@ -108,6 +109,8 @@ class HistoryCardWidget(QWidget):
         self.tip_color = tip_color if tip_color else "#6b7280"
         self.tip_icon = tip_icon if tip_icon else "?"
         self.tip_material = tip_material if tip_material else "Standard"
+        self.resonance_hz_l = resonance_hz_l
+        self.resonance_hz_r = resonance_hz_r
 
         if seal_l is not None:
             self.seal_l_delta = float(round(seal_l, 1))
@@ -172,6 +175,14 @@ class HistoryCardWidget(QWidget):
         self.lbl_date.setObjectName("lbl_date")
         row2.addWidget(self.lbl_date)
         
+        if self.resonance_hz_l is not None or self.resonance_hz_r is not None:
+            parts = []
+            if self.resonance_hz_l is not None: parts.append(f"L: {self.resonance_hz_l/1000:.1f}k")
+            if self.resonance_hz_r is not None: parts.append(f"R: {self.resonance_hz_r/1000:.1f}k")
+            self.lbl_res = QLabel(f"📍 {' | '.join(parts)}")
+            self.lbl_res.setStyleSheet("color: #f59e0b; font-size: 11px; font-weight: bold;")
+            row2.addWidget(self.lbl_res)
+            
         row2.addStretch(1)
         
         self.lbl_tip_badge = QLabel()
@@ -781,7 +792,7 @@ class HistoryWidget(QWidget):
                     pass
 
             cursor.execute('''
-                SELECT m.timestamp, m.notes, m.photo_path, m.frequencies, m.magnitude_l, m.magnitude_r, iem.model_name, iem.custom_name, m.meas_name, COALESCE(m.tip_id, 1) AS tip_id, COALESCE(t.name, 'Unknown') AS tip_name, COALESCE(t.icon_char, '?') AS tip_icon, COALESCE(t.color_hex, '#6b7280') AS tip_color FROM Measurements m JOIN IEM_Models iem ON m.iem_id = iem.id LEFT JOIN TipProfiles t ON m.tip_id = t.id WHERE iem.musician_id = ? ORDER BY m.timestamp DESC LIMIT 100
+                SELECT m.timestamp, m.notes, m.photo_path, m.frequencies, m.magnitude_l, m.magnitude_r, iem.model_name, iem.custom_name, m.meas_name, COALESCE(m.tip_id, 1) AS tip_id, COALESCE(t.name, 'Unknown') AS tip_name, COALESCE(t.icon_char, '?') AS tip_icon, COALESCE(t.color_hex, '#6b7280') AS tip_color, m.resonance_hz_l, m.resonance_hz_r, m.snr_l, m.snr_r FROM Measurements m JOIN IEM_Models iem ON m.iem_id = iem.id LEFT JOIN TipProfiles t ON m.tip_id = t.id WHERE iem.musician_id = ? ORDER BY m.timestamp DESC LIMIT 100
             ''', (m_id,))
             
             rows = cursor.fetchall()
@@ -795,9 +806,10 @@ class HistoryWidget(QWidget):
                     date_counts[date_only] = date_counts.get(date_only, 0) + 1
             
             for row in rows:
+                row_padded = list(row) + [None] * (17 - len(row))
                 (timestamp, notes, photo_path, freq_blob, mag_l_blob, mag_r_blob,
                  iem_name, custom_name, meas_name,
-                 raw_tip_id, raw_tip_name, raw_tip_icon, raw_tip_color) = row
+                 raw_tip_id, raw_tip_name, raw_tip_icon, raw_tip_color, resonance_hz_l, resonance_hz_r, snr_l, snr_r) = row_padded[:17]
                  
                 base_name = "Measurement"
                 if timestamp:
@@ -872,6 +884,8 @@ class HistoryWidget(QWidget):
                     'seal_l_status': seal_l_status,
                     'seal_r_status': seal_r_status,
                     'seal_text': seal_text,
+                    'snr_l': snr_l,
+                    'snr_r': snr_r,
                 }
                 
                 item = QListWidgetItem(self.list_widget)
@@ -892,6 +906,8 @@ class HistoryWidget(QWidget):
                     freq=freq,
                     mag_l=mag_l,
                     mag_r=mag_r,
+                    resonance_hz_l=resonance_hz_l,
+                    resonance_hz_r=resonance_hz_r,
                 )
                 
                 # Ensure the item is big enough for the card
@@ -1115,18 +1131,26 @@ class HistoryWidget(QWidget):
         items = self.list_widget.selectedItems()
         if not items: return
         
-        data = items[0].data(Qt.UserRole)
-        ts = data['timestamp']
-        
+        count = len(items)
+        if count == 1:
+            data = items[0].data(Qt.UserRole)
+            ts = data['timestamp']
+            msg = f"Are you sure you want to delete this measurement?\n{ts}"
+        else:
+            msg = f"Are you sure you want to delete these {count} measurements?"
+            
         from PySide6.QtWidgets import QMessageBox
-        reply = QMessageBox.question(self, 'Delete Measurement', f"Are you sure you want to delete this measurement?\n{ts}", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(self, 'Delete Measurement', msg, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         
         if reply == QMessageBox.Yes:
             try:
                 import sqlite3
                 conn = sqlite3.connect(self.db_path)
                 cursor = conn.cursor()
-                cursor.execute('DELETE FROM Measurements WHERE timestamp = ?', (ts,))
+                for item in items:
+                    data = item.data(Qt.UserRole)
+                    ts = data['timestamp']
+                    cursor.execute('DELETE FROM Measurements WHERE timestamp = ?', (ts,))
                 conn.commit()
                 conn.close()
                 self.load_history(self.last_m_id, force_reload=True)
@@ -1210,6 +1234,11 @@ class HistoryWidget(QWidget):
                 with open(target_path, 'w') as f:
                     for i in range(len(freq)):
                         f.write(f"{freq[i]:.2f},{mag_to_save[i]:.2f}\n")
+                        
+                main_window = self.window()
+                if hasattr(main_window, 'load_targets'):
+                    main_window.load_targets()
+                    
                 from PySide6.QtWidgets import QMessageBox
                 QMessageBox.information(self, "Target Saved", f"Target saved to {target_path}")
             except Exception as e:
