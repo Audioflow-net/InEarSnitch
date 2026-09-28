@@ -927,7 +927,7 @@ class AnalysisWidget(QWidget):
         self.watermark_thd.setAlignment(Qt.AlignCenter)
         self.watermark_thd.hide()
         
-        self.thd_filter = OverlayFilter(self.watermark_thd, y_offset=20, parent=self.thd_widget)
+        self.thd_filter = OverlayFilter(self.watermark_thd, y_offset=13, parent=self.thd_widget)
         self.thd_widget.installEventFilter(self.thd_filter)
         self.watermark_thd.raise_()
         

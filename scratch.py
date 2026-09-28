@@ -1,28 +1,31 @@
 import numpy as np
 
-fs = 48000
-frames = 1024
-t = np.arange(frames) / fs
+def calculate_measurement_snr(ir_data, sample_rate):
+    if ir_data is None: return None
+    peak_idx = np.argmax(np.abs(ir_data))
+    
+    # Signal window: Peak + 10ms
+    signal_len = int(0.010 * sample_rate)
+    signal_window = ir_data[peak_idx : peak_idx + signal_len]
+    
+    # Noise window: Peak + 50ms to 150ms
+    noise_start = peak_idx + int(0.050 * sample_rate)
+    noise_end = peak_idx + int(0.150 * sample_rate)
+    
+    if noise_end > len(ir_data):
+        return 100.0 # Fallback if IR is too short
+        
+    noise_window = ir_data[noise_start : noise_end]
+    
+    rms_signal = np.sqrt(np.mean(signal_window**2))
+    rms_noise = np.sqrt(np.mean(noise_window**2))
+    rms_noise = max(rms_noise, 1e-12)
+    
+    snr_db = 20 * np.log10(rms_signal / rms_noise)
+    return snr_db
 
-# sine wave amp 1 at 2000 Hz
-sig = np.sin(2 * np.pi * 2000 * t)
-
-# Time domain RMS
-rms = np.sqrt(np.mean(sig**2))
-print("Time RMS:", rms)
-print("Time dBFS (20*log10(RMS)): ", 20*np.log10(rms))
-print("Time dBFS (20*log10(RMS/sqrt(0.5))): ", 20*np.log10(rms / np.sqrt(0.5)))
-
-# Freq domain
-window = np.hanning(frames)
-X = np.fft.rfft(sig * window)
-freqs = np.fft.rfftfreq(frames, 1/fs)
-high_mask = freqs > 1000
-
-high_power = np.sum((np.abs(X[high_mask]) / frames)**2) * 2.0
-# Hanning window correction for power is 8/3 (approx 2.6666)
-high_power *= (8.0/3.0)
-
-print("Freq Power:", high_power)
-print("Freq dBFS (10*log10(Power)): ", 10*np.log10(high_power))
-print("Freq dBFS (10*log10(Power/0.5)): ", 10*np.log10(high_power / 0.5))
+# Let's generate a fake IR to see what happens
+sr = 48000
+ir = np.zeros(sr)
+ir[100] = 1.0 # peak
+print(calculate_measurement_snr(ir, sr))
