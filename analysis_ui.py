@@ -249,9 +249,10 @@ from analysis import Analyzer
 
 
 class OverlayFilter(QObject):
-    def __init__(self, overlay_widget, parent=None):
+    def __init__(self, overlay_widget, y_offset=0, parent=None):
         super().__init__(parent)
         self.overlay_widget = overlay_widget
+        self.y_offset = y_offset
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.Resize:
@@ -259,12 +260,7 @@ class OverlayFilter(QObject):
             h = obj.height()
             ow = self.overlay_widget.width()
             oh = self.overlay_widget.height()
-            
-            # THD widget is shorter because of the STRESS TEST button below it.
-            # We add a ~20px offset to THD so its watermark visually aligns with CSD.
-            y_offset = 20 if hasattr(self.overlay_widget.parent(), 'hohd_line') else 0
-            
-            self.overlay_widget.move((w - ow) // 2, (h - oh) // 2 + y_offset)
+            self.overlay_widget.move((w - ow) // 2, (h - oh) // 2 + self.y_offset)
         return False
 
 class AutoWrapLabel(QLabel):
@@ -926,11 +922,12 @@ class AnalysisWidget(QWidget):
         self.hohd_line.hide()
         
         self.watermark_thd = QLabel("⚠️ NOISE CORRUPTED", self.thd_widget)
-        self.watermark_thd.setStyleSheet("color: rgba(255, 60, 60, 200); font-size: 24pt; font-weight: bold; background-color: rgba(0,0,0,150); padding: 8px 16px; border-radius: 6px;")
+        self.watermark_thd.setStyleSheet("color: rgba(255, 60, 60, 200); font-size: 24pt; font-weight: bold; background-color: rgba(0,0,0,150); border-radius: 6px;")
+        self.watermark_thd.setFixedSize(500, 60)
         self.watermark_thd.setAlignment(Qt.AlignCenter)
         self.watermark_thd.hide()
         
-        self.thd_filter = OverlayFilter(self.watermark_thd, self.thd_widget)
+        self.thd_filter = OverlayFilter(self.watermark_thd, y_offset=20, parent=self.thd_widget)
         self.thd_widget.installEventFilter(self.thd_filter)
         self.watermark_thd.raise_()
         
@@ -968,11 +965,12 @@ class AnalysisWidget(QWidget):
         self.csd_widget.getViewBox().disableAutoRange()
         
         self.watermark_csd = QLabel("⚠️ NOISE CORRUPTED", self.csd_widget)
-        self.watermark_csd.setStyleSheet("color: rgba(255, 60, 60, 200); font-size: 24pt; font-weight: bold; background-color: rgba(0,0,0,150); padding: 8px 16px; border-radius: 6px;")
+        self.watermark_csd.setStyleSheet("color: rgba(255, 60, 60, 200); font-size: 24pt; font-weight: bold; background-color: rgba(0,0,0,150); border-radius: 6px;")
+        self.watermark_csd.setFixedSize(500, 60)
         self.watermark_csd.setAlignment(Qt.AlignCenter)
         self.watermark_csd.hide()
         
-        self.csd_filter = OverlayFilter(self.watermark_csd, self.csd_widget)
+        self.csd_filter = OverlayFilter(self.watermark_csd, y_offset=0, parent=self.csd_widget)
         self.csd_widget.installEventFilter(self.csd_filter)
         self.watermark_csd.raise_()
         
