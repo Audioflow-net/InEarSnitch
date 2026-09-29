@@ -717,9 +717,10 @@ class LiveSealWorker(QThread):
         # Precompute Kill-Switch variables (cache to avoid allocations in stream)
         kill_window = None
         kill_high_mask = None
+        kill_sig = None
 
         def callback(indata, outdata, frames, time, status):
-            nonlocal in_circ, kill_window, kill_high_mask
+            nonlocal in_circ, kill_window, kill_high_mask, kill_sig
             if not self.running:
                 raise sd.CallbackStop
             try:
@@ -728,16 +729,19 @@ class LiveSealWorker(QThread):
                     kill_window = np.hanning(frames)
                     kill_freqs = np.fft.rfftfreq(frames, 1/self.fs)
                     kill_high_mask = kill_freqs > 1000.0
+                    kill_sig = np.empty(frames, dtype=indata.dtype)
                     
-                kill_sig = indata[:, 0] * kill_window
+                np.multiply(indata[:, 0], kill_window, out=kill_sig)
                 kill_fft = np.fft.rfft(kill_sig)
                 
-                # Calculate high-frequency energy power
-                high_power = np.sum((np.abs(kill_fft[kill_high_mask]) / frames)**2) * 5.33333
+                # Zero-allocation high-frequency energy power (RMS approximated) using vdot
+                high_bins = kill_fft[kill_high_mask]
+                high_power = np.vdot(high_bins, high_bins).real / (frames**2) * 5.33333
                 
                 if high_power > 1e-12:
                     if (10 * np.log10(high_power)) > -10.0:
                         self.error.emit("EMERGENCY STOP: Signal zu laut! In-Ear in Gefahr. Bitte Interface leiser drehen.")
+                        outdata.fill(0.0) # Prevent loud click on final buffer
                         raise sd.CallbackStop
 
                 # Grab a chunk of precomputed pink noise
@@ -792,6 +796,8 @@ class LiveSealWorker(QThread):
                 mag_db_out = mag_db + cal_offset
                 
                 self.update_signal.emit(log_freqs, mag_db_out)
+            except sd.CallbackStop:
+                raise
             except Exception as e:
                 print(f"[LiveSealWorker Error] {e}")
                 self.error.emit(str(e))
