@@ -713,12 +713,33 @@ class LiveSealWorker(QThread):
         # Precompute Hanning window
         window = np.hanning(self.blocksize)
         in_circ = np.zeros(self.blocksize)
+        
+        # Precompute Kill-Switch variables (cache to avoid allocations in stream)
+        kill_window = None
+        kill_high_mask = None
 
         def callback(indata, outdata, frames, time, status):
-            nonlocal in_circ
+            nonlocal in_circ, kill_window, kill_high_mask
             if not self.running:
                 raise sd.CallbackStop
             try:
+                # EMERGENCY KILL-SWITCH (> 1 kHz)
+                if kill_window is None or len(kill_window) != frames:
+                    kill_window = np.hanning(frames)
+                    kill_freqs = np.fft.rfftfreq(frames, 1/self.fs)
+                    kill_high_mask = kill_freqs > 1000.0
+                    
+                kill_sig = indata[:, 0] * kill_window
+                kill_fft = np.fft.rfft(kill_sig)
+                
+                # Calculate high-frequency energy power
+                high_power = np.sum((np.abs(kill_fft[kill_high_mask]) / frames)**2) * 5.33333
+                
+                if high_power > 1e-12:
+                    if (10 * np.log10(high_power)) > -10.0:
+                        self.error.emit("EMERGENCY STOP: Signal zu laut! In-Ear in Gefahr. Bitte Interface leiser drehen.")
+                        raise sd.CallbackStop
+
                 # Grab a chunk of precomputed pink noise
                 end_idx = self.noise_idx + frames
                 if end_idx <= N_noise:
