@@ -1871,3 +1871,12 @@
   - Höhe von 4.0 mm auf 2.5 mm reduziert, plus Stufe (Klick-Mechanismus, 1 mm hoch, 1.5 mm breiter).
   - Das Logo (`logo_scale = 0.8`) wurde zusätzlich um `1.8 mm` nach links innerhalb des Pucks verschoben, damit die verbreiterten SVG-Wellen nicht unter die verdeckte Flansch-Lippe geraten.
 - **Die Idee / Der Grund:** Dateisystem-Sync. Die Änderungen aus der Stencil-Datei wurden nun in die aktive `V41_Fit` Datei portiert. Mit 15.5 mm ist der Puck noch kleiner und hat massig Platz (mehr als 1 mm) zum Kabelgraben. Das Linksschieben des Logos verhindert visuelles Abschneiden der Wellen durch den Klick-Rand.
+
+### V42 - Hexagon Shockmount Base (2026-09-29)
+**Das betroffene Bauteil:** PETG Main Tower & TPU Tower Sleeve
+**Maße (Alt vs. Neu):**
+- PETG Tower Außendurchmesser von 22.0 mm auf 28.0 mm vergrößert.
+- PETG Tower Cutout (Socket) vertieft auf Z=19.5 (vorher Z=26) und als 24.0mm Hexagon umgeformt.
+- TPU Tower Sleeve komplett ausgetauscht durch eine 18.0mm Hexagon-Kapsel (Gesamthöhe 22.0mm = 12mm BNC + 10mm Mic Grip).
+**Formen-Änderung:** Hexagon-Geometrie eingeführt, alte runde Pressfit-Snap-In-Architektur und Kabel-Seitenschlitz im Sleeve entfernt.
+**Die Idee / Der Grund:** Zwiebel-Schalen-Prinzip zur radikalen Entkopplung des Mikrofons vor 50Hz-Trittschall. Das Hexagon-Profil verhindert das Abscheren des dazwischenliegenden Silikons beim Eindrehen des BNC-Steckers.

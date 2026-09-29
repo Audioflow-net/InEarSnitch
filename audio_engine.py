@@ -131,9 +131,12 @@ class AudioEngine:
         
         # Ignore the first 300ms where the DC offset pop occurs!
         if len(rec) > silence_samples:
-            peak_amp = np.max(np.abs(rec[silence_samples:]))
+            valid_rec = rec[silence_samples:]
         else:
-            peak_amp = np.max(np.abs(rec))
+            valid_rec = rec
+            
+        # --- SCHRITT 1: Der rohe Safety-Check (Time-Domain) ---
+        peak_amp = np.max(np.abs(valid_rec))
         peak_dbfs = 20 * np.log10(peak_amp + 1e-12)
         
         # Only block on actual clipping (> -1 dBFS at half amplitude = guaranteed clip at full)
@@ -148,21 +151,31 @@ class AudioEngine:
                 f"The app is playing sound out of the '{ch_name}' channel, but the microphone is recording silence."
             )
         
+        # --- SCHRITT 2: Der 1 kHz Filter-Check (Frequency-Domain) ---
+        rec_1d = valid_rec.flatten()
+        N_fft = len(rec_1d)
+        fft_res = np.fft.rfft(rec_1d)
+        freqs = np.fft.rfftfreq(N_fft, 1.0 / self.sample_rate)
+        
+        bin_idx = np.argmin(np.abs(freqs - 1000.0))
+        fft_amp = np.abs(fft_res[bin_idx]) * 2.0 / N_fft
+        fft_dbfs = 20 * np.log10(fft_amp + 1e-12)
+        
         # Check drift: scale expected peak by the ratio of probe amp to calibrated sweep amp
         cal_rec_peak = getattr(self, 'calibration_rec_peak', None)
         cal_sweep_amp = getattr(self, 'calibrated_sweep_amp', None)
         if cal_rec_peak is not None and cal_sweep_amp is not None:
             # Expected probe peak = cal peak + 20*log10(probe_amp / cal_sweep_amp)
             expected_probe_peak = cal_rec_peak + 20 * np.log10(probe_amp / cal_sweep_amp + 1e-12)
-            drift = abs(peak_dbfs - expected_probe_peak)
-            if drift > 6.0:
+            drift = abs(fft_dbfs - expected_probe_peak)
+            if drift > 4.0:
                 msg = (
                     f"Level shifted by {drift:.0f} dB since calibration "
-                    f"(expected {expected_probe_peak:.0f}, got {peak_dbfs:.0f} dBFS)."
+                    f"(expected {expected_probe_peak:.0f}, got {fft_dbfs:.0f} dBFS)."
                 )
                 
                 # If it's a massive drop (> 10 dB), they likely selected the wrong channel!
-                if expected_probe_peak - peak_dbfs > 10.0:
+                if expected_probe_peak - fft_dbfs > 10.0:
                     ch_name = "Left" if target_channel == 'L' else "Right"
                     msg += (
                         f"\n\n|TIP|👂 Are you testing the correct ear?<br><br>🔊 Or did you change the volume?\n\n"
@@ -174,9 +187,9 @@ class AudioEngine:
                         f"The volume does not match your calibration. Please restore your volume or re-calibrate."
                     )
                     
-                return False, peak_dbfs, msg
+                return False, fft_dbfs, msg
         
-        return True, peak_dbfs, f"Level OK ({peak_dbfs:.0f} dBFS)"
+        return True, fft_dbfs, f"Level OK ({fft_dbfs:.0f} dBFS)"
 
     def measure_noise_floor(self, input_device_idx, duration=0.5, sample_rate=None):
         """Measures the room noise floor in dBFS per frequency bin."""
