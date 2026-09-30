@@ -174,12 +174,11 @@ class AudioEngine:
                     f"(expected {expected_probe_peak:.0f}, got {fft_dbfs:.0f} dBFS)."
                 )
                 
-                # If it's a massive drop (> 10 dB), they likely selected the wrong channel!
+                # If it's a massive drop (> 10 dB), it's either the wrong channel, changed volume, or stage noise overload!
                 if expected_probe_peak - fft_dbfs > 10.0:
-                    ch_name = "Left" if target_channel == 'L' else "Right"
                     msg += (
-                        f"\n\n|TIP|👂 Are you testing the correct ear?<br><br>🔊 Or did you change the volume?\n\n"
-                        f"You selected '{ch_name}', but the recording is extremely quiet (possibly just crosstalk)."
+                        f"\n\n|TIP|⚠️ Volume Mismatch or Stage Noise?<br><br>🔊 1kHz tone is {drift:.0f} dB too quiet!\n\n"
+                        f"Did you turn down the volume, or is extreme background bass currently overloading the mic?"
                     )
                 else:
                     msg += (
