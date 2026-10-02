@@ -307,6 +307,8 @@ class Analyzer:
 
     @staticmethod
     def auto_seal_detection(freqs, mag_l, mag_r):
+        if mag_l is None or mag_r is None:
+            return False, "Seal OK"
         if len(freqs) == 0:
             return False, "Seal OK"
         
@@ -333,6 +335,8 @@ class Analyzer:
 
     @staticmethod
     def lr_imbalance_check(freqs, mag_l, mag_r):
+        if mag_l is None or mag_r is None:
+            return False, "L/R Balance OK"
         if len(freqs) == 0:
             return False, "L/R Balance OK"
         

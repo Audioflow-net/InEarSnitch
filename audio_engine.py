@@ -37,7 +37,10 @@ class AudioEngine:
     def get_inverse_filter(self, sweep, duration, f_start=5.0, f_end=24000.0):
         """Generates the inverse filter using Farina's amplitude modulation method."""
         t = np.linspace(0, duration, len(sweep), False)
-        amplitude_modulation = np.exp(-t * np.log(f_end / f_start) / duration)
+        if f_start == f_end:
+            amplitude_modulation = np.ones_like(t)
+        else:
+            amplitude_modulation = np.exp(-t * np.log(f_end / f_start) / duration)
         inverse_sweep = sweep[::-1] * amplitude_modulation
         return inverse_sweep
 
@@ -134,6 +137,9 @@ class AudioEngine:
             valid_rec = rec[silence_samples:]
         else:
             valid_rec = rec
+            
+        if len(valid_rec) == 0:
+            return False, -99.0, "Recording failed (too short)"
             
         # --- SCHRITT 1: Der rohe Safety-Check (Time-Domain) ---
         peak_amp = np.max(np.abs(valid_rec))
@@ -594,7 +600,10 @@ class AudioEngine:
         
         for n in harmonics:
             # Time shift for n-th harmonic
-            delta_t = duration * np.log(n) / np.log(f_end / f_start)
+            if f_start == f_end:
+                delta_t = 0.0
+            else:
+                delta_t = duration * np.log(n) / np.log(f_end / f_start)
             offset_samples = int(delta_t * self.sample_rate)
             h_idx_expected = peak_idx - offset_samples
             
@@ -677,12 +686,17 @@ class AudioEngine:
             if n > 5 and n < 10:
                 continue
                 
-            delta_t = duration * np.log(n) / np.log(f_end / f_start)
+            if f_start == f_end:
+                delta_t = 0.0
+                max_half_win = default_half_win
+            else:
+                delta_t = duration * np.log(n) / np.log(f_end / f_start)
+                max_half_win = int((duration * np.log((n+1)/n) / np.log(f_end / f_start)) * self.sample_rate / 2.0)
+                
             offset_samples = int(delta_t * self.sample_rate)
             h_idx = peak_idx - offset_samples
             
             # Dynamically calculate safe half-window to avoid overlapping n+1
-            max_half_win = int((duration * np.log((n+1)/n) / np.log(f_end / f_start)) * self.sample_rate / 2.0)
             half_win = min(default_half_win, max_half_win)
             
             if h_idx - half_win < 0 or h_idx + half_win >= N:

@@ -1281,10 +1281,10 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if hasattr(self, 'live_worker') and self.live_worker and self.live_worker.isRunning():
             self.live_worker.stop()
-            self.live_worker.wait()
+            self.live_worker.wait(1000)
         if hasattr(self, 'worker') and self.worker and self.worker.isRunning():
             self.worker.stop()
-            self.worker.wait()
+            self.worker.wait(1000)
         event.accept()
 
     def setup_ui(self):
@@ -3138,11 +3138,13 @@ class MainWindow(QMainWindow):
             return
 
         # Confirmation
-        reply = QMessageBox.question(
+        reply = QMessageBox.warning(
             self, self.tr("Run Rub & Buzz Test?"),
-            self.tr("This plays a louder-than-normal sweep to detect driver defects (Rub & Buzz).\n\n"
-            "Make sure your IEM is seated in the coupler — do NOT wear it while measuring.\n"
-            "Continue?"),
+            self.tr("⚠️ <b>EXTREME LOUDNESS (+15 dB)</b><br><br>"
+            "This test plays a very loud sweep to detect rub & buzz.<br><br>"
+            "🛑 <b>HEARING DAMAGE:</b> Do NOT wear the IEM!<br>"
+            "🔥 <b>HARDWARE DAMAGE:</b> Turn your amp down first, or drivers might melt!<br><br>"
+            "Are you sure you want to continue?"),
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         )
         if reply != QMessageBox.Yes:
@@ -3353,7 +3355,10 @@ class MainWindow(QMainWindow):
             "This software is designed to produce loud sweeping tones. "
             "Never wear In-Ear Monitors while running a sweep unless you are absolutely sure of the volume levels. "
             "High sound pressure levels can cause permanent hearing damage.<br><br>"
-            "<i>Use at your own risk.</i>"
+            "<i>Use at your own risk.</i><br><br>"
+            "<b>MEDICAL DISCLAIMER:</b><br>"
+            "InEar Snitch is a technical measurement tool for hardware diagnostics. It is NOT a medical device. "
+            "These measurements do not replace professional audiological exams."
         )
 
     def save_settings(self):
@@ -4262,7 +4267,7 @@ class MainWindow(QMainWindow):
         else:
             if hasattr(self, 'live_worker'):
                 self.live_worker.stop()
-                self.live_worker.wait()
+                self.live_worker.wait(1000)
             if hasattr(self, 'rta_big_lbl'):
                 self.rta_big_lbl.hide()
             if hasattr(self, 'live_rta_line') and self.live_rta_line is not None:

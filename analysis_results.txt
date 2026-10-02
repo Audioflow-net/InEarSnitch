@@ -1,0 +1,161 @@
+--- Analysis for main.py ---
+Connect call found: self._on_index_changed at line 566
+Connect call found: self._on_completer_activated at line 567
+Connect call found: self.show_popup at line 934
+Connect call found: self.save_trace_to_db at line 1237
+Connect call found: self.save_trace_to_db at line 1238
+Connect call found: self.clear_trace at line 1239
+Connect call found: self.clear_trace at line 1240
+Connect call found: self.on_theme_toggle at line 1358
+Connect call found: self.filter_profiles at line 1454
+Connect call found: self.open_add_profile_dialog at line 1459
+Connect call found: self.on_smooth_changed at line 1566
+Connect call found: self.reset_graph_view at line 1573
+Connect call found: self.clear_trace at line 1642
+Connect call found: self.save_trace_to_db at line 1648
+Connect call found: self.on_meas_target_changed at line 1662
+Connect call found: self.on_meas_history_changed at line 1669
+Connect call found: self.update_watermark at line 1699
+Connect call found: self.on_target_channel_changed at line 1700
+Connect call found: self.on_rta_button_clicked at line 1733
+Connect call found: self.on_rta_button_clicked at line 1740
+Connect call found: self.run_measurement at line 1758
+Connect call found: self.run_measurement at line 1827
+Connect call found: self.run_stress_test at line 1828
+Connect call found: self.start_guided_tour at line 1939
+Connect call found: self.populate_devices at line 1993
+Connect call found: self.reload_calibrations at line 2026
+Connect call found: self.update_cal_preview at line 2027
+Connect call found: self._run_level_calibration at line 2061
+Connect call found: self.backup_database at line 2195
+Connect call found: self.restore_database at line 2200
+Connect call found: self.filter_target_list at line 2213
+Connect call found: self.import_target_template at line 2223
+Connect call found: self.export_target_template at line 2227
+Connect call found: self.delete_target_template at line 2232
+Connect call found: self.show_about_dialog at line 2267
+Connect call found: self.save_settings at line 2282
+Connect call found: self.on_ana_target_changed at line 2290
+Connect call found: self.on_ana_history_changed at line 2291
+Connect call found: self.on_log_message at line 2298
+Connect call found: self.on_log_message at line 2299
+Connect call found: self._on_stress_done at line 3264
+Connect call found: self._on_stress_error at line 3265
+Connect call found: self.on_measurement_finished at line 4648
+Connect call found: self.on_measurement_error at line 4649
+Connect call found: self._on_meas_progress at line 4652
+Connect call found: self._animate_tour_button at line 5066
+Connect call found: self.on_tour_finished at line 5098
+Connect call found: self.on_profile_data_changed at line 1528
+Connect call found: self.on_profile_data_saved_only at line 1529
+Connect call found: self.handle_measure_requested at line 1530
+Connect call found: self.update_live_rta at line 4259
+Connect call found: self.on_measurement_error at line 4260
+Connect call found: self.load_profiles_from_db at line 1534
+Loop found in function: tickStrings at line 134
+Loop found in function: select_iem at line 320
+Loop found in function: __init__ at line 329
+Loop found in function: run at line 654
+Loop found in function: run at line 838
+Loop found in function: findData at line 981
+Loop found in function: show_popup at line 994
+Loop found in function: _align_target at line 2355
+Loop found in function: reload_calibrations at line 2468
+Loop found in function: load_targets at line 2520
+Loop found in function: handle_measure_requested at line 2646
+Loop found in function: on_profile_data_saved_only at line 2659
+Loop found in function: on_profile_data_changed at line 2678
+Loop found in function: populate_devices at line 2687
+Loop found in function: filter_target_list at line 2727
+Loop found in function: reload_target_list at line 2736
+Loop found in function: import_target_template at line 2750
+Loop found in function: _run_level_calibration at line 2891
+Loop found in function: filter_profiles at line 3460
+Loop found in function: load_profiles_from_db at line 3477
+Loop found in function: force_profile_selection at line 3515
+Loop found in function: on_target_channel_changed at line 3580
+Loop found in function: apply_dynamic_theme_styles at line 3623
+Loop found in function: on_theme_toggle at line 3786
+Loop found in function: on_profile_selected at line 3867
+Loop found in function: _parse_csv_file at line 4044
+Loop found in function: toggle_live_seal at line 4168
+Loop found in function: populate_tips at line 5162
+Loop found in function: suggest_tip_for_current_iem at line 5198
+Loop found in function: _sync_dir at line 55
+--- Analysis for analysis_ui.py ---
+Connect call found: self._on_index_changed at line 43
+Connect call found: self._on_completer_activated at line 44
+Connect call found: self._on_txt_changed at line 192
+Connect call found: self._on_dial_changed at line 196
+Connect call found: self._on_tip_combo_changed at line 378
+Connect call found: self.refresh_view at line 861
+Connect call found: self.refresh_view at line 863
+Connect call found: self.mouseMoved at line 894
+Connect call found: self.toggle_tools_pane at line 996
+Connect call found: self.save_eq_preset at line 1205
+Loop found in function: tickStrings at line 116
+Loop found in function: populate_tips at line 507
+Loop found in function: update_theme at line 556
+Loop found in function: refresh_metrics at line 598
+Loop found in function: __init__ at line 791
+Loop found in function: mouseMoved at line 1229
+Loop found in function: render_diagnostics at line 1304
+Loop found in function: refresh_view at line 1511
+Loop found in function: load_eq_presets at line 1792
+Loop found in function: save_eq_preset at line 1872
+Loop found in function: apply_eq_preset at line 1914
+Loop found in function: render_group at line 1419
+Loop found in function: update_dsp at line 1090
+--- Analysis for profile_ui.py ---
+Connect call found: self.handle_pic_click at line 213
+Connect call found: self.remove_pic at line 245
+Connect call found: self.choose_color at line 246
+Connect call found: self.toggle_expand at line 286
+Connect call found: self.sync_title at line 309
+Connect call found: self.sync_title at line 370
+Connect call found: self.save_all at line 608
+Connect call found: self.choose_pic at line 636
+Connect call found: self.remove_pic at line 639
+Connect call found: self.delete_musician at line 666
+Connect call found: self.trigger_save at line 686
+Connect call found: self.trigger_save at line 687
+Connect call found: self.trigger_save at line 698
+Connect call found: self.add_another_iem at line 725
+Connect call found: self.sync_title at line 357
+Connect call found: self.hide_form_after_anim at line 473
+Connect call found: self.delete_iem at line 814
+Connect call found: self.recalc_avatar_sizes at line 815
+Connect call found: self.trigger_save at line 816
+Loop found in function: __init__ at line 180
+Loop found in function: recalc_avatar_sizes at line 750
+Loop found in function: load_profile at line 767
+Loop found in function: delete_musician at line 875
+Loop found in function: save_all at line 920
+--- Analysis for history_ui.py ---
+Connect call found: self.on_item_checked at line 403
+Connect call found: self.on_item_checked at line 404
+Connect call found: self.on_item_checked at line 415
+Connect call found: self.reset_zoom at line 422
+Connect call found: self.save_notes at line 485
+Connect call found: self.show_import_menu at line 507
+Connect call found: self.export_selected_csv at line 511
+Connect call found: self.save_as_target at line 515
+Connect call found: self.delete_selected at line 519
+Connect call found: self.toggle_tools_pane at line 544
+Connect call found: self.filter_history at line 579
+Connect call found: self.on_selection_changed at line 589
+Connect call found: self.refresh_view at line 590
+Connect call found: self.db_path at line 724
+Connect call found: self.db_path at line 777
+Connect call found: self.db_path at line 1003
+Connect call found: self.db_path at line 1148
+Loop found in function: tickStrings at line 16
+Loop found in function: update_theme at line 613
+Loop found in function: load_history at line 759
+Loop found in function: update_prokit_ui_visibility at line 926
+Loop found in function: filter_history at line 944
+Loop found in function: refresh_view at line 1070
+Loop found in function: delete_selected at line 1130
+Loop found in function: export_selected_csv at line 1165
+Loop found in function: save_as_target at line 1191
+Done.
