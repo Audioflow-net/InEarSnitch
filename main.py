@@ -2973,7 +2973,14 @@ class MainWindow(QMainWindow):
                     with sd.Stream(device=(self.selected_in_idx, self.selected_out_idx),
                                    samplerate=self.audio_engine.sample_rate, channels=(in_channels, 2),
                                    callback=callback):
-                        event.wait(timeout=1.0)
+                        # Process GUI events while waiting to prevent macOS beachball freeze
+                        from PySide6.QtWidgets import QApplication
+                        import time
+                        start_wait = time.time()
+                        while not event.is_set() and (time.time() - start_wait < 1.0):
+                            event.wait(timeout=0.02)
+                            QApplication.processEvents()
+                            
                     return rec_buf[:, 0:1]
 
                 try:
