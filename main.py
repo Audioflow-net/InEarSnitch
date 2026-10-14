@@ -718,9 +718,10 @@ class LiveSealWorker(QThread):
         kill_window = None
         kill_high_mask = None
         kill_sig = None
+        overload_count = 0
 
         def callback(indata, outdata, frames, time, status):
-            nonlocal in_circ, kill_window, kill_high_mask, kill_sig
+            nonlocal in_circ, kill_window, kill_high_mask, kill_sig, overload_count
             if not self.running:
                 raise sd.CallbackStop
             try:
@@ -739,10 +740,14 @@ class LiveSealWorker(QThread):
                 high_power = np.vdot(high_bins, high_bins).real / (frames**2) * 5.33333
                 
                 if high_power > 1e-12:
-                    if (10 * np.log10(high_power)) > -10.0:
-                        self.error.emit("EMERGENCY STOP: Signal zu laut! In-Ear in Gefahr. Bitte Interface leiser drehen.")
-                        outdata.fill(0.0) # Prevent loud click on final buffer
-                        raise sd.CallbackStop
+                    if (10 * np.log10(high_power)) > -6.0:
+                        overload_count += 1
+                        if overload_count >= 5:
+                            self.error.emit("EMERGENCY_OVERLOAD")
+                            outdata.fill(0.0) # Prevent loud click on final buffer
+                            raise sd.CallbackStop
+                    else:
+                        overload_count = 0
 
                 # Grab a chunk of precomputed pink noise
                 end_idx = self.noise_idx + frames
@@ -4383,13 +4388,13 @@ class MainWindow(QMainWindow):
                 # Normal Pink Noise RMS (mids only) in log-binned FFT is ~52 dB below cal_peak.
                 # Example: cal_peak = -15 -> Normal RMS = -67 dB.
                 floor_threshold = cal_peak - 75.0   # Below this = Room Noise / Blocked Mic
-                ceil_threshold = cal_peak - 30.0    # Above this = Pressure Spike / Overload
+                ceil_threshold = cal_peak - 15.0    # Above this = Pressure Spike / Overload
             else:
                 floor_threshold = -90.0
-                ceil_threshold = -45.0
+                ceil_threshold = -30.0
 
             if broadband_rms > ceil_threshold:
-                seal_html = f"<span style='color: #f59e0b; font-weight: bold;'>Pressure Spike / Overload</span>"
+                seal_html = f"<span style='color: #f59e0b; font-weight: bold;'>Overload (Pressure / Stage Noise)</span>"
                 depth_html = ""
                 if hasattr(self, 'rta_peak_line') and self.rta_peak_line is not None:
                     self.rta_peak_line.hide()
@@ -4458,7 +4463,7 @@ class MainWindow(QMainWindow):
                         
                     hist_hz = getattr(self, '_current_hist_hz', None)
                     if hist_hz is not None:
-                        depth_html += f"<br><span style='font-size: 24px; color: #f59e0b;'>📍 Letzte Messung: {hist_hz:.0f} Hz</span>"
+                        depth_html += f"<br><span style='font-size: 24px; color: #f59e0b;'>📍 Last Measurement: {hist_hz/1000.0:.1f} kHz</span>"
                         if hasattr(self, 'rta_history_peak_line') and self.rta_history_peak_line is not None:
                             if self.btn_iec_guide.isChecked():
                                 self.rta_history_peak_line.show()
@@ -5067,9 +5072,26 @@ class MainWindow(QMainWindow):
         
         msg = QMessageBox(self)
         msg.setIcon(QMessageBox.Critical)
-        msg.setWindowTitle("Measurement Failed")
-        msg.setText("The measurement didn't complete successfully.")
-        msg.setInformativeText(f"Please check that your IEM is seated correctly in the coupler and that your audio interface is connected.\n\nTechnical detail: {str(err_msg)}")
+        err_str = str(err_msg)
+        
+        if "EMERGENCY_OVERLOAD" in err_str:
+            msg.setWindowTitle("Emergency Stop: Overload")
+            msg.setText(f"🛑 <b>EMERGENCY STOP (OVERLOAD)</b><br><br>"
+                        f"The audio signal reached a critically loud level.<br><br>"
+                        f"👉 <b>HOW TO FIX:</b><br>"
+                        f"1. <b>Turn down your audio interface volume!</b><br>"
+                        f"2. Ensure there is no extremely loud background noise (e.g. stage bass) clipping the mic.<br>"
+                        f"3. Do NOT wear the IEM.<br><br>"
+                        f"<i>(The audio stream was killed instantly to protect your hardware.)</i>")
+        else:
+            msg.setWindowTitle("Audio Interface Error")
+            msg.setText(f"⚠️ <b>Audio Device Unavailable</b><br><br>"
+                        f"The app lost connection to your audio interface.<br><br>"
+                        f"👉 <b>HOW TO FIX:</b><br>"
+                        f"1. Open <b>Settings</b> (top right).<br>"
+                        f"2. Click the <b>Refresh</b> (🔄) button.<br>"
+                        f"3. Re-select your Input and Output devices.<br><br>"
+                        f"<i>Technical detail: {err_str}</i>")
         msg.exec()
 
     def _start_tour_pulse(self):

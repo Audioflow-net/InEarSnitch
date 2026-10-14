@@ -1387,7 +1387,7 @@ class AnalysisWidget(QWidget):
             elif show_r and snr_r is not None:
                 min_snr = snr_r
                 
-            if min_snr is not None and min_snr < 75.0:
+            if min_snr is not None and min_snr < 40.0:
                 report_items = [item for item in report_items if item.get('category') not in ('THD', 'CSD')]
                 report_items.append({
                     'status': 'DISABLED',
@@ -1649,8 +1649,8 @@ class AnalysisWidget(QWidget):
             snr_l = getattr(self, '_snr_l', None)
             snr_r = getattr(self, '_snr_r', None)
             
-            is_poor_snr_l = (snr_l is not None and snr_l < 75.0)
-            is_poor_snr_r = (snr_r is not None and snr_r < 75.0)
+            is_poor_snr_l = (snr_l is not None and snr_l < 40.0)
+            is_poor_snr_r = (snr_r is not None and snr_r < 40.0)
             
             if thd_l is not None:
                 pen_l = pg.mkPen(theme.get_color('curve_left'), width=2, style=Qt.DashLine if is_poor_snr_l else Qt.SolidLine)
@@ -1732,7 +1732,7 @@ class AnalysisWidget(QWidget):
                     base_rgb = (255, 0, 85) if is_right else (0, 255, 255)
                     
                 snr_val = getattr(self, '_snr_r' if is_right else '_snr_l', None)
-                is_poor_snr = snr_val is not None and snr_val < 75.0
+                is_poor_snr = snr_val is not None and snr_val < 40.0
                 if is_poor_snr:
                     base_rgb = (100, 100, 105) # Gray scale for corrupted
                     
@@ -1768,7 +1768,7 @@ class AnalysisWidget(QWidget):
                     )
                     
 
-            if getattr(self, '_snr_l', None) is not None and getattr(self, '_snr_l', None) < 75.0 or getattr(self, '_snr_r', None) is not None and getattr(self, '_snr_r', None) < 75.0:
+            if getattr(self, '_snr_l', None) is not None and getattr(self, '_snr_l', None) < 40.0 or getattr(self, '_snr_r', None) is not None and getattr(self, '_snr_r', None) < 40.0:
                 if hasattr(self, 'watermark_csd'): self.watermark_csd.show()
             else:
                 if hasattr(self, 'watermark_csd'): self.watermark_csd.hide()

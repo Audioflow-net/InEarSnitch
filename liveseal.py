@@ -106,7 +106,7 @@ class LiveSealWorker(QThread):
                 
                 if high_power > 1e-12:
                     if (10 * np.log10(high_power)) > -10.0:
-                        self.error.emit("EMERGENCY STOP: Signal zu laut! In-Ear in Gefahr. Bitte Interface leiser drehen.")
+                        self.error.emit("EMERGENCY_OVERLOAD")
                         outdata.fill(0.0) # Prevent loud click on final buffer
                         raise sd.CallbackStop
 

@@ -68,11 +68,13 @@ class AudioEngine:
         # Add 300ms silence at the start to let the DAC wake up and DC offset pops to settle!
         # If we play immediately, the DAC wake-up pop pressurizes the sealed coupler and triggers a false 0 dBFS clipping error!
         silence_samples = int(0.3 * self.sample_rate)
-        tone_stereo = np.zeros((silence_samples + n_samples, 2))
+        latency_pad = int(0.15 * self.sample_rate)  # 150ms extra recording time for USB latency!
+        
+        tone_stereo = np.zeros((silence_samples + n_samples + latency_pad, 2))
         if target_channel == 'L':
-            tone_stereo[silence_samples:, 0] = tone
+            tone_stereo[silence_samples:silence_samples+n_samples, 0] = tone
         else:
-            tone_stereo[silence_samples:, 1] = tone
+            tone_stereo[silence_samples:silence_samples+n_samples, 1] = tone
 
         # WASAPI Crash Prevention
         import sys
@@ -165,7 +167,10 @@ class AudioEngine:
         
         bin_idx = np.argmin(np.abs(freqs - 1000.0))
         fft_amp = np.abs(fft_res[bin_idx]) * 2.0 / N_fft
-        fft_dbfs = 20 * np.log10(fft_amp + 1e-12)
+        
+        # Compensate for latency padding dilution: the tone only exists for 'n_samples' out of 'N_fft'
+        fft_amp_corrected = fft_amp * (N_fft / n_samples)
+        fft_dbfs = 20 * np.log10(fft_amp_corrected + 1e-12)
         
         # Check drift: scale expected peak by the ratio of probe amp to calibrated sweep amp
         cal_rec_peak = getattr(self, 'calibration_rec_peak', None)
