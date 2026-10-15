@@ -3,6 +3,13 @@ Unicode True
 !define APP_EXE "InEarSnitch.exe"
 !define INSTALL_DIR "$PROGRAMFILES64\InEar SNITCH"
 
+!ifndef APP_VERSION
+  !define APP_VERSION "1.0.0"
+!endif
+!ifndef INSTALLER_NAME
+  !define INSTALLER_NAME "InEarSnitch-Windows-Setup.exe"
+!endif
+
 Name "${APP_NAME} ${APP_VERSION}"
 OutFile "${INSTALLER_NAME}"
 InstallDir "${INSTALL_DIR}"
